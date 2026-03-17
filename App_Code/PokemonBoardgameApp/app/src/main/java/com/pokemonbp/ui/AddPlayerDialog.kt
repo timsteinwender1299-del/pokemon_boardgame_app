@@ -130,8 +130,8 @@ class AddPlayerDialog(
                 val llTypes    = frame.findViewById<LinearLayout>(R.id.ll_slot_types)
                 val tvName     = frame.findViewById<TextView>(R.id.tv_slot_name)
                 val btnBp      = frame.findViewById<MaterialButton>(R.id.btn_slot_bp)
-                val btnRemove  = frame.findViewById<MaterialButton>(R.id.btn_slot_remove)
-                val btnEvolve  = frame.findViewById<MaterialButton>(R.id.btn_slot_evolve)
+                val btnRemove  = frame.findViewById<ImageButton>(R.id.btn_slot_remove)
+                val btnEvolve  = frame.findViewById<ImageButton>(R.id.btn_slot_evolve)
                 val btnDusk    = frame.findViewById<ImageButton>(R.id.btn_slot_duskstone)
 
                 val entry = pokemonEntries[i]
@@ -173,12 +173,26 @@ class AddPlayerDialog(
                     }
 
                     // Delete button
+                    Glide.with(requireContext())
+                        .load(SpriteUrls.garbageBinUrl)
+                        .placeholder(R.drawable.ic_garbage_bin)
+                        .error(R.drawable.ic_garbage_bin)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .fitCenter()
+                        .into(btnRemove)
                     btnRemove.setOnClickListener {
                         pokemonEntries[i] = null
                         refreshSlots()
                     }
 
                     // Evolve button
+                    Glide.with(requireContext())
+                        .load(SpriteUrls.dawnstoneUrl)
+                        .placeholder(R.drawable.ic_dawnstone)
+                        .error(R.drawable.ic_dawnstone)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .fitCenter()
+                        .into(btnEvolve)
                     val nextEvos = EvolutionData.nextEvolutions(preset.pokedexId)
                     btnEvolve.isEnabled = nextEvos.isNotEmpty()
                     btnEvolve.alpha = if (nextEvos.isNotEmpty()) 1f else 0.3f

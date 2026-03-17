@@ -88,7 +88,9 @@ object SpriteUrls {
         return "$BASE_URL/pokemon_artwork/Hauptartwork_$padded.png"
     }
 
-    val duskstoneUrl: String = "$BASE_URL/Images/Icons/Duskstone.png"
+    val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
+    val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"
+    val garbageBinUrl: String = "$BASE_URL/Icons/Garbage%20Bin.png"
 
     /** No local drawables anymore — always use URL */
     fun localResId(context: Context, pokedexId: Int): Int = 0
