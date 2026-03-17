@@ -26,10 +26,19 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp"
         android:layout_weight="1" android:orientation="vertical">
 
-        <TextView android:id="@+id/tv_team_a_label"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="🔴 Player" android:textSize="15sp" android:textStyle="bold"
-            android:paddingBottom="6dp"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingBottom="6dp">
+            <ImageView
+                android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_marginEnd="6dp"
+                android:src="@drawable/ic_player"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"/>
+            <TextView android:id="@+id/tv_team_a_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="🔴 Player" android:textSize="15sp" android:textStyle="bold"/>
+        </LinearLayout>
 
         <!-- Team A action buttons -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
