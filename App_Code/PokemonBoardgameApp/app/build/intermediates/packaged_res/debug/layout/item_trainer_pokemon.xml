@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_tp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp"
+    app:cardCornerRadius="8dp"
+    app:strokeWidth="1dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <!-- Sprite -->
+        <ImageView android:id="@+id/iv_tp_sprite"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"/>
+
+        <!-- Type icons -->
+        <LinearLayout android:id="@+id/ll_tp_types"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="2dp"/>
+
+        <!-- Name -->
+        <TextView android:id="@+id/tv_tp_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:paddingTop="2dp"
+            android:paddingBottom="4dp"/>
+
+        <!-- 2x2 button grid -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Row 1: BP | Delete -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="2dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_bp_toggle"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="24dp"
+                    android:layout_weight="1" android:layout_marginEnd="2dp"
+                    android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
+                    android:text="BP:1" android:textSize="8sp" android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:backgroundTint="#FFFFFF"
+                    android:textColor="#333333"
+                    app:strokeColor="#CCCCCC"
+                    app:cornerRadius="4dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_tp_remove"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
+                    android:text="✕" android:textSize="9sp"
+                    android:backgroundTint="#FFFFFF"
+                    android:textColor="#CC0000"
+                    app:strokeColor="#CCCCCC"
+                    app:cornerRadius="4dp"/>
+            </LinearLayout>
+
+            <!-- Row 2: Evolve | Duskstone -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_evolve"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="24dp"
+                    android:layout_weight="1" android:layout_marginEnd="2dp"
+                    android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
+                    android:text=""
+                    android:backgroundTint="#FFFFFF"
+                    app:icon="@drawable/ic_dawnstone"
+                    app:iconSize="14dp" app:iconPadding="0dp" app:iconGravity="textStart"
+                    app:iconTint="#555555"
+                    app:strokeColor="#CCCCCC"
+                    app:cornerRadius="4dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_duskstone"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
+                    android:text=""
+                    android:backgroundTint="#FFFFFF"
+                    app:icon="@drawable/ic_dawnstone"
+                    app:iconSize="14dp" app:iconPadding="0dp" app:iconGravity="textStart"
+                    app:iconTint="#888888"
+                    app:strokeColor="#CCCCCC"
+                    app:cornerRadius="4dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- BP picker panel (hidden by default) -->
+        <LinearLayout
+            android:id="@+id/layout_bp_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:paddingTop="6dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="2dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="1" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_2"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="2" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_3"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="3" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_4"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="4" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_5"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="5" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_6"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="6" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_7"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="7" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_8"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="8" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_9"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="9" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="10" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_11"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="11" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/bp_12"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+                    android:layout_marginHorizontal="1dp" android:text="12" android:textSize="10sp"
+                    android:textAllCaps="false" app:cornerRadius="6dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
