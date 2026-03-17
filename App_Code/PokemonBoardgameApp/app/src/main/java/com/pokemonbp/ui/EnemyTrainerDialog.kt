@@ -37,17 +37,15 @@ class EnemyTrainerDialog(
             .create()
 
         dialog.setOnShowListener {
-            dialog.window?.setLayout(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.80).toInt()
+            dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         return dialog
     }
 
     private fun buildOptions(): List<EnemyOption> = buildList {
         SinnohData.gymLeaders.forEach { add(EnemyOption.GymLeaderOption(it)) }
-        add(EnemyOption.ChampionMenu)
+        SinnohData.champions.forEach { add(EnemyOption.ChampionOption(it)) }
         add(EnemyOption.WildOption)
         add(EnemyOption.RandomOption)
         add(EnemyOption.SavedTrainerMenu)
@@ -55,10 +53,10 @@ class EnemyTrainerDialog(
 
     private fun handleOptionSelected(option: EnemyOption) {
         when (option) {
-            is EnemyOption.GymLeaderOption -> showBadgeDialog(option.gym)
-            is EnemyOption.ChampionMenu    -> showChampionDialog()
-            is EnemyOption.WildOption      -> { dismiss(); onAddSinglePokemon() }
-            is EnemyOption.RandomOption    -> { dismiss(); onAddSinglePokemon() }
+            is EnemyOption.GymLeaderOption  -> showBadgeDialog(option.gym)
+            is EnemyOption.ChampionOption   -> { onTrainerSelected(option.champion, null); dismiss() }
+            is EnemyOption.WildOption       -> { dismiss(); onAddSinglePokemon() }
+            is EnemyOption.RandomOption     -> { dismiss(); onAddSinglePokemon() }
             is EnemyOption.SavedTrainerMenu -> showSavedTrainerDialog()
         }
     }
@@ -69,18 +67,6 @@ class EnemyTrainerDialog(
             .setTitle("${gym.nameDE} / ${gym.nameEN} — Choose Badge")
             .setItems(badges) { _, which ->
                 onTrainerSelected(gym, which + 1)
-                dismiss()
-            }
-            .setNegativeButton("Back", null)
-            .show()
-    }
-
-    private fun showChampionDialog() {
-        val names = SinnohData.champions.map { it.nameEN }.toTypedArray()
-        AlertDialog.Builder(requireContext())
-            .setTitle("Choose Champion")
-            .setItems(names) { _, which ->
-                onTrainerSelected(SinnohData.champions[which], null)
                 dismiss()
             }
             .setNegativeButton("Back", null)
@@ -105,7 +91,7 @@ class EnemyTrainerDialog(
 
 sealed class EnemyOption {
     data class GymLeaderOption(val gym: EnemyTrainer.GymLeader) : EnemyOption()
-    object ChampionMenu : EnemyOption()
+    data class ChampionOption(val champion: EnemyTrainer.Champion) : EnemyOption()
     object WildOption : EnemyOption()
     object RandomOption : EnemyOption()
     object SavedTrainerMenu : EnemyOption()
@@ -133,10 +119,10 @@ class EnemyGridAdapter(
         holder.tvName.setTextColor(c.textPrimary)
 
         val (iconId, label) = when (opt) {
-            is EnemyOption.GymLeaderOption -> opt.gym.id to opt.gym.nameDE
-            is EnemyOption.ChampionMenu    -> "champion" to "Champion"
-            is EnemyOption.WildOption      -> "wild" to "Wild"
-            is EnemyOption.RandomOption    -> "random" to "Random"
+            is EnemyOption.GymLeaderOption  -> opt.gym.id to opt.gym.nameDE
+            is EnemyOption.ChampionOption   -> opt.champion.nameEN.lowercase() to opt.champion.nameEN
+            is EnemyOption.WildOption       -> "wild" to "Wild"
+            is EnemyOption.RandomOption     -> "random" to "Random"
             is EnemyOption.SavedTrainerMenu -> "saved" to "Trainer"
         }
 

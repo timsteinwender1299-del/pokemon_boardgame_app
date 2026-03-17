@@ -116,6 +116,7 @@ object SinnohData {
 
     val champions: List<EnemyTrainer.Champion> = listOf(
         EnemyTrainer.Champion("Cynthia"),
+        EnemyTrainer.Champion("Hilda"),
         EnemyTrainer.Champion("Tim")
     )
 }
