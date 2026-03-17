@@ -45,11 +45,10 @@ class EnemyTrainerDialog(
 
     private fun buildOptions(): List<EnemyOption> = buildList {
         val hilda = SinnohData.champions.first { it.nameEN == "Hilda" }
-        val otherChampions = SinnohData.champions.filter { it.nameEN != "Hilda" }
         SinnohData.gymLeaders.take(2).forEach { add(EnemyOption.GymLeaderOption(it)) }
         add(EnemyOption.ChampionOption(hilda))
         SinnohData.gymLeaders.drop(2).forEach { add(EnemyOption.GymLeaderOption(it)) }
-        otherChampions.forEach { add(EnemyOption.ChampionOption(it)) }
+        add(EnemyOption.ChampionMenu)
         add(EnemyOption.WildOption)
         add(EnemyOption.RandomOption)
         add(EnemyOption.SavedTrainerMenu)
@@ -59,10 +58,24 @@ class EnemyTrainerDialog(
         when (option) {
             is EnemyOption.GymLeaderOption  -> showBadgeDialog(option.gym)
             is EnemyOption.ChampionOption   -> { onTrainerSelected(option.champion, null); dismiss() }
+            is EnemyOption.ChampionMenu     -> showChampionDialog()
             is EnemyOption.WildOption       -> { dismiss(); onAddSinglePokemon() }
             is EnemyOption.RandomOption     -> { dismiss(); onAddSinglePokemon() }
             is EnemyOption.SavedTrainerMenu -> showSavedTrainerDialog()
         }
+    }
+
+    private fun showChampionDialog() {
+        val champions = SinnohData.champions.filter { it.nameEN != "Hilda" }
+        val names = champions.map { it.nameEN }.toTypedArray()
+        AlertDialog.Builder(requireContext())
+            .setTitle("Choose Champion")
+            .setItems(names) { _, which ->
+                onTrainerSelected(champions[which], null)
+                dismiss()
+            }
+            .setNegativeButton("Back", null)
+            .show()
     }
 
     private fun showBadgeDialog(gym: EnemyTrainer.GymLeader) {
@@ -96,6 +109,7 @@ class EnemyTrainerDialog(
 sealed class EnemyOption {
     data class GymLeaderOption(val gym: EnemyTrainer.GymLeader) : EnemyOption()
     data class ChampionOption(val champion: EnemyTrainer.Champion) : EnemyOption()
+    object ChampionMenu : EnemyOption()
     object WildOption : EnemyOption()
     object RandomOption : EnemyOption()
     object SavedTrainerMenu : EnemyOption()
@@ -125,6 +139,7 @@ class EnemyGridAdapter(
         val (iconId, label) = when (opt) {
             is EnemyOption.GymLeaderOption  -> opt.gym.id to opt.gym.nameDE
             is EnemyOption.ChampionOption   -> opt.champion.nameEN.lowercase() to opt.champion.nameEN
+            is EnemyOption.ChampionMenu     -> "cynthia" to "Champion"
             is EnemyOption.WildOption       -> "wild" to "Wild"
             is EnemyOption.RandomOption     -> "random" to "Random"
             is EnemyOption.SavedTrainerMenu -> "saved" to "Trainer"
