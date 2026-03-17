@@ -96,12 +96,19 @@ object SpriteUrls {
         "byron"       -> "$BASE_URL/Trainer/Trainer_Icon/Byron_Icon.png"
         "candice"     -> "$BASE_URL/Trainer/Trainer_Icon/Candice_Icon.png"
         "volkner"     -> "$BASE_URL/Trainer/Trainer_Icon/Volkner_Image.png"
-        "cynthia"     -> "$BASE_URL/Trainer/Trainer_Icon/Cynthia_Icon.png"
-        "hilda"       -> "$BASE_URL/Trainer/Trainer_Icon/Hilda_Icon.png"
-        "tim"         -> "$BASE_URL/Trainer/Trainer_Icon/Tim_Icon.png"
-        "random"      -> "$BASE_URL/Trainer/Trainer_Icon/Random_Trainer.png"
-        "saved"       -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
+        "cynthia"      -> "$BASE_URL/Trainer/Trainer_Icon/Cynthia_Icon.png"
+        "hilda"        -> "$BASE_URL/Trainer/Trainer_Icon/Hilda_Icon.png"
+        "tim"          -> "$BASE_URL/Trainer/Trainer_Icon/Tim_Icon.png"
+        "championmenu" -> "$BASE_URL/Trainer/Trainer_Icon/ChampionIcon.png"
+        "random"       -> "$BASE_URL/Trainer/Trainer_Icon/Random_Trainer.png"
+        "saved"        -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
         else          -> null
+    }
+
+    fun championImageUrl(nameEN: String): String? = when (nameEN) {
+        "Cynthia" -> "$BASE_URL/Trainer/TrainerImage/ChampCynthia.png"
+        "Tim"     -> "$BASE_URL/Trainer/TrainerImage/ChampTim.png"
+        else      -> null
     }
 
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"

@@ -67,15 +67,24 @@ class EnemyTrainerDialog(
 
     private fun showChampionDialog() {
         val champions = SinnohData.champions.filter { it.nameEN != "Hilda" }
-        val names = champions.map { it.nameEN }.toTypedArray()
-        AlertDialog.Builder(requireContext())
-            .setTitle("Choose Champion")
-            .setItems(names) { _, which ->
-                onTrainerSelected(champions[which], null)
-                dismiss()
-            }
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_enemy_trainer, null)
+        view.setBackgroundColor(ThemeManager.colorsFor(theme).surface)
+        val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
+        recycler.layoutManager = GridLayoutManager(requireContext(), 2)
+        recycler.adapter = ChampionPickerAdapter(champions, ThemeManager.colorsFor(theme)) { champion ->
+            onTrainerSelected(champion, null)
+            dismiss()
+        }
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(view)
             .setNegativeButton("Back", null)
-            .show()
+            .create()
+        dialog.setOnShowListener {
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.75).toInt()
+            dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        dialog.show()
     }
 
     private fun showBadgeDialog(gym: EnemyTrainer.GymLeader) {
@@ -139,7 +148,7 @@ class EnemyGridAdapter(
         val (iconId, label) = when (opt) {
             is EnemyOption.GymLeaderOption  -> opt.gym.id to opt.gym.nameDE
             is EnemyOption.ChampionOption   -> opt.champion.nameEN.lowercase() to opt.champion.nameEN
-            is EnemyOption.ChampionMenu     -> "cynthia" to "Champion"
+            is EnemyOption.ChampionMenu     -> "championmenu" to "Champion"
             is EnemyOption.WildOption       -> "wild" to "Wild"
             is EnemyOption.RandomOption     -> "random" to "Random"
             is EnemyOption.SavedTrainerMenu -> "saved" to "Trainer"
@@ -164,4 +173,43 @@ class EnemyGridAdapter(
     }
 
     override fun getItemCount() = options.size
+}
+
+class ChampionPickerAdapter(
+    private val champions: List<EnemyTrainer.Champion>,
+    private val c: ThemeColors,
+    private val onClick: (EnemyTrainer.Champion) -> Unit
+) : RecyclerView.Adapter<ChampionPickerAdapter.VH>() {
+
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val ivImage: ImageView = v.findViewById(R.id.iv_champion_image)
+        val tvName: TextView   = v.findViewById(R.id.tv_champion_name)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val v = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_champion_card, parent, false)
+        return VH(v)
+    }
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val champion = champions[position]
+        holder.tvName.text = champion.nameEN
+        holder.tvName.setTextColor(c.textPrimary)
+        val url = SpriteUrls.championImageUrl(champion.nameEN)
+        if (url != null) {
+            Glide.with(holder.ivImage.context)
+                .load(url)
+                .placeholder(R.drawable.ic_pokeball)
+                .error(R.drawable.ic_pokeball)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(holder.ivImage)
+        } else {
+            holder.ivImage.setImageResource(R.drawable.ic_pokeball)
+        }
+        holder.itemView.setOnClickListener { onClick(champion) }
+    }
+
+    override fun getItemCount() = champions.size
 }
