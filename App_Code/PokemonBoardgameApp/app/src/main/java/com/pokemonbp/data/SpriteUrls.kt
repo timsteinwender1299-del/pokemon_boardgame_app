@@ -88,6 +88,20 @@ object SpriteUrls {
         return "$BASE_URL/pokemon_artwork/Hauptartwork_$padded.png"
     }
 
+    fun trainerIconUrl(id: String): String? = when (id) {
+        "roark"       -> "$BASE_URL/Trainer/Trainer_Icon/Roark_Icon.png"
+        "gardenia"    -> "$BASE_URL/Trainer/Trainer_Icon/Silvana_Icon.png"
+        "crasherwake" -> "$BASE_URL/Trainer/Trainer_Icon/Wake_Icon.png"
+        "fantina"     -> "$BASE_URL/Trainer/Trainer_Icon/Fantina_Icon.png"
+        "byron"       -> "$BASE_URL/Trainer/Trainer_Icon/Byron_Icon.png"
+        "candice"     -> "$BASE_URL/Trainer/Trainer_Icon/Candice_Icon.png"
+        "volkner"     -> "$BASE_URL/Trainer/Trainer_Icon/Volkner_Image.png"
+        "champion"    -> "$BASE_URL/Trainer/Trainer_Icon/Cynthia_Icon.png"
+        "random"      -> "$BASE_URL/Trainer/Trainer_Icon/Random_Trainer.png"
+        "saved"       -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
+        else          -> null
+    }
+
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"
     val garbageBinUrl: String = "$BASE_URL/Icons/Garbage%20Bin.png"

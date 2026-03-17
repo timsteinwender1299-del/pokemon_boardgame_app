@@ -2,13 +2,14 @@ package com.pokemonbp.ui
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.R
 import com.pokemonbp.data.*
 import com.pokemonbp.model.*
@@ -25,15 +26,23 @@ class EnemyTrainerDialog(
         view.setBackgroundColor(c.surface)
 
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
-        recycler.layoutManager = LinearLayoutManager(requireContext())
-        recycler.adapter = EnemyOptionAdapter(buildOptions(), c) { option ->
+        recycler.layoutManager = GridLayoutManager(requireContext(), 3)
+        recycler.adapter = EnemyGridAdapter(buildOptions(), c) { option ->
             handleOptionSelected(option)
         }
 
-        return AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
             .setNegativeButton("Cancel", null)
             .create()
+
+        dialog.setOnShowListener {
+            dialog.window?.setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        return dialog
     }
 
     private fun buildOptions(): List<EnemyOption> = buildList {
@@ -102,50 +111,50 @@ sealed class EnemyOption {
     object SavedTrainerMenu : EnemyOption()
 }
 
-class EnemyOptionAdapter(
+class EnemyGridAdapter(
     private val options: List<EnemyOption>,
     private val c: ThemeColors,
     private val onClick: (EnemyOption) -> Unit
-) : RecyclerView.Adapter<EnemyOptionAdapter.VH>() {
+) : RecyclerView.Adapter<EnemyGridAdapter.VH>() {
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val tvTitle: TextView = v.findViewById(R.id.tv_enemy_option_title)
-        val tvSub: TextView   = v.findViewById(R.id.tv_enemy_option_sub)
+        val ivIcon: ImageView  = v.findViewById(R.id.iv_trainer_icon)
+        val tvName: TextView   = v.findViewById(R.id.tv_trainer_name)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_enemy_option, parent, false)
+            .inflate(R.layout.item_enemy_grid, parent, false)
         return VH(v)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val opt = options[position]
-        holder.itemView.setBackgroundColor(if (position % 2 == 0) c.surface else c.surfaceVariant)
-        holder.tvTitle.setTextColor(c.textPrimary)
-        holder.tvSub.setTextColor(c.textSecondary)
-        when (opt) {
-            is EnemyOption.GymLeaderOption -> {
-                holder.tvTitle.text = "${opt.gym.nameDE} / ${opt.gym.nameEN}"
-                holder.tvSub.text = "Gym Leader  ·  Tap to choose badge"
-            }
-            is EnemyOption.ChampionMenu -> {
-                holder.tvTitle.text = "🏆 Champion"
-                holder.tvSub.text = "Cynthia or Tim"
-            }
-            is EnemyOption.WildOption -> {
-                holder.tvTitle.text = "🌿 Wild Pokémon"
-                holder.tvSub.text = "Choose one Pokémon to battle"
-            }
-            is EnemyOption.RandomOption -> {
-                holder.tvTitle.text = "🎲 Random Trainer"
-                holder.tvSub.text = "Choose one Pokémon to battle"
-            }
-            is EnemyOption.SavedTrainerMenu -> {
-                holder.tvTitle.text = "👤 Choose Trainer"
-                holder.tvSub.text = "From your saved trainers"
-            }
+        holder.tvName.setTextColor(c.textPrimary)
+
+        val (iconId, label) = when (opt) {
+            is EnemyOption.GymLeaderOption -> opt.gym.id to opt.gym.nameDE
+            is EnemyOption.ChampionMenu    -> "champion" to "Champion"
+            is EnemyOption.WildOption      -> "wild" to "Wild"
+            is EnemyOption.RandomOption    -> "random" to "Random"
+            is EnemyOption.SavedTrainerMenu -> "saved" to "Trainer"
         }
+
+        holder.tvName.text = label
+
+        val url = SpriteUrls.trainerIconUrl(iconId)
+        if (url != null) {
+            Glide.with(holder.ivIcon.context)
+                .load(url)
+                .placeholder(R.drawable.ic_pokeball)
+                .error(R.drawable.ic_pokeball)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(holder.ivIcon)
+        } else {
+            holder.ivIcon.setImageResource(R.drawable.ic_pokeball)
+        }
+
         holder.itemView.setOnClickListener { onClick(opt) }
     }
 
