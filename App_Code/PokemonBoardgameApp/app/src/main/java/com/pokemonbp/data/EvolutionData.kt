@@ -133,6 +133,16 @@ object EvolutionData {
         445 to listOf(10058), 448 to listOf(10059), 460 to listOf(10060)
     )
 
+    // Reverse map: evolution ID → pre-evolution ID (built lazily from chains)
+    private val reverseChains: Map<Int, Int> by lazy {
+        val map = mutableMapOf<Int, Int>()
+        chains.forEach { (parent, evos) -> evos.forEach { evo -> map[evo] = parent } }
+        map
+    }
+
     fun nextEvolutions(pokedexId: Int): List<Int> = chains[pokedexId] ?: emptyList()
     fun canEvolve(pokedexId: Int): Boolean = chains.containsKey(pokedexId)
+
+    fun previousEvolution(pokedexId: Int): Int? = reverseChains[pokedexId]
+    fun canDevolve(pokedexId: Int): Boolean = reverseChains.containsKey(pokedexId)
 }

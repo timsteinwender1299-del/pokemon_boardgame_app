@@ -208,15 +208,25 @@ class AddPlayerDialog(
                         }
                     }
 
-                    // Duskstone button — load image from GitHub, placeholder for now
+                    // Duskstone button — devolve Pokémon
                     Glide.with(requireContext())
                         .load(SpriteUrls.duskstoneUrl)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .fitCenter()
                         .into(btnDusk)
+                    val prevEvoId = EvolutionData.previousEvolution(preset.pokedexId)
+                    btnDusk.isEnabled = prevEvoId != null
+                    btnDusk.alpha = if (prevEvoId != null) 1f else 0.3f
                     btnDusk.setOnClickListener {
-                        // Function to be added later
-                        Toast.makeText(requireContext(), "Duskstone — coming soon!", Toast.LENGTH_SHORT).show()
+                        val prev = prevEvoId?.let { id -> PokedexData.allPokemon.find { it.id == id } }
+                        if (prev != null) {
+                            pokemonEntries[i] = entry.copy(preset = preset.copy(
+                                name = prev.name, nameDE = prev.nameDE,
+                                pokedexId = prev.id, types = prev.types))
+                            refreshSlots()
+                        } else {
+                            Toast.makeText(requireContext(), "Already at base form!", Toast.LENGTH_SHORT).show()
+                        }
                     }
 
                     // Tap sprite area to swap Pokémon
