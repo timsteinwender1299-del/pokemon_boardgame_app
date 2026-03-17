@@ -1,0 +1,310 @@
+[
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_fragment_result.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/fragment_result.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_2.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_2.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_12.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_12.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_flying.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_flying.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_steel.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_steel.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_enemy_option.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_enemy_option.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_3.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_3.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_dark.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_dark.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_9.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_9.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_ghost.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_ghost.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_ic_pokedex.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/ic_pokedex.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-mdpi_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-mdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_6.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_6.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_ground.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_ground.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_dialog_pokemon_picker.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/dialog_pokemon_picker.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_5.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_5.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_dialog_choose_trainer.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/dialog_choose_trainer.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_type_chip.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_type_chip.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_dragon.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_dragon.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_3.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_3.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_ic_pokeball.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/ic_pokeball.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-mdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_4.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_4.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_6.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_6.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-hdpi_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-hdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_dialog_enemy_trainer.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/dialog_enemy_trainer.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xhdpi_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_fairy.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_fairy.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_12.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_12.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_psychic.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_psychic.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xhdpi_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_slot_bg.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/slot_bg.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_7.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_7.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xxhdpi_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_ic_dawnstone.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/ic_dawnstone.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_ice.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_ice.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_bug.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_bug.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_avatar.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_avatar.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_electric.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_electric.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_battle_result.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_battle_result.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_11.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_11.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_trainer_row.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_trainer_row.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_grass.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_grass.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_4.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_4.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_10.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_10.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xxxhdpi_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xxxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_5.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_5.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_normal.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_normal.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_trainer_pokemon.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_trainer_pokemon.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_dialog_add_pokemon.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/dialog_add_pokemon.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_fighting.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_fighting.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_fire.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_fire.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_7.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_7.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_slot.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_slot.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_8.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_8.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_water.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_water.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-hdpi_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-hdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_1.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_1.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_poison.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_poison.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_10.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_10.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_2.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_2.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_pokemon.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_pokemon.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_activity_main.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_dialog_add_player.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/dialog_add_player.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_9.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_9.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_item_pokemon_picker.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/item_pokemon_picker.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_female_11.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_female_11.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/layout_fragment_team_setup.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/layout/fragment_team_setup.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_type_rock.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/type_rock.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_8.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_8.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_ic_battle.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/ic_battle.png"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xxxhdpi_ic_launcher_round.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xxxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/mipmap-xxhdpi_ic_launcher.xml.flat",
+        "source": "com.pokemonbp.app-main-44:/mipmap-xxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pokemonbp.app-merged_res-42:/drawable_trainer_male_1.png.flat",
+        "source": "com.pokemonbp.app-main-44:/drawable/trainer_male_1.png"
+    }
+]

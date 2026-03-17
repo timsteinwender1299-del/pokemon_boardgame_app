@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_avatar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="10dp"
+    app:strokeWidth="2dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="4dp">
+
+        <!-- Trainer image -->
+        <ImageView
+            android:id="@+id/iv_avatar_img"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true"
+            android:visibility="gone"/>
+
+        <!-- Fallback emoji/number if no image -->
+        <TextView
+            android:id="@+id/tv_avatar_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👤"
+            android:textSize="28sp"
+            android:gravity="center"
+            android:visibility="visible"/>
+
+        <!-- Trainer name -->
+        <TextView
+            android:id="@+id/tv_avatar_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:paddingTop="2dp"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
