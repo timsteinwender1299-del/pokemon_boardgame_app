@@ -37,7 +37,7 @@
                 android:adjustViewBounds="true"/>
             <TextView android:id="@+id/tv_team_a_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="🔴 Player" android:textSize="15sp" android:textStyle="bold"/>
+                android:text="Player" android:textSize="15sp" android:textStyle="bold"/>
         </LinearLayout>
 
         <!-- Team A action buttons -->
