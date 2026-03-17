@@ -211,6 +211,8 @@ class AddPlayerDialog(
                     // Duskstone button — devolve Pokémon
                     Glide.with(requireContext())
                         .load(SpriteUrls.duskstoneUrl)
+                        .placeholder(R.drawable.ic_duskstone)
+                        .error(R.drawable.ic_duskstone)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .fitCenter()
                         .into(btnDusk)

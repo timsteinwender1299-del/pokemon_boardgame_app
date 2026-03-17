@@ -4,7 +4,7 @@ import android.content.Context
 
 object SpriteUrls {
 
-    private const val BASE_URL = "https://raw.githubusercontent.com/timsteinwender1299-del/pokemon_boardgame_app/main"
+    private const val BASE_URL = "https://raw.githubusercontent.com/timsteinwender1299-del/pokemon_boardgame_app/main/Images"
 
     // Mega IDs that exist in the mega_artwork folder
     private val megaSpriteIds = setOf(
@@ -88,7 +88,7 @@ object SpriteUrls {
         return "$BASE_URL/pokemon_artwork/Hauptartwork_$padded.png"
     }
 
-    val duskstoneUrl: String = "$BASE_URL/Duskstone.png"
+    val duskstoneUrl: String = "$BASE_URL/Images/Icons/Duskstone.png"
 
     /** No local drawables anymore — always use URL */
     fun localResId(context: Context, pokedexId: Int): Int = 0
