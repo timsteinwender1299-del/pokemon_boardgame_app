@@ -15,7 +15,8 @@
             android:adjustViewBounds="true"/>
         <TextView android:id="@+id/tv_app_title"
             android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:text="BP Calculator" android:textSize="20sp" android:textStyle="bold"/>
+            android:text="BP Calculator" android:textSize="20sp" android:textStyle="bold"
+            android:includeFontPadding="false"/>
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_theme"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content" android:layout_height="36dp"
@@ -37,7 +38,8 @@
                 android:adjustViewBounds="true"/>
             <TextView android:id="@+id/tv_team_a_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Player" android:textSize="15sp" android:textStyle="bold"/>
+                android:text="Player" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false"/>
         </LinearLayout>
 
         <!-- Team A action buttons -->
@@ -85,7 +87,8 @@
                 android:adjustViewBounds="true"/>
             <TextView android:id="@+id/tv_team_b_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Enemy Trainer" android:textSize="15sp" android:textStyle="bold"/>
+                android:text="Enemy Trainer" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false"/>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_choose_enemy_b"
