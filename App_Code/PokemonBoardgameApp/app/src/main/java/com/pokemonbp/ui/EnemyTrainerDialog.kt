@@ -70,6 +70,7 @@ class EnemyTrainerDialog(
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_enemy_trainer, null)
         view.setBackgroundColor(ThemeManager.colorsFor(theme).surface)
+        view.findViewById<TextView>(R.id.tv_enemy_dialog_title).text = "Choose Champion"
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
         recycler.layoutManager = GridLayoutManager(requireContext(), 2)
         recycler.adapter = ChampionPickerAdapter(champions, ThemeManager.colorsFor(theme)) { champion ->
@@ -81,7 +82,7 @@ class EnemyTrainerDialog(
             .setNegativeButton("Back", null)
             .create()
         dialog.setOnShowListener {
-            val width = (requireContext().resources.displayMetrics.widthPixels * 0.75).toInt()
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.62).toInt()
             dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         dialog.show()
