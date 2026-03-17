@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.PokemonBP" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/press_start_2p</item>
+        <item name="fontFamily">@font/press_start_2p</item>
         <item name="colorPrimary">#FF6F00</item>
         <item name="colorPrimaryVariant">#FF6F00</item>
         <item name="colorOnPrimary">#FFFFFF</item>
