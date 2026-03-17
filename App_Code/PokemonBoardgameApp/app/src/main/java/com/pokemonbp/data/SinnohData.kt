@@ -34,19 +34,6 @@ object SinnohData {
         ),
 
         EnemyTrainer.GymLeader(
-            id = "maylene",
-            nameDE = "Hilda",
-            nameEN = "Maylene",
-            badgeTeams = mapOf(
-                3 to listOf(
-                    GymPokemon("Meditalis", "Meditite", 307, listOf(PokemonType.FIGHTING, PokemonType.PSYCHIC), 3),
-                    GymPokemon("Machomei", "Machoke", 67, listOf(PokemonType.FIGHTING), 3),
-                    GymPokemon("Lucario", "Lucario", 448, listOf(PokemonType.FIGHTING, PokemonType.STEEL), 4)
-                )
-            )
-        ),
-
-        EnemyTrainer.GymLeader(
             id = "crasherwake",
             nameDE = "Wellenbrecher Marinus",
             nameEN = "Crasher Wake",

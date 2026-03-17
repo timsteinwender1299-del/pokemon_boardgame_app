@@ -44,8 +44,12 @@ class EnemyTrainerDialog(
     }
 
     private fun buildOptions(): List<EnemyOption> = buildList {
-        SinnohData.gymLeaders.forEach { add(EnemyOption.GymLeaderOption(it)) }
-        SinnohData.champions.forEach { add(EnemyOption.ChampionOption(it)) }
+        val hilda = SinnohData.champions.first { it.nameEN == "Hilda" }
+        val otherChampions = SinnohData.champions.filter { it.nameEN != "Hilda" }
+        SinnohData.gymLeaders.take(2).forEach { add(EnemyOption.GymLeaderOption(it)) }
+        add(EnemyOption.ChampionOption(hilda))
+        SinnohData.gymLeaders.drop(2).forEach { add(EnemyOption.GymLeaderOption(it)) }
+        otherChampions.forEach { add(EnemyOption.ChampionOption(it)) }
         add(EnemyOption.WildOption)
         add(EnemyOption.RandomOption)
         add(EnemyOption.SavedTrainerMenu)
