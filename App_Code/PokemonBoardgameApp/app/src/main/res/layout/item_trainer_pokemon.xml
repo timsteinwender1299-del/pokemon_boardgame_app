@@ -76,9 +76,13 @@
                     android:layout_width="0dp" android:layout_height="24dp"
                     android:layout_weight="1"
                     android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
-                    android:text="✕" android:textSize="9sp"
+                    android:text=""
                     android:backgroundTint="#FFFFFF"
-                    android:textColor="#CC0000"
+                    app:icon="@drawable/ic_garbage_bin"
+                    app:iconSize="14dp"
+                    app:iconPadding="0dp"
+                    app:iconGravity="textStart"
+                    app:iconTint="@null"
                     app:strokeColor="#CCCCCC"
                     app:cornerRadius="4dp"/>
             </LinearLayout>

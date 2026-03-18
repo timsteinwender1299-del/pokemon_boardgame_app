@@ -21,6 +21,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pokemonbp.R
 import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
 
 class PokemonPickerDialog(
@@ -36,7 +37,7 @@ class PokemonPickerDialog(
         val inflater = LayoutInflater.from(requireContext())
         val view = inflater.inflate(R.layout.dialog_pokemon_picker, null)
 
-        view.setBackgroundColor(c.surface)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
 
         val etSearch = view.findViewById<EditText>(R.id.et_picker_search)
         val recycler  = view.findViewById<RecyclerView>(R.id.recycler_picker)
@@ -76,9 +77,17 @@ class PokemonPickerDialog(
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        return MaterialAlertDialogBuilder(requireContext())
+        view.findViewById<android.widget.Button>(R.id.btn_close_picker).setOnClickListener { dismiss() }
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(view)
             .create()
+        dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+            val dm = requireContext().resources.displayMetrics
+            dialog.window?.setLayout((dm.widthPixels * 0.95).toInt(), (dm.heightPixels * 0.90).toInt())
+        }
+        return dialog
     }
 }
 
@@ -117,27 +126,17 @@ class PickerAdapter(
         holder.tvName.setTextColor(c.textPrimary)
         if (theme == AppTheme.RETRO) holder.tvName.typeface = Typeface.MONOSPACE
 
-        // Build type icon badges with rounded corners
+        // Build type icons
         holder.llTypes.removeAllViews()
         for (type in entry.types) {
-            val iconId = type.iconResId(ctx)
-            if (iconId != 0) {
-                val card = com.google.android.material.card.MaterialCardView(ctx)
-                val dp32 = (32 * ctx.resources.displayMetrics.density).toInt()
-                val cardParams = LinearLayout.LayoutParams(dp32, dp32)
-                cardParams.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-                card.layoutParams = cardParams
-                card.radius = (6 * ctx.resources.displayMetrics.density)
-                card.cardElevation = 0f
-                card.setCardBackgroundColor(android.graphics.Color.parseColor(type.colorHex))
-
-                val iv = ImageView(ctx)
-                iv.layoutParams = android.view.ViewGroup.LayoutParams(dp32, dp32)
-                iv.setImageResource(iconId)
-                iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                card.addView(iv)
-                holder.llTypes.addView(card)
-            }
+            val dp32 = (32 * ctx.resources.displayMetrics.density).toInt()
+            val iv = ImageView(ctx)
+            val params = LinearLayout.LayoutParams(dp32, dp32)
+            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
+            iv.layoutParams = params
+            Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            holder.llTypes.addView(iv)
         }
 
         // Pokémon sprite — prefer local drawable, fall back to PokeAPI

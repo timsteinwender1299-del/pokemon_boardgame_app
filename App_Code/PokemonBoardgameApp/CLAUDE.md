@@ -38,7 +38,8 @@ Single-Activity Android app (Kotlin, minSdk 24, targetSdk 34) using ViewBinding 
 
 **`data/`** — Business logic and data sources:
 - `BattleCalculator.kt` — orchestrates team vs team battle resolution
-- `TypeChart.kt` — 18-type effectiveness matrix + immunity rules and BP modifier logic
+- `TypeChart.kt` — `PokemonType` enum (18 types) + effectiveness matrix + immunity rules and BP modifier logic
+- `EvolutionData.kt` — maps Pokédex IDs to next/previous evolutions (Gen 1–4 + Megas); supports evolve and devolve
 - `PresetManager.kt` / `TrainerManager.kt` — SharedPreferences-backed persistence
 - `ThemeManager.kt` — 4 themes persisted to SharedPreferences
 - `SinnohData.kt` — hardcoded Sinnoh gym leader teams (badge-level variants)
@@ -47,7 +48,10 @@ Single-Activity Android app (Kotlin, minSdk 24, targetSdk 34) using ViewBinding 
 **`ui/`** — Single `MainActivity` hosts two fragments:
 - `TeamSetupFragment` → main screen, team assembly, trainer selection
 - `ResultFragment` → battle result display
-- Multiple `DialogFragment`s for adding Pokemon, selecting trainers, picking avatars
+- `PokedexData.kt` — full Pokédex (Gen 1–9 + Megas) as `PokedexEntry` list; source of truth for names, types, and sprite IDs
+- `PokedexHelper.kt` — name-to-ID lookup map for search
+- `PokemonPickerDialog.kt` — searchable picker backed by `PokedexData`
+- Multiple other `DialogFragment`s for adding Pokémon, selecting trainers, picking avatars
 
 ### Battle calculation rules (TypeChart.kt)
 

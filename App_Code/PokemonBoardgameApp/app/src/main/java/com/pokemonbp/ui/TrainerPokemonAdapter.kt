@@ -6,10 +6,12 @@ import android.view.*
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.pokemonbp.R
 import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.model.PokemonPreset
 
@@ -75,17 +77,14 @@ class TrainerPokemonAdapter(
         // Type icons
         holder.llTypes.removeAllViews()
         for (type in preset.types) {
-            val iconId = type.iconResId(holder.itemView.context)
-            if (iconId != 0) {
-                val iv = ImageView(holder.itemView.context)
-                val dp = (24 * holder.itemView.context.resources.displayMetrics.density).toInt()
-                val params = LinearLayout.LayoutParams(dp, dp)
-                params.marginEnd = (2 * holder.itemView.context.resources.displayMetrics.density).toInt()
-                iv.layoutParams = params
-                iv.setImageResource(iconId)
-                iv.scaleType = ImageView.ScaleType.FIT_CENTER
-                holder.llTypes.addView(iv)
-            }
+            val iv = ImageView(holder.itemView.context)
+            val dp = (24 * holder.itemView.context.resources.displayMetrics.density).toInt()
+            val params = LinearLayout.LayoutParams(dp, dp)
+            params.marginEnd = (2 * holder.itemView.context.resources.displayMetrics.density).toInt()
+            iv.layoutParams = params
+            Glide.with(holder.itemView.context).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            holder.llTypes.addView(iv)
         }
 
         // BP toggle pill — shows current BP, opens/closes picker

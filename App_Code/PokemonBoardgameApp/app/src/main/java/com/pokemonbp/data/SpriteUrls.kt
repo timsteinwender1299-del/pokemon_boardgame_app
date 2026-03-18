@@ -88,6 +88,29 @@ object SpriteUrls {
         return "$BASE_URL/pokemon_artwork/Hauptartwork_$padded.png"
     }
 
+    private val maleAvatarNames = mapOf(
+        1 to "Barry", 2 to "Blue", 3 to "Brendan", 4 to "Calem",
+        5 to "Ethan", 6 to "Hau", 7 to "Hilbert", 8 to "Hugh",
+        9 to "Lucas", 10 to "Nate", 11 to "Red", 12 to "Silver"
+    )
+    private val femaleAvatarNames = mapOf(
+        101 to "Bianca", 102 to "Dawn", 103 to "Hilda", 104 to "Leaf",
+        105 to "Lyra", 106 to "Marnie", 107 to "May", 108 to "Nemona",
+        109 to "Penny", 110 to "Rosa", 111 to "Serena", 112 to "Shauna"
+    )
+
+    fun avatarUrl(avatarId: Int): String? = when {
+        avatarId in 1..12 -> {
+            val name = maleAvatarNames[avatarId] ?: return null
+            "$BASE_URL/Trainer/PlayerTrainer/Male/MaleTrainer%20Icon/${name}_Icon.png"
+        }
+        avatarId in 101..112 -> {
+            val name = femaleAvatarNames[avatarId] ?: return null
+            "$BASE_URL/Trainer/PlayerTrainer/Female/FemaleTrainerIcon/${name}_Icon.png"
+        }
+        else -> null
+    }
+
     fun trainerIconUrl(id: String): String? = when (id) {
         "roark"       -> "$BASE_URL/Trainer/Trainer_Icon/Roark_Icon.png"
         "gardenia"    -> "$BASE_URL/Trainer/Trainer_Icon/Silvana_Icon.png"
@@ -111,6 +134,47 @@ object SpriteUrls {
         "Tim"     -> "$BASE_URL/Trainer/TrainerImage/ChampTim.png"
         else      -> null
     }
+
+    fun gymLeaderImageUrl(id: String): String? = when (id) {
+        "roark"        -> "$BASE_URL/Trainer/TrainerImage/GymLeaderRoark.png"
+        "gardenia"     -> "$BASE_URL/Trainer/TrainerImage/GymLeaderSilvana.png"
+        "maylene"      -> "$BASE_URL/Trainer/TrainerImage/GymLeaderMaylene.png"
+        "crasherwake"  -> "$BASE_URL/Trainer/TrainerImage/GymLeaderWake.png"
+        "fantina"      -> "$BASE_URL/Trainer/TrainerImage/GymLeaderFantina.png"
+        "byron"        -> "$BASE_URL/Trainer/TrainerImage/GymLeaderByron.png"
+        "candice"      -> "$BASE_URL/Trainer/TrainerImage/GymLeaderCandice.png"
+        "volkner"      -> "$BASE_URL/Trainer/TrainerImage/GymLeaderVolkner.png"
+        else           -> null
+    }
+
+    fun playerTrainerImageUrl(avatarId: Int): String? = when {
+        avatarId in 1..12 -> {
+            val name = maleAvatarNames[avatarId] ?: return null
+            "$BASE_URL/Trainer/PlayerTrainer/Male/MaleTrainerImage/$name.png"
+        }
+        avatarId in 101..112 -> {
+            val name = femaleAvatarNames[avatarId] ?: return null
+            "$BASE_URL/Trainer/PlayerTrainer/Female/FemaleTrainerImage/$name.png"
+        }
+        else -> null
+    }
+
+    private val randomTrainerFileNames = listOf(
+        "ORAS_Ace_Trainer_F.png", "ORAS_Ace_Trainer_M.png", "ORAS_Aroma_Lady.png",
+        "ORAS_Bird_Keeper.png", "ORAS_Bug_Catcher.png", "ORAS_Dragon_Tamer.png",
+        "ORAS_Lady.png", "ORAS_Lass.png", "ORAS_Pok%C3%A9mon_Breeder_M.png",
+        "ORAS_Pok%C3%A9mon_Ranger_F.png", "ORAS_Pok%C3%A9mon_Ranger_M.png",
+        "ORAS_Rich_Boy.png", "ORAS_Street_Thug.png",
+        "XY_Ace_Trainer_F.png", "XY_Ace_Trainer_M.png", "XY_Backpacker.png",
+        "XY_Lass.png", "XY_Pok%C3%A9mon_Ranger_M.png", "XY_Psychic.png",
+        "XY_Roller_Skater_M.png"
+    )
+
+    fun randomTrainerImageUrl(): String =
+        "$BASE_URL/Trainer/TrainerRandom/${randomTrainerFileNames.random()}"
+
+    fun typeIconUrl(typeName: String): String =
+        "$BASE_URL/TypeIcons/${typeName.lowercase()}.png"
 
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"

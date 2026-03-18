@@ -23,7 +23,7 @@ class EnemyTrainerDialog(
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val c = ThemeManager.colorsFor(theme)
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_enemy_trainer, null)
-        view.setBackgroundColor(c.surface)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
 
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
         recycler.layoutManager = GridLayoutManager(requireContext(), 3)
@@ -31,14 +31,16 @@ class EnemyTrainerDialog(
             handleOptionSelected(option)
         }
 
+        view.findViewById<android.widget.Button>(R.id.btn_close_dialog).setOnClickListener { dismiss() }
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
-            .setNegativeButton("Cancel", null)
             .create()
 
         dialog.setOnShowListener {
-            val width = (requireContext().resources.displayMetrics.widthPixels * 0.80).toInt()
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.33).toInt()
             dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         return dialog
     }
@@ -57,7 +59,7 @@ class EnemyTrainerDialog(
             is EnemyOption.ChampionOption   -> { onTrainerSelected(option.champion, null); dismiss() }
             is EnemyOption.ChampionMenu     -> showChampionDialog()
             is EnemyOption.WildOption       -> { dismiss(); onAddSinglePokemon() }
-            is EnemyOption.RandomOption     -> { dismiss(); onAddSinglePokemon() }
+            is EnemyOption.RandomOption     -> { onTrainerSelected(EnemyTrainer.RandomTrainer, null); dismiss(); onAddSinglePokemon() }
             is EnemyOption.SavedTrainerMenu -> showSavedTrainerDialog()
         }
     }
@@ -66,7 +68,7 @@ class EnemyTrainerDialog(
         val champions = SinnohData.champions.filter { it.nameEN != "Hilda" }
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_enemy_trainer, null)
-        view.setBackgroundColor(ThemeManager.colorsFor(theme).surface)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(ThemeManager.colorsFor(theme).surface)
         view.findViewById<TextView>(R.id.tv_enemy_dialog_title).text = "Choose Champion"
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
         recycler.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -76,28 +78,74 @@ class EnemyTrainerDialog(
             subDialog?.dismiss()
             dismiss()
         }
+        view.findViewById<android.widget.Button>(R.id.btn_close_dialog).also {
+            it.text = "Back"
+            it.setOnClickListener { subDialog?.dismiss() }
+        }
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
-            .setNegativeButton("Back", null)
             .create()
         dialog.setOnShowListener {
-            val width = (requireContext().resources.displayMetrics.widthPixels * 0.62).toInt()
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.45).toInt()
             dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         subDialog = dialog
         dialog.show()
     }
 
     private fun showBadgeDialog(gym: EnemyTrainer.GymLeader) {
-        val badges = (1..8).map { "Badge $it" }.toTypedArray()
-        AlertDialog.Builder(requireContext())
-            .setTitle("${gym.nameDE} / ${gym.nameEN} — Choose Badge")
-            .setItems(badges) { _, which ->
-                onTrainerSelected(gym, which + 1)
-                dismiss()
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_badge_select, null)
+        val c = ThemeManager.colorsFor(theme)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
+        view.findViewById<android.widget.TextView>(R.id.tv_badge_title).text =
+            "${gym.nameDE} / ${gym.nameEN} — Badge"
+
+        val container = view.findViewById<android.widget.LinearLayout>(R.id.badge_container)
+        var badgeDialog: android.app.AlertDialog? = null
+
+        for (i in 1..8) {
+            val btn = com.google.android.material.button.MaterialButton(requireContext()).apply {
+                text = "Badge $i"
+                textSize = 14f
+                isAllCaps = false
+                setTextColor(android.graphics.Color.WHITE)
+                backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#CC0000")
+                )
+                cornerRadius = (22 * resources.displayMetrics.density).toInt()
+                val lp = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    (44 * resources.displayMetrics.density).toInt()
+                )
+                lp.bottomMargin = (6 * resources.displayMetrics.density).toInt()
+                layoutParams = lp
+                setOnClickListener {
+                    onTrainerSelected(gym, i)
+                    badgeDialog?.dismiss()
+                    dismiss()
+                }
             }
-            .setNegativeButton("Back", null)
-            .show()
+            container.addView(btn)
+        }
+
+        view.findViewById<android.widget.Button>(R.id.btn_back_badge)
+            .setOnClickListener { badgeDialog?.dismiss() }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(view)
+            .create()
+        dialog.setOnShowListener {
+            val width = (requireContext().resources.displayMetrics.widthPixels * 0.20).toInt()
+            dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+            dialog.window?.setBackgroundDrawable(
+                android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            )
+        }
+        badgeDialog = dialog
+        dialog.show()
     }
 
     private fun showSavedTrainerDialog() {

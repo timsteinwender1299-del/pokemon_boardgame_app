@@ -10,4 +10,9 @@
     <color name="bp_positive">#66BB6A</color>
     <color name="bp_negative">#EF5350</color>
     <color name="ic_launcher_background">#0D0D0D</color>
+    <!-- Pokédex shell -->
+    <color name="pokedex_red">#CC0000</color>
+    <color name="pokedex_screen">#0F0F1A</color>
+    <color name="pokedex_hinge">#FFFFFF</color>
+    <color name="pokedex_lens">#1D4ED8</color>
 </resources>

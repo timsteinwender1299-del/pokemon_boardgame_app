@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -94,23 +96,20 @@ class PokemonListAdapter(
         container.removeAllViews()
         val ctx = itemView.context
         for (type in types) {
-            val iconId = type.iconResId(ctx)
-            if (iconId != 0) {
-                val card = com.google.android.material.card.MaterialCardView(ctx)
-                val iv = ImageView(ctx)
-                val dp28 = (28 * ctx.resources.displayMetrics.density).toInt()
-                val params = LinearLayout.LayoutParams(dp28, dp28)
-                params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-                card.layoutParams = params
+            val card = com.google.android.material.card.MaterialCardView(ctx)
+            val iv = ImageView(ctx)
+            val dp28 = (28 * ctx.resources.displayMetrics.density).toInt()
+            val params = LinearLayout.LayoutParams(dp28, dp28)
+            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
+            card.layoutParams = params
                 card.radius = (5 * ctx.resources.displayMetrics.density)
                 card.cardElevation = 0f
                 card.setCardBackgroundColor(Color.parseColor(type.colorHex))
                 iv.layoutParams = android.view.ViewGroup.LayoutParams(dp28, dp28)
-                iv.setImageResource(iconId)
+                Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
                 iv.scaleType = ImageView.ScaleType.CENTER_CROP
                 card.addView(iv)
                 container.addView(card)
-            }
         }
     }
 }

@@ -11,10 +11,12 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.pokemonbp.R
 import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.data.TrainerManager
 import com.pokemonbp.model.PlayerTrainer
@@ -30,7 +32,7 @@ class ChooseTrainerDialog(
         val c = ThemeManager.colorsFor(theme)
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_choose_trainer, null)
-        view.setBackgroundColor(c.surface)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
 
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_trainer_chooser)
         recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
@@ -50,17 +52,19 @@ class ChooseTrainerDialog(
 
         reloadAdapter()
 
+        view.findViewById<android.widget.Button>(R.id.btn_close_dialog).setOnClickListener { dismiss() }
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
-            .setNegativeButton("Close", null)
             .create()
 
         dialog.setOnShowListener {
-            // Force full width
+            val dm = requireContext().resources.displayMetrics
             dialog.window?.setLayout(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                (dm.widthPixels * 0.95).toInt(),
                 android.view.ViewGroup.LayoutParams.WRAP_CONTENT
             )
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         return dialog
     }
@@ -131,11 +135,17 @@ class TrainerRowAdapter(
         holder.card.strokeColor = c.teamA
 
         // Avatar
-        val resId = TrainerManager.avatarResId(ctx, trainer.avatarId)
-        if (resId != 0) {
-            holder.ivAvatar.setImageResource(resId)
+        val avatarUrl = SpriteUrls.avatarUrl(trainer.avatarId)
+        if (avatarUrl != null) {
             holder.ivAvatar.visibility = View.VISIBLE
             holder.tvAvatar.visibility = View.GONE
+            Glide.with(ctx)
+                .load(avatarUrl)
+                .placeholder(R.drawable.ic_player)
+                .error(R.drawable.ic_player)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(holder.ivAvatar)
         } else {
             holder.tvAvatar.text = if (trainer.gender == com.pokemonbp.model.TrainerGender.FEMALE) "👩" else "👨"
             holder.tvAvatar.visibility = View.VISIBLE
@@ -179,7 +189,7 @@ class TrainerRowAdapter(
         holder.btnBattle.iconPadding = 0
         holder.btnBattle.setOnClickListener { onBattle(trainer) }
 
-        holder.btnDelete.setTextColor(red)
+        holder.btnDelete.iconTint = null
         holder.btnDelete.setOnClickListener { onDelete(trainer) }
     }
 

@@ -1,34 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/pokedex_dialog_shell"
+    android:padding="10dp">
 
-    <TextView android:id="@+id/tv_picker_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Select Pokémon"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="16dp"/>
+    <!-- Pokédex mini-header -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="6dp">
+        <View android:layout_width="28dp" android:layout_height="28dp"
+            android:background="@drawable/pokedex_lens" android:layout_marginEnd="8dp"/>
+        <View android:layout_width="8dp" android:layout_height="8dp"
+            android:background="@drawable/pokedex_led_red" android:layout_marginEnd="3dp"/>
+        <View android:layout_width="8dp" android:layout_height="8dp"
+            android:background="@drawable/pokedex_led_yellow" android:layout_marginEnd="3dp"/>
+        <View android:layout_width="8dp" android:layout_height="8dp"
+            android:background="@drawable/pokedex_led_green" android:layout_marginEnd="8dp"/>
+        <TextView android:id="@+id/tv_picker_title"
+            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Select Pokémon"
+            android:textSize="11sp" android:textStyle="bold"
+            android:textColor="#FFFFFF" android:includeFontPadding="false"/>
+    </LinearLayout>
 
-    <EditText android:id="@+id/et_picker_search"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="8dp"
-        android:hint="🔍  Search by name, type or #"
-        android:textSize="14sp"
-        android:paddingHorizontal="12dp"
-        android:singleLine="true"
-        android:imeOptions="actionSearch"
-        android:inputType="text"/>
+    <!-- Hinge -->
+    <View android:layout_width="match_parent" android:layout_height="2dp"
+        android:background="#FFFFFF"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_picker"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:minHeight="400dp"/>
+    <!-- Screen panel -->
+    <LinearLayout android:id="@+id/screen_panel"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="@drawable/pokedex_screen_bg"
+        android:paddingBottom="8dp">
+
+        <EditText android:id="@+id/et_picker_search"
+            android:layout_width="match_parent" android:layout_height="48dp"
+            android:layout_marginHorizontal="10dp" android:layout_marginTop="8dp" android:layout_marginBottom="6dp"
+            android:hint="🔍  Search by name, type or #"
+            android:textSize="14sp" android:paddingHorizontal="12dp"
+            android:singleLine="true" android:imeOptions="actionSearch" android:inputType="text"/>
+
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_picker"
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:minHeight="400dp"/>
+
+        <!-- Close button -->
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_close_picker"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginHorizontal="10dp" android:layout_marginTop="6dp"
+            android:text="Close" android:textAllCaps="false" android:textColor="#CC0000"
+            app:strokeColor="#CC0000" app:cornerRadius="22dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>

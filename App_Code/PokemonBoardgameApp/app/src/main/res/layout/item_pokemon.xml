@@ -62,11 +62,15 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:text="✕"
-            android:textSize="11sp"
+            android:text=""
             android:padding="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
+            app:icon="@drawable/ic_garbage_bin"
+            app:iconSize="18dp"
+            app:iconPadding="0dp"
+            app:iconGravity="textStart"
+            app:iconTint="@null"
             app:strokeColor="#555555"
             app:cornerRadius="16dp"/>
     </LinearLayout>

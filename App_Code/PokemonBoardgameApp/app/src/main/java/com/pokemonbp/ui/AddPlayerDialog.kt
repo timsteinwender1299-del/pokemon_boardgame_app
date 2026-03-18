@@ -38,7 +38,7 @@ class AddPlayerDialog(
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val c = ThemeManager.colorsFor(theme)
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_player, null)
-        view.setBackgroundColor(c.surface)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
 
         val tvTitle           = view.findViewById<TextView>(R.id.tv_add_player_title)
         val etName            = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_trainer_name)
@@ -62,7 +62,7 @@ class AddPlayerDialog(
         avatarAdapter = AvatarAdapter(TrainerManager.maleAvatars, selectedAvatarId, c) { avatar ->
             selectedAvatarId = avatar.id
             selectedGender = avatar.gender
-            btnChooseAvatar.text = "👤 Avatar ${if (avatar.gender == TrainerGender.MALE) "♂" else "♀"} #${if (avatar.gender == TrainerGender.MALE) avatar.id else avatar.id - 100} selected"
+            btnChooseAvatar.text = "👤 Character ${if (avatar.gender == TrainerGender.MALE) "♂" else "♀"} #${if (avatar.gender == TrainerGender.MALE) avatar.id else avatar.id - 100} selected"
         }
         recyclerAvatars.layoutManager = GridLayoutManager(requireContext(), 4)
         recyclerAvatars.adapter = avatarAdapter
@@ -83,13 +83,13 @@ class AddPlayerDialog(
         btnChooseAvatar.setOnClickListener {
             avatarPickerVisible = !avatarPickerVisible
             layoutAvatarPicker.visibility = if (avatarPickerVisible) View.VISIBLE else View.GONE
-            btnChooseAvatar.text = if (avatarPickerVisible) "▲ Close Avatar Picker" else "👤 Choose Avatar"
+            btnChooseAvatar.text = if (avatarPickerVisible) "▲ Close Character Picker" else "👤 Choose Character"
         }
         btnConfirmAvatar.setOnClickListener {
             avatarPickerVisible = false
             layoutAvatarPicker.visibility = View.GONE
             val num = if (selectedGender == TrainerGender.MALE) selectedAvatarId else selectedAvatarId - 100
-            btnChooseAvatar.text = "👤 Avatar ${if (selectedGender == TrainerGender.MALE) "♂" else "♀"} #$num — tap to change"
+            btnChooseAvatar.text = "👤 Character ${if (selectedGender == TrainerGender.MALE) "♂" else "♀"} #$num — tap to change"
         }
 
         // Pre-fill from existing trainer, pad to 4 nulls
@@ -155,9 +155,10 @@ class AddPlayerDialog(
                         val lp = LinearLayout.LayoutParams(size, size)
                         lp.marginEnd = (2 * resources.displayMetrics.density).toInt()
                         chip.layoutParams = lp
-                        val resId = requireContext().resources.getIdentifier(
-                            "type_${type.name.lowercase()}", "drawable", requireContext().packageName)
-                        if (resId != 0) chip.setImageResource(resId)
+                        Glide.with(requireContext())
+                            .load(SpriteUrls.typeIconUrl(type.name))
+                            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                            .into(chip)
                         llTypes.addView(chip)
                     }
 
@@ -257,34 +258,37 @@ class AddPlayerDialog(
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
-            .setPositiveButton(if (existingTrainer != null) "Save Changes" else "Save Trainer", null)
-            .setNegativeButton("Cancel", null)
             .create()
+
+        val btnSave   = view.findViewById<android.widget.Button>(R.id.btn_save_player)
+        val btnCancel = view.findViewById<android.widget.Button>(R.id.btn_cancel_player)
+        btnSave.text = if (existingTrainer != null) "Save Changes" else "Save Trainer"
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnSave.setOnClickListener {
+            val name = etName.text.toString().trim()
+            if (name.isEmpty()) { etName.error = "Enter a trainer name"; return@setOnClickListener }
+            val trainer = PlayerTrainer(
+                id = existingTrainer?.id ?: UUID.randomUUID().toString(),
+                name = name,
+                avatarId = selectedAvatarId,
+                gender = selectedGender,
+                pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) }
+            )
+            if (existingTrainer == null) {
+                val all = TrainerManager.loadTrainers(requireContext())
+                all.add(trainer)
+                TrainerManager.saveTrainers(requireContext(), all)
+            }
+            onTrainerSaved(trainer)
+            dialog.dismiss()
+        }
 
         dialog.setOnShowListener {
             val dm = resources.displayMetrics
-            val width  = (dm.widthPixels  * 0.62).toInt()
+            val width  = (dm.widthPixels  * 0.80).toInt()
             val height = (dm.heightPixels * 0.82).toInt()
             dialog.window?.setLayout(width, height)
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val name = etName.text.toString().trim()
-                if (name.isEmpty()) { etName.error = "Enter a trainer name"; return@setOnClickListener }
-                val trainer = PlayerTrainer(
-                    id = existingTrainer?.id ?: UUID.randomUUID().toString(),
-                    name = name,
-                    avatarId = selectedAvatarId,
-                    gender = selectedGender,
-                    pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) }
-                )
-                if (existingTrainer == null) {
-                    val all = TrainerManager.loadTrainers(requireContext())
-                    all.add(trainer)
-                    TrainerManager.saveTrainers(requireContext(), all)
-                }
-                onTrainerSaved(trainer)
-                dialog.dismiss()
-            }
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
 
         return dialog

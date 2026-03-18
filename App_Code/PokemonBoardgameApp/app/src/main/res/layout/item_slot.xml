@@ -80,6 +80,7 @@
                     android:layout_width="0dp" android:layout_height="22dp"
                     android:layout_weight="1" android:layout_marginStart="1dp"
                     android:background="@drawable/slot_bg"
+                    android:src="@drawable/ic_garbage_bin"
                     android:scaleType="fitCenter"
                     android:padding="3dp"
                     android:contentDescription="Delete"/>

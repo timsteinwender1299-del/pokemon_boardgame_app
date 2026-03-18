@@ -9,7 +9,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.R
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeColors
 import com.pokemonbp.model.TrainerAvatar
 import com.pokemonbp.model.TrainerGender
@@ -37,18 +40,17 @@ class AvatarAdapter(
         val avatar = avatars[position]
         val isSelected = avatar.id == selectedId
 
-        // Try to load trainer image from drawable
-        val resName = if (avatar.gender == TrainerGender.MALE)
-            "trainer_male_${avatar.id}"
-        else
-            "trainer_female_${avatar.id - 100}"
-        val resId = holder.itemView.context.resources.getIdentifier(
-            resName, "drawable", holder.itemView.context.packageName)
-
-        if (resId != 0) {
-            holder.ivImg.setImageResource(resId)
+        val url = SpriteUrls.avatarUrl(avatar.id)
+        if (url != null) {
             holder.ivImg.visibility = View.VISIBLE
             holder.tvLabel.visibility = View.GONE
+            Glide.with(holder.ivImg.context)
+                .load(url)
+                .placeholder(R.drawable.ic_player)
+                .error(R.drawable.ic_player)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(holder.ivImg)
         } else {
             holder.ivImg.visibility = View.GONE
             holder.tvLabel.text = if (avatar.gender == TrainerGender.MALE) "♂" else "♀"

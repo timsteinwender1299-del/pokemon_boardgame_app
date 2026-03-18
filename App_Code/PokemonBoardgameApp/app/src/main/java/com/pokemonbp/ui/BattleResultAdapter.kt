@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.data.TypeChart
 import android.widget.ImageView
@@ -113,23 +115,20 @@ class BattleResultAdapter(
         container.removeAllViews()
         val ctx = itemView.context
         for (type in types) {
-            val iconId = type.iconResId(ctx)
-            if (iconId != 0) {
-                val card = com.google.android.material.card.MaterialCardView(ctx)
-                val iv = ImageView(ctx)
-                val dp30 = (30 * ctx.resources.displayMetrics.density).toInt()
-                val params = LinearLayout.LayoutParams(dp30, dp30)
-                params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-                card.layoutParams = params
-                card.radius = (5 * ctx.resources.displayMetrics.density)
-                card.cardElevation = 0f
-                card.setCardBackgroundColor(android.graphics.Color.parseColor(type.colorHex))
-                iv.layoutParams = android.view.ViewGroup.LayoutParams(dp30, dp30)
-                iv.setImageResource(iconId)
-                iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                card.addView(iv)
-                container.addView(card)
-            }
+            val card = com.google.android.material.card.MaterialCardView(ctx)
+            val iv = ImageView(ctx)
+            val dp30 = (30 * ctx.resources.displayMetrics.density).toInt()
+            val params = LinearLayout.LayoutParams(dp30, dp30)
+            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
+            card.layoutParams = params
+            card.radius = (5 * ctx.resources.displayMetrics.density)
+            card.cardElevation = 0f
+            card.setCardBackgroundColor(android.graphics.Color.parseColor(type.colorHex))
+            iv.layoutParams = android.view.ViewGroup.LayoutParams(dp30, dp30)
+            Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            iv.scaleType = ImageView.ScaleType.CENTER_CROP
+            card.addView(iv)
+            container.addView(card)
         }
     }
 }

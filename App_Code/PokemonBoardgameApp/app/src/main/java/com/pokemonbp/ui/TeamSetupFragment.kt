@@ -8,6 +8,8 @@ import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pokemonbp.data.*
 import com.pokemonbp.databinding.FragmentTeamSetupBinding
@@ -29,6 +31,7 @@ class TeamSetupFragment : Fragment() {
 
     private var teamATrainer: PlayerTrainer? = null
     private var teamBLabel: String = "Enemy Trainer"
+    private var currentEnemyTrainer: EnemyTrainer? = null
 
     private val mainActivity get() = activity as? MainActivity
 
@@ -102,8 +105,8 @@ class TeamSetupFragment : Fragment() {
 
     private fun applyTheme(theme: AppTheme) {
         val c = ThemeManager.colorsFor(theme)
-        binding.root.setBackgroundColor(c.background)
-        binding.tvAppTitle.setTextColor(c.accent)
+        binding.screenPanel.setBackgroundColor(c.background)
+        binding.tvAppTitle.setTextColor(android.graphics.Color.WHITE)
         binding.tvTeamALabel.setTextColor(c.teamA)
         binding.tvTeamBLabel.setTextColor(c.teamB)
         binding.divider.setBackgroundColor(c.divider)
@@ -136,6 +139,19 @@ class TeamSetupFragment : Fragment() {
 
     private fun updateTeamALabel() {
         binding.tvTeamALabel.text = "🔴 ${teamATrainer?.name ?: "Player"}"
+    }
+
+    private fun loadTrainerImage(url: String?, imageView: android.widget.ImageView) {
+        if (url == null) {
+            imageView.visibility = android.view.View.GONE
+            return
+        }
+        imageView.visibility = android.view.View.VISIBLE
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .fitCenter()
+            .into(imageView)
     }
 
     private fun showAddPokemonDialog(team: Team) {
@@ -182,6 +198,7 @@ class TeamSetupFragment : Fragment() {
             adapterA.activeIndex = 0
             adapterA.notifyDataSetChanged()
             updateTeamALabel()
+            loadTrainerImage(SpriteUrls.playerTrainerImageUrl(trainer.avatarId), binding.ivTrainerA)
             updateBattleButton()
             Toast.makeText(requireContext(), "${trainer.name}'s team loaded!", Toast.LENGTH_SHORT).show()
         }).show(parentFragmentManager, "ChooseTrainer")
@@ -191,7 +208,9 @@ class TeamSetupFragment : Fragment() {
         val theme = mainActivity?.currentTheme ?: AppTheme.DARK
         EnemyTrainerDialog(theme,
             onTrainerSelected = { enemyTrainer, badge ->
+            currentEnemyTrainer = enemyTrainer
             teamBList.clear()
+            val trainerImageUrl: String?
             when (enemyTrainer) {
                 is EnemyTrainer.GymLeader -> {
                     val b = badge ?: 1
@@ -206,6 +225,7 @@ class TeamSetupFragment : Fragment() {
                             team = Team.TEAM_B, pokedexId = gp.pokedexId
                         ))
                     }
+                    trainerImageUrl = SpriteUrls.gymLeaderImageUrl(enemyTrainer.id)
                 }
                 is EnemyTrainer.Champion -> {
                     teamBLabel = "Champion ${enemyTrainer.nameEN}"
@@ -217,9 +237,16 @@ class TeamSetupFragment : Fragment() {
                             team = Team.TEAM_B, pokedexId = gp.pokedexId
                         ))
                     }
+                    trainerImageUrl = SpriteUrls.championImageUrl(enemyTrainer.nameEN)
                 }
-                is EnemyTrainer.WildPokemon -> { teamBLabel = "Wild Pokémon" }
-                is EnemyTrainer.RandomTrainer -> { teamBLabel = "Random Trainer" }
+                is EnemyTrainer.WildPokemon -> {
+                    teamBLabel = "Wild Pokémon"
+                    trainerImageUrl = null
+                }
+                is EnemyTrainer.RandomTrainer -> {
+                    teamBLabel = "Random Trainer"
+                    trainerImageUrl = SpriteUrls.randomTrainerImageUrl()
+                }
                 is EnemyTrainer.SavedTrainer -> {
                     teamBLabel = enemyTrainer.trainer.name
                     enemyTrainer.trainer.pokemon.forEach { preset ->
@@ -230,12 +257,14 @@ class TeamSetupFragment : Fragment() {
                             team = Team.TEAM_B, pokedexId = preset.pokedexId
                         ))
                     }
+                    trainerImageUrl = SpriteUrls.playerTrainerImageUrl(enemyTrainer.trainer.avatarId)
                 }
             }
             activeIndexB = 0
             adapterB.activeIndex = 0
             adapterB.notifyDataSetChanged()
-            binding.tvTeamBLabel.text = "🔵 $teamBLabel"
+            binding.tvTeamBLabel.text = teamBLabel
+            loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
             updateBattleButton()
             },
             onAddSinglePokemon = {
@@ -268,9 +297,9 @@ class TeamSetupFragment : Fragment() {
         if (canBattle) {
             val nameA = teamAList.getOrNull(activeIndexA)?.displayName() ?: "?"
             val nameB = teamBList.getOrNull(activeIndexB)?.displayName() ?: "?"
-            binding.btnCalculate.text = "⚔️  $nameA  vs  $nameB"
+            binding.btnCalculate.text = "  $nameA  vs  $nameB"
         } else {
-            binding.btnCalculate.text = "⚔️  CALCULATE BATTLE"
+            binding.btnCalculate.text = "  CALCULATE BATTLE"
         }
     }
 

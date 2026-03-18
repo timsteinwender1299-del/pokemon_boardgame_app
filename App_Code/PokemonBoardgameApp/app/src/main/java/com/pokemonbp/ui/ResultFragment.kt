@@ -33,7 +33,7 @@ class ResultFragment : Fragment() {
         val c = ThemeManager.colorsFor(theme)
         val result = battleResult ?: return
 
-        binding.root.setBackgroundColor(c.background)
+        binding.screenPanel.setBackgroundColor(c.background)
         binding.dividerResult.setBackgroundColor(c.divider)
 
         val isRetro = theme == AppTheme.RETRO

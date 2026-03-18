@@ -5,8 +5,11 @@ import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.PokemonType
+import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.databinding.ItemTypeChipBinding
 
 class TypeSelectionAdapter(
@@ -27,14 +30,12 @@ class TypeSelectionAdapter(
         val isSelected = selectedTypes.contains(type)
         val typeColor = Color.parseColor(type.colorHex)
 
-        // Load icon
-        val iconId = type.iconResId(ctx)
-        if (iconId != 0) {
-            holder.binding.ivTypeIcon.setImageResource(iconId)
-            holder.binding.ivTypeIcon.visibility = android.view.View.VISIBLE
-        } else {
-            holder.binding.ivTypeIcon.visibility = android.view.View.GONE
-        }
+        // Load icon from GitHub
+        holder.binding.ivTypeIcon.visibility = android.view.View.VISIBLE
+        Glide.with(ctx)
+            .load(SpriteUrls.typeIconUrl(type.name))
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(holder.binding.ivTypeIcon)
 
         if (theme == AppTheme.RETRO) holder.binding.tvTypeName.typeface = Typeface.MONOSPACE
 

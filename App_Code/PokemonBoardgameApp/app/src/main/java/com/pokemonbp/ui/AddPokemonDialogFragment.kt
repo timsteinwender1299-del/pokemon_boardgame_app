@@ -49,7 +49,7 @@ class AddPokemonDialogFragment(
         val c = ThemeManager.colorsFor(theme)
         val teamColor = if (team == Team.TEAM_A) c.teamA else c.teamB
 
-        binding.root.setBackgroundColor(c.surface)
+        binding.screenPanel.setBackgroundColor(c.surface)
         binding.tvDialogTitle.setTextColor(teamColor)
         // Different title depending on team
         binding.tvDialogTitle.text = if (team == Team.TEAM_A)
@@ -59,12 +59,15 @@ class AddPokemonDialogFragment(
         binding.tvTypesLabel.setTextColor(c.textSecondary)
         binding.tvPresetsLabel.setTextColor(c.textSecondary)
 
-        // Picker button label changes per team
-        val pickerLabel = if (team == Team.TEAM_A) "📖  Choose Player" else "📖  Choose from Pokédex"
-        binding.btnPickPokemon.text = pickerLabel
         binding.btnPickPokemon.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
         binding.btnPickPokemon.setTextColor(Color.WHITE)
         binding.btnPickPokemon.setOnClickListener { openPicker() }
+
+        binding.btnPickFromRoute.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
+        binding.btnPickFromRoute.setTextColor(Color.WHITE)
+        binding.btnPickFromRoute.setOnClickListener {
+            // TODO: Route picker — coming soon
+        }
 
         // "Add Player" preset button — only shown for Team A
         if (team == Team.TEAM_A) {
@@ -101,33 +104,34 @@ class AddPokemonDialogFragment(
         binding.btnSavePreset.setOnClickListener { saveCurrentAsPreset() }
         binding.btnSavePreset.setTextColor(c.accent)
 
+        binding.btnCancelPokemon.setOnClickListener { dismiss() }
+        binding.btnAddPokemon.setOnClickListener {
+            if (selectedTypes.isEmpty()) {
+                Toast.makeText(requireContext(), "Pick a Pokémon or select types!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (selectedBP < 1) {
+                Toast.makeText(requireContext(), "Select a BP value!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            onPokemonAdded(Pokemon(
+                id = System.currentTimeMillis().toInt(),
+                name = currentName,
+                nameDE = currentNameDE,
+                types = selectedTypes.toList(),
+                baseBP = selectedBP,
+                team = team,
+                pokedexId = currentPokedexId
+            ))
+            dismiss()
+        }
+
         val dialog = AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_MinWidth)
             .setView(binding.root)
-            .setPositiveButton("Add", null)
-            .setNegativeButton("Cancel", null)
             .create()
 
         dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                if (selectedTypes.isEmpty()) {
-                    Toast.makeText(requireContext(), "Pick a Pokémon or select types!", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                if (selectedBP < 1) {
-                    Toast.makeText(requireContext(), "Select a BP value!", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                onPokemonAdded(Pokemon(
-                    id = System.currentTimeMillis().toInt(),
-                    name = currentName,
-                    nameDE = currentNameDE,
-                    types = selectedTypes.toList(),
-                    baseBP = selectedBP,
-                    team = team,
-                    pokedexId = currentPokedexId
-                ))
-                dialog.dismiss()
-            }
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         return dialog
     }
@@ -163,9 +167,8 @@ class AddPokemonDialogFragment(
         currentName = entry.name
         currentNameDE = entry.nameDE
         currentPokedexId = entry.id
-        binding.btnPickPokemon.text = entry.name + "  #${entry.id}"
+        binding.btnPickPokemon.text = "  ${entry.name}  #${entry.id}"
         binding.tvDexId.text = "#${entry.id}"
-        binding.ivSprite.loadPokemonSprite(requireContext(), entry.spriteId)
         selectedTypes.clear()
         selectedTypes.addAll(entry.types)
         typeAdapter.notifyDataSetChanged()
@@ -202,7 +205,6 @@ class AddPokemonDialogFragment(
         typeAdapter.notifyDataSetChanged()
         if (preset.pokedexId > 0) {
             binding.tvDexId.text = "#${preset.pokedexId}"
-            binding.ivSprite.loadPokemonSprite(requireContext(), preset.pokedexId)
         }
     }
 
