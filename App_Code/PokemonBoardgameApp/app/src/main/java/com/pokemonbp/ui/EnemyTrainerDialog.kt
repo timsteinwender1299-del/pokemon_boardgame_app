@@ -70,8 +70,10 @@ class EnemyTrainerDialog(
         view.findViewById<TextView>(R.id.tv_enemy_dialog_title).text = "Choose Champion"
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_enemy_options)
         recycler.layoutManager = GridLayoutManager(requireContext(), 2)
+        var subDialog: android.app.AlertDialog? = null
         recycler.adapter = ChampionPickerAdapter(champions, ThemeManager.colorsFor(theme)) { champion ->
             onTrainerSelected(champion, null)
+            subDialog?.dismiss()
             dismiss()
         }
         val dialog = AlertDialog.Builder(requireContext())
@@ -82,6 +84,7 @@ class EnemyTrainerDialog(
             val width = (requireContext().resources.displayMetrics.widthPixels * 0.62).toInt()
             dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
         }
+        subDialog = dialog
         dialog.show()
     }
 
