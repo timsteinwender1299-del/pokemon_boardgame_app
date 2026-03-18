@@ -207,7 +207,17 @@ class TeamSetupFragment : Fragment() {
                         ))
                     }
                 }
-                is EnemyTrainer.Champion -> { teamBLabel = "Champion ${enemyTrainer.nameEN}" }
+                is EnemyTrainer.Champion -> {
+                    teamBLabel = "Champion ${enemyTrainer.nameEN}"
+                    enemyTrainer.team.forEach { gp ->
+                        teamBList.add(Pokemon(
+                            id = System.currentTimeMillis().toInt() + teamBList.size,
+                            name = gp.nameEN, nameDE = gp.nameDE,
+                            types = gp.types, baseBP = gp.baseBP,
+                            team = Team.TEAM_B, pokedexId = gp.pokedexId
+                        ))
+                    }
+                }
                 is EnemyTrainer.WildPokemon -> { teamBLabel = "Wild Pokémon" }
                 is EnemyTrainer.RandomTrainer -> { teamBLabel = "Random Trainer" }
                 is EnemyTrainer.SavedTrainer -> {

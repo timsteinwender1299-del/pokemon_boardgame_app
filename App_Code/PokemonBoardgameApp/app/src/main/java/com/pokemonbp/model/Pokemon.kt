@@ -65,7 +65,7 @@ sealed class EnemyTrainer {
         val badgeTeams: Map<Int, List<GymPokemon>>  // badge 1-8 -> team
     ) : EnemyTrainer()
 
-    data class Champion(val nameEN: String) : EnemyTrainer()
+    data class Champion(val nameEN: String, val team: List<GymPokemon> = emptyList()) : EnemyTrainer()
     object WildPokemon : EnemyTrainer()
     object RandomTrainer : EnemyTrainer()
     data class SavedTrainer(val trainer: PlayerTrainer) : EnemyTrainer()
