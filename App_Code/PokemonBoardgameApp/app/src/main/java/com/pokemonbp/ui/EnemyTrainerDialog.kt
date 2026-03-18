@@ -146,13 +146,13 @@ class EnemyGridAdapter(
         val opt = options[position]
         holder.tvName.setTextColor(c.textPrimary)
 
-        val (iconId, label) = when (opt) {
-            is EnemyOption.GymLeaderOption  -> opt.gym.id to opt.gym.nameDE
-            is EnemyOption.ChampionOption   -> opt.champion.nameEN.lowercase() to opt.champion.nameEN
-            is EnemyOption.ChampionMenu     -> "championmenu" to "Champion"
-            is EnemyOption.WildOption       -> "wild" to "Wild"
-            is EnemyOption.RandomOption     -> "random" to "Random"
-            is EnemyOption.SavedTrainerMenu -> "saved" to "Trainer"
+        val (iconId, label, fallback) = when (opt) {
+            is EnemyOption.GymLeaderOption  -> Triple(opt.gym.id, opt.gym.nameDE, R.drawable.ic_pokeball)
+            is EnemyOption.ChampionOption   -> Triple(opt.champion.nameEN.lowercase(), opt.champion.nameEN, R.drawable.ic_pokeball)
+            is EnemyOption.ChampionMenu     -> Triple("championmenu", "Champion", R.drawable.ic_pokeball)
+            is EnemyOption.WildOption       -> Triple("wild", "Wild", R.drawable.ic_wild_pokemon)
+            is EnemyOption.RandomOption     -> Triple("random", "Random", R.drawable.ic_random_trainer)
+            is EnemyOption.SavedTrainerMenu -> Triple("saved", "Trainer", R.drawable.ic_pokeball)
         }
 
         holder.tvName.text = label
@@ -161,13 +161,13 @@ class EnemyGridAdapter(
         if (url != null) {
             Glide.with(holder.ivIcon.context)
                 .load(url)
-                .placeholder(R.drawable.ic_pokeball)
-                .error(R.drawable.ic_pokeball)
+                .placeholder(fallback)
+                .error(fallback)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .fitCenter()
                 .into(holder.ivIcon)
         } else {
-            holder.ivIcon.setImageResource(R.drawable.ic_pokeball)
+            holder.ivIcon.setImageResource(fallback)
         }
 
         holder.itemView.setOnClickListener { onClick(opt) }

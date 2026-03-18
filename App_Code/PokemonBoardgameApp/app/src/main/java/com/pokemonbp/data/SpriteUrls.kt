@@ -101,6 +101,7 @@ object SpriteUrls {
         "tim"          -> "$BASE_URL/Trainer/Trainer_Icon/Tim_Icon.png"
         "championmenu" -> "$BASE_URL/Trainer/Trainer_Icon/ChampionIcon.png"
         "random"       -> "$BASE_URL/Trainer/Trainer_Icon/Random_Trainer.png"
+        "wild"         -> "$BASE_URL/Icons/WildPokemon.png"
         "saved"        -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
         else          -> null
     }
