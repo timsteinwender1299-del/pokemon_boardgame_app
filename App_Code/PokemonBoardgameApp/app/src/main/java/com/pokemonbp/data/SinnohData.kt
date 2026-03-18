@@ -330,17 +330,17 @@ object SinnohData {
 
     val champions: List<EnemyTrainer.Champion> = listOf(
         EnemyTrainer.Champion("Cynthia", listOf(
-            GymPokemon("Kryppuk", "Spiritomb", 442, listOf(PokemonType.GHOST, PokemonType.DARK), 9),
-            GymPokemon("Milotic", "Milotic", 350, listOf(PokemonType.WATER), 10),
-            GymPokemon("Lucario", "Lucario", 448, listOf(PokemonType.FIGHTING, PokemonType.STEEL), 10),
-            GymPokemon("Knackrack", "Garchomp", 445, listOf(PokemonType.DRAGON, PokemonType.GROUND), 11)
+            GymPokemon("Kryppuk", "Spiritomb", 442, listOf(PokemonType.GHOST, PokemonType.DARK), 10),
+            GymPokemon("Milotic", "Milotic", 350, listOf(PokemonType.WATER), 11),
+            GymPokemon("Lucario", "Lucario", 448, listOf(PokemonType.FIGHTING, PokemonType.STEEL), 11),
+            GymPokemon("Knackrack", "Garchomp", 445, listOf(PokemonType.DRAGON, PokemonType.GROUND), 12)
         )),
         EnemyTrainer.Champion("Hilda", listOf()),
         EnemyTrainer.Champion("Tim", listOf(
-            GymPokemon("Bisasam", "Bulbasaur", 1, listOf(PokemonType.GRASS, PokemonType.POISON), 9),
-            GymPokemon("Aggrostella", "Toxapex", 748, listOf(PokemonType.POISON, PokemonType.WATER), 10),
-            GymPokemon("Colossand", "Palossand", 770, listOf(PokemonType.GHOST, PokemonType.GROUND), 10),
-            GymPokemon("Aranestro", "Araquanid", 752, listOf(PokemonType.WATER, PokemonType.BUG), 11)
+            GymPokemon("Bisasam", "Bulbasaur", 1, listOf(PokemonType.GRASS, PokemonType.POISON), 10),
+            GymPokemon("Aggrostella", "Toxapex", 748, listOf(PokemonType.POISON, PokemonType.WATER), 11),
+            GymPokemon("Colossand", "Palossand", 770, listOf(PokemonType.GHOST, PokemonType.GROUND), 11),
+            GymPokemon("Aranestro", "Araquanid", 752, listOf(PokemonType.WATER, PokemonType.BUG), 12)
         ))
     )
 }
