@@ -13,9 +13,31 @@ object SinnohData {
             nameEN = "Roark",
             badgeTeams = mapOf(
                 1 to listOf(
-                    GymPokemon("Krikling", "Geodude", 74, listOf(PokemonType.ROCK, PokemonType.GROUND), 2),
-                    GymPokemon("Onix", "Onix", 95, listOf(PokemonType.ROCK, PokemonType.GROUND), 3),
-                    GymPokemon("Krawumms", "Cranidos", 408, listOf(PokemonType.ROCK), 3)
+                    GymPokemon("Koknodon", "Cranidos", 408, listOf(PokemonType.ROCK), 3)
+                ),
+                2 to listOf(
+                    GymPokemon("Aerodactyl", "Aerodactyl", 142, listOf(PokemonType.ROCK, PokemonType.FLYING), 4)
+                ),
+                3 to listOf(
+                    GymPokemon("Rameidos", "Rampardos", 409, listOf(PokemonType.ROCK), 5)
+                ),
+                4 to listOf(
+                    GymPokemon("Aerodactyl", "Aerodactyl", 142, listOf(PokemonType.ROCK, PokemonType.FLYING), 4),
+                    GymPokemon("Rameidos", "Rampardos", 409, listOf(PokemonType.ROCK), 5)
+                ),
+                5 to listOf(
+                    GymPokemon("Aerodactyl", "Aerodactyl", 142, listOf(PokemonType.ROCK, PokemonType.FLYING), 5),
+                    GymPokemon("Rameidos", "Rampardos", 409, listOf(PokemonType.ROCK), 6)
+                ),
+                7 to listOf(
+                    GymPokemon("Aerodactyl", "Aerodactyl", 142, listOf(PokemonType.ROCK, PokemonType.FLYING), 7),
+                    GymPokemon("Despotar", "Tyranitar", 248, listOf(PokemonType.ROCK, PokemonType.DARK), 7),
+                    GymPokemon("Rameidos", "Rampardos", 409, listOf(PokemonType.ROCK), 8)
+                ),
+                8 to listOf(
+                    GymPokemon("Aerodactyl", "Aerodactyl", 142, listOf(PokemonType.ROCK, PokemonType.FLYING), 8),
+                    GymPokemon("Despotar", "Tyranitar", 248, listOf(PokemonType.ROCK, PokemonType.DARK), 8),
+                    GymPokemon("Rameidos", "Rampardos", 409, listOf(PokemonType.ROCK), 9)
                 )
             )
         ),
