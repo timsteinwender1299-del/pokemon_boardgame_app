@@ -147,7 +147,7 @@ class EnemyGridAdapter(
         holder.tvName.setTextColor(c.textPrimary)
 
         val (iconId, label, fallback) = when (opt) {
-            is EnemyOption.GymLeaderOption  -> Triple(opt.gym.id, "${opt.gym.nameEN}\n${opt.gym.nameDE}", R.drawable.ic_pokeball)
+            is EnemyOption.GymLeaderOption  -> Triple(opt.gym.id, "${opt.gym.nameDE}\n${opt.gym.nameEN}", R.drawable.ic_pokeball)
             is EnemyOption.ChampionOption   -> Triple(opt.champion.nameEN.lowercase(), opt.champion.nameEN, R.drawable.ic_pokeball)
             is EnemyOption.ChampionMenu     -> Triple("championmenu", "Choose\nChampion", R.drawable.ic_pokeball)
             is EnemyOption.WildOption       -> Triple("wild", "Wild\nPokemon", R.drawable.ic_wild_pokemon)
