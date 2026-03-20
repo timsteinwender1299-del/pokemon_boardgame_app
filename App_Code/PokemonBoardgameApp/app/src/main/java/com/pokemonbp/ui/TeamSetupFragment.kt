@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.pokemonbp.R
 import com.pokemonbp.data.*
 import com.pokemonbp.databinding.FragmentTeamSetupBinding
 import com.pokemonbp.model.*
@@ -82,6 +83,12 @@ class TeamSetupFragment : Fragment() {
         binding.recyclerTeamB.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerTeamB.adapter = adapterB
 
+        binding.ivWildButton.setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Test")
+                .setPositiveButton("OK", null)
+                .show()
+        }
         binding.btnAddPokemonA.setOnClickListener { showAddPokemonDialog(Team.TEAM_A) }
         binding.btnAddPlayerA.setOnClickListener { showAddTrainerDialog() }
         binding.btnChooseTrainerA.setOnClickListener { showChooseTrainerDialog() }
@@ -141,13 +148,24 @@ class TeamSetupFragment : Fragment() {
         binding.tvTeamALabel.text = "🔴 ${teamATrainer?.name ?: "Player"}"
     }
 
+    private fun loadLabelIcon(url: String?, imageView: android.widget.ImageView, fallbackRes: Int) {
+        if (url == null) { imageView.setImageResource(fallbackRes); return }
+        Glide.with(imageView.context)
+            .load(url)
+            .placeholder(fallbackRes)
+            .error(fallbackRes)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .fitCenter()
+            .into(imageView)
+    }
+
     private fun loadTrainerImage(url: String?, imageView: android.widget.ImageView) {
         if (url == null) {
             imageView.visibility = android.view.View.GONE
             return
         }
         imageView.visibility = android.view.View.VISIBLE
-        Glide.with(this)
+        Glide.with(imageView.context)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .fitCenter()
@@ -198,6 +216,7 @@ class TeamSetupFragment : Fragment() {
             adapterA.activeIndex = 0
             adapterA.notifyDataSetChanged()
             updateTeamALabel()
+            loadLabelIcon(SpriteUrls.avatarUrl(trainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
             loadTrainerImage(SpriteUrls.playerTrainerImageUrl(trainer.avatarId), binding.ivTrainerA)
             updateBattleButton()
             Toast.makeText(requireContext(), "${trainer.name}'s team loaded!", Toast.LENGTH_SHORT).show()
@@ -241,7 +260,7 @@ class TeamSetupFragment : Fragment() {
                 }
                 is EnemyTrainer.WildPokemon -> {
                     teamBLabel = "Wild Pokémon"
-                    trainerImageUrl = null
+                    trainerImageUrl = SpriteUrls.trainerIconUrl("wild")
                 }
                 is EnemyTrainer.RandomTrainer -> {
                     teamBLabel = "Random Trainer"
@@ -260,10 +279,18 @@ class TeamSetupFragment : Fragment() {
                     trainerImageUrl = SpriteUrls.playerTrainerImageUrl(enemyTrainer.trainer.avatarId)
                 }
             }
+            val labelIconUrl = when (enemyTrainer) {
+                is EnemyTrainer.GymLeader    -> SpriteUrls.trainerIconUrl(enemyTrainer.id)
+                is EnemyTrainer.Champion     -> SpriteUrls.trainerIconUrl(enemyTrainer.nameEN.lowercase())
+                is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
+                is EnemyTrainer.WildPokemon  -> SpriteUrls.trainerIconUrl("wild")
+                is EnemyTrainer.SavedTrainer -> SpriteUrls.avatarUrl(enemyTrainer.trainer.avatarId)
+            }
             activeIndexB = 0
             adapterB.activeIndex = 0
             adapterB.notifyDataSetChanged()
             binding.tvTeamBLabel.text = teamBLabel
+            loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
             loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
             updateBattleButton()
             },

@@ -65,9 +65,7 @@ class AddPokemonDialogFragment(
 
         binding.btnPickFromRoute.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
         binding.btnPickFromRoute.setTextColor(Color.WHITE)
-        binding.btnPickFromRoute.setOnClickListener {
-            // TODO: Route picker — coming soon
-        }
+        binding.btnPickFromRoute.setOnClickListener { openRoutePicker() }
 
         // "Add Player" preset button — only shown for Team A
         if (team == Team.TEAM_A) {
@@ -161,6 +159,46 @@ class AddPokemonDialogFragment(
     private fun openPicker() {
         val picker = PokemonPickerDialog(theme) { entry -> applyEntry(entry) }
         picker.show(parentFragmentManager, "PokemonPicker")
+    }
+
+    private fun openRoutePicker() {
+        RoutePickerDialog(theme) { nameDE, nameEN, bp ->
+            val entry = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
+            val types = entry?.types ?: emptyList()
+            if (types.isNotEmpty() && bp > 0) {
+                onPokemonAdded(Pokemon(
+                    id = System.currentTimeMillis().toInt(),
+                    name = nameEN,
+                    nameDE = nameDE,
+                    types = types,
+                    baseBP = bp,
+                    team = team,
+                    pokedexId = entry?.id ?: 0
+                ))
+                dismiss()
+            } else {
+                applyRouteEntry(nameDE, nameEN, bp)
+            }
+        }.show(parentFragmentManager, "RoutePicker")
+    }
+
+    private fun applyRouteEntry(nameDE: String, nameEN: String, bp: Int) {
+        currentName = nameEN
+        currentNameDE = nameDE
+        val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+        if (entry != null) {
+            currentPokedexId = entry.id
+            binding.btnPickPokemon.text = "  $nameEN  #${entry.id}"
+            binding.tvDexId.text = "#${entry.id}"
+            selectedTypes.clear()
+            selectedTypes.addAll(entry.types)
+        } else {
+            currentPokedexId = 0
+            binding.btnPickPokemon.text = "  $nameEN"
+            binding.tvDexId.text = ""
+        }
+        typeAdapter.notifyDataSetChanged()
+        if (bp > 0) selectBP(bp)
     }
 
     private fun applyEntry(entry: PokedexEntry) {

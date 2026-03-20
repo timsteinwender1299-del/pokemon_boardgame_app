@@ -1,0 +1,261 @@
+package com.pokemonbp.ui
+
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.button.MaterialButton
+import com.pokemonbp.R
+import com.pokemonbp.data.AppTheme
+import com.pokemonbp.data.RouteData
+import com.pokemonbp.data.RouteLocation
+import com.pokemonbp.data.RoutePokemon
+import com.pokemonbp.data.SpriteUrls
+import com.pokemonbp.data.ThemeColors
+import com.pokemonbp.data.ThemeManager
+
+class RoutePickerDialog(
+    private val theme: AppTheme,
+    private val onPokemonPicked: (nameDE: String, nameEN: String, bp: Int) -> Unit
+) : DialogFragment() {
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val routes = RouteData.loadRoutes(requireContext())
+        val c = ThemeManager.colorsFor(theme)
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_route_picker, null)
+        view.findViewById<LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
+
+        val recycler = view.findViewById<RecyclerView>(R.id.recycler_routes)
+        recycler.layoutManager = GridLayoutManager(requireContext(), 2)
+        recycler.adapter = RouteGridAdapter(routes, c,
+            onRouteClick = { location -> handleRouteClick(location) },
+            onRandomClick = { handleRouteClick(routes.random()) }
+        )
+
+        view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(view)
+            .create()
+        dialog.setOnShowListener {
+            val w = (requireContext().resources.displayMetrics.widthPixels * 0.92).toInt()
+            dialog.window?.setLayout(w, ViewGroup.LayoutParams.WRAP_CONTENT)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+        return dialog
+    }
+
+    private fun handleRouteClick(location: RouteLocation) {
+        if (!location.isLegendary) {
+            showPokemonGrid(location.displayName, location.tiers[0].pokemon)
+        } else {
+            showBadgeTierPicker(location)
+        }
+    }
+
+    private fun showBadgeTierPicker(location: RouteLocation) {
+        val c = ThemeManager.colorsFor(theme)
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(20), dp(20), dp(12))
+            setBackgroundColor(c.surface)
+        }
+
+        TextView(requireContext()).apply {
+            text = location.displayName
+            textSize = 13f
+            setTextColor(c.textPrimary)
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 0, 0, dp(14))
+            container.addView(this)
+        }
+
+        var tierDialog: AlertDialog? = null
+
+        for (tier in location.tiers) {
+            MaterialButton(requireContext()).apply {
+                text = tier.label
+                isAllCaps = false
+                textSize = 14f
+                setTextColor(Color.WHITE)
+                backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
+                cornerRadius = dp(22)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(48)
+                ).also { it.bottomMargin = dp(8) }
+                setOnClickListener {
+                    tierDialog?.dismiss()
+                    showPokemonGrid("${location.displayName} — ${tier.label}", tier.pokemon)
+                }
+                container.addView(this)
+            }
+        }
+
+        MaterialButton(
+            requireContext(), null,
+            com.google.android.material.R.attr.materialButtonOutlinedStyle
+        ).apply {
+            text = "Back"
+            isAllCaps = false
+            textSize = 12f
+            setTextColor(Color.parseColor("#CC0000"))
+            strokeColor = ColorStateList.valueOf(Color.parseColor("#CC0000"))
+            backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            cornerRadius = dp(22)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(40)
+            ).also { it.topMargin = dp(4) }
+            setOnClickListener { tierDialog?.dismiss() }
+            container.addView(this)
+        }
+
+        tierDialog = AlertDialog.Builder(requireContext())
+            .setView(container)
+            .create()
+        tierDialog.setOnShowListener {
+            val w = (requireContext().resources.displayMetrics.widthPixels * 0.75).toInt()
+            tierDialog.window?.setLayout(w, ViewGroup.LayoutParams.WRAP_CONTENT)
+            tierDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+        tierDialog.show()
+    }
+
+    private fun showPokemonGrid(title: String, pokemon: List<RoutePokemon>) {
+        val c = ThemeManager.colorsFor(theme)
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_route_pokemon_grid, null)
+
+        view.findViewById<LinearLayout>(R.id.screen_panel_grid).setBackgroundColor(c.surface)
+        view.findViewById<TextView>(R.id.tv_pokemon_grid_title).text = title
+
+        val recycler = view.findViewById<RecyclerView>(R.id.recycler_pokemon_grid)
+        recycler.layoutManager = GridLayoutManager(requireContext(), 2)
+        recycler.adapter = RoutePokemonGridAdapter(pokemon, c) { p ->
+            onPokemonPicked(p.nameDE, p.nameEN, p.bp)
+            dismiss()
+        }
+
+        var gridDialog: AlertDialog? = null
+        view.findViewById<MaterialButton>(R.id.btn_back_pokemon_grid)
+            .setOnClickListener { gridDialog?.dismiss() }
+
+        gridDialog = AlertDialog.Builder(requireContext())
+            .setView(view)
+            .create()
+        gridDialog.setOnShowListener {
+            val dm = requireContext().resources.displayMetrics
+            val w = (dm.widthPixels * 0.44).toInt()
+            val h = (dm.heightPixels * 0.78).toInt()
+            gridDialog.window?.setLayout(w, h)
+            gridDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+        gridDialog.show()
+    }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+}
+
+// ── Route grid adapter (route name buttons, 2-col) ────────────────────────────
+
+private class RouteGridAdapter(
+    private val routes: List<RouteLocation>,
+    private val c: ThemeColors,
+    private val onRouteClick: (RouteLocation) -> Unit,
+    private val onRandomClick: () -> Unit
+) : RecyclerView.Adapter<RouteGridAdapter.VH>() {
+
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val tvName: TextView = v.findViewById(R.id.tv_route_name)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_route_button, parent, false)
+    )
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        if (position == routes.size) {
+            holder.tvName.text = "🎲 Random"
+            holder.itemView.setOnClickListener { onRandomClick() }
+        } else {
+            val loc = routes[position]
+            holder.tvName.text = loc.displayName
+            holder.itemView.setOnClickListener { onRouteClick(loc) }
+        }
+    }
+
+    override fun getItemCount() = routes.size + 1
+}
+
+// ── Pokémon grid adapter (sprites + types + BP, 3-col) ───────────────────────
+
+private class RoutePokemonGridAdapter(
+    private val pokemon: List<RoutePokemon>,
+    private val c: ThemeColors,
+    private val onClick: (RoutePokemon) -> Unit
+) : RecyclerView.Adapter<RoutePokemonGridAdapter.VH>() {
+
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val ivSprite: ImageView = v.findViewById(R.id.iv_route_sprite)
+        val ivType1:  ImageView = v.findViewById(R.id.iv_route_type1)
+        val ivType2:  ImageView = v.findViewById(R.id.iv_route_type2)
+        val tvBP:     TextView  = v.findViewById(R.id.tv_route_bp)
+        val tvName:   TextView  = v.findViewById(R.id.tv_route_pokemon_name)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_route_pokemon, parent, false)
+    )
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val p   = pokemon[position]
+        val ctx = holder.itemView.context
+
+        holder.tvName.text = "${p.nameDE} / ${p.nameEN}"
+        holder.tvName.setTextColor(c.textSecondary)
+        holder.tvBP.text = if (p.bp > 0) "BP: ${p.bp}" else "BP: ?"
+
+        val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
+
+        // Sprite
+        if (entry != null && entry.spriteId > 0) {
+            holder.ivSprite.loadPokemonSprite(ctx, entry.spriteId)
+        } else {
+            holder.ivSprite.setImageResource(R.drawable.ic_pokeball)
+        }
+
+        // Type icons
+        val types = entry?.types ?: emptyList()
+        if (types.isNotEmpty()) {
+            Glide.with(ctx)
+                .load(SpriteUrls.typeIconUrl(types[0].name))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.ivType1)
+        }
+        if (types.size >= 2) {
+            holder.ivType2.visibility = View.VISIBLE
+            Glide.with(ctx)
+                .load(SpriteUrls.typeIconUrl(types[1].name))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.ivType2)
+        } else {
+            holder.ivType2.visibility = View.GONE
+        }
+
+        holder.itemView.setOnClickListener { onClick(p) }
+    }
+
+    override fun getItemCount() = pokemon.size
+}

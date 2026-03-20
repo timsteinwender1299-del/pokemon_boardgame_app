@@ -58,7 +58,7 @@ class EnemyTrainerDialog(
             is EnemyOption.GymLeaderOption  -> showBadgeDialog(option.gym)
             is EnemyOption.ChampionOption   -> { onTrainerSelected(option.champion, null); dismiss() }
             is EnemyOption.ChampionMenu     -> showChampionDialog()
-            is EnemyOption.WildOption       -> { dismiss(); onAddSinglePokemon() }
+            is EnemyOption.WildOption       -> { onTrainerSelected(EnemyTrainer.WildPokemon, null); dismiss(); onAddSinglePokemon() }
             is EnemyOption.RandomOption     -> { onTrainerSelected(EnemyTrainer.RandomTrainer, null); dismiss(); onAddSinglePokemon() }
             is EnemyOption.SavedTrainerMenu -> showSavedTrainerDialog()
         }
