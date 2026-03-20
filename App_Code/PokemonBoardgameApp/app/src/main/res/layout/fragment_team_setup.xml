@@ -72,12 +72,47 @@
         android:padding="10dp"
         android:background="@drawable/pokedex_screen_bg">
 
-        <!-- Wild Pokémon route grid (visible only in wild mode) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_wild_routes"
+        <!-- Wild Pokémon route columns (visible only in wild mode) -->
+        <LinearLayout
+            android:id="@+id/layout_wild_routes"
             android:layout_width="match_parent" android:layout_height="match_parent"
-            android:visibility="gone"
-            android:clipToPadding="false"/>
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <!-- Legendary routes — left column -->
+            <LinearLayout
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="⭐ Legendary" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#9b59b6" android:gravity="center"
+                    android:paddingBottom="4dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_legendary_routes"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp" android:layout_height="match_parent"
+                android:background="#33FFFFFF" android:layout_marginHorizontal="4dp"/>
+
+            <!-- Normal routes — right column -->
+            <LinearLayout
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Normal" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#2983d3" android:gravity="center"
+                    android:paddingBottom="4dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_normal_routes"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Route Detail (visible when a route is tapped in wild mode) -->
         <LinearLayout

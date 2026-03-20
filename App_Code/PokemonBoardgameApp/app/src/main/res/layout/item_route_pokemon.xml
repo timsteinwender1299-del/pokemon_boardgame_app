@@ -13,7 +13,7 @@
         <!-- Sprite -->
         <ImageView
             android:id="@+id/iv_route_sprite"
-            android:layout_width="54dp" android:layout_height="54dp"
+            android:layout_width="72dp" android:layout_height="72dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
 
@@ -31,13 +31,13 @@
 
                 <ImageView
                     android:id="@+id/iv_route_type1"
-                    android:layout_width="26dp" android:layout_height="26dp"
+                    android:layout_width="34dp" android:layout_height="34dp"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"/>
 
                 <ImageView
                     android:id="@+id/iv_route_type2"
-                    android:layout_width="26dp" android:layout_height="26dp"
+                    android:layout_width="34dp" android:layout_height="34dp"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
                     android:layout_marginStart="2dp"
@@ -49,7 +49,7 @@
             <TextView
                 android:id="@+id/tv_route_bp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textSize="9sp" android:textStyle="bold"
+                android:textSize="11sp" android:textStyle="bold"
                 android:textColor="#CC0000"
                 android:layout_marginTop="2dp"/>
 
@@ -61,7 +61,7 @@
     <TextView
         android:id="@+id/tv_route_pokemon_name"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:textSize="8sp"
+        android:textSize="9sp"
         android:gravity="start"
         android:maxLines="1" android:ellipsize="end"
         android:paddingStart="2dp"

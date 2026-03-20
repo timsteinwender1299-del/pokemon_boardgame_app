@@ -104,12 +104,12 @@ class TeamSetupFragment : Fragment() {
                 binding.ivWildButton.setImageResource(R.drawable.ic_battle_calculator_menu)
                 binding.layoutMainContent.visibility = android.view.View.GONE
                 binding.layoutRouteDetail.visibility = android.view.View.GONE
-                binding.rvWildRoutes.visibility = android.view.View.VISIBLE
+                binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
             } else {
                 binding.root.setBackgroundColor(requireContext().getColor(R.color.pokedex_red))
                 binding.ivWildButton.setImageResource(R.drawable.ic_wild_pokemon_menu)
                 binding.layoutMainContent.visibility = android.view.View.VISIBLE
-                binding.rvWildRoutes.visibility = android.view.View.GONE
+                binding.layoutWildRoutes.visibility = android.view.View.GONE
                 binding.layoutRouteDetail.visibility = android.view.View.GONE
             }
         }
@@ -137,11 +137,38 @@ class TeamSetupFragment : Fragment() {
     private fun setupWildRouteGrid() {
         val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
         val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
-        binding.rvWildRoutes.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvWildRoutes.adapter = WildRouteAdapter(routes, c) { route ->
-            showRouteDetail(route)
-        }
+        val legendary = routes.filter { it.isLegendary }
+        val normal    = routes.filter { !it.isLegendary }
 
+        binding.rvLegendaryRoutes.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvLegendaryRoutes.adapter = WildRouteAdapter(legendary, c) { route ->
+            handleRouteClick(route)
+        }
+        binding.rvNormalRoutes.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvNormalRoutes.adapter = WildRouteAdapter(normal, c) { route ->
+            handleRouteClick(route)
+        }
+    }
+
+    private fun handleRouteClick(route: com.pokemonbp.data.RouteLocation) {
+        if (route.tiers.size <= 1) {
+            val tier = route.tiers.firstOrNull()
+            showRouteDetail(route.displayName, tier?.pokemon ?: emptyList())
+        } else {
+            showBadgeTierPicker(route)
+        }
+    }
+
+    private fun showBadgeTierPicker(route: com.pokemonbp.data.RouteLocation) {
+        val labels = route.tiers.map { it.label }.toTypedArray()
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle(route.displayName)
+            .setItems(labels) { _, index ->
+                val tier = route.tiers[index]
+                showRouteDetail("${route.displayName} — ${tier.label}", tier.pokemon)
+            }
+            .setNegativeButton("Back", null)
+            .show()
     }
 
     private fun applyTheme(theme: AppTheme) {
@@ -333,33 +360,19 @@ class TeamSetupFragment : Fragment() {
         ).show(parentFragmentManager, "EnemyTrainer")
     }
 
-    private fun showRouteDetail(route: com.pokemonbp.data.RouteLocation) {
-        binding.rvWildRoutes.visibility = android.view.View.GONE
+    private fun showRouteDetail(title: String, pokemon: List<com.pokemonbp.data.RoutePokemon>) {
+        binding.layoutWildRoutes.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
-        binding.tvRouteDetailName.text = route.displayName
+        binding.tvRouteDetailName.text = title
 
         binding.tvRouteBack.setOnClickListener {
             binding.layoutRouteDetail.visibility = android.view.View.GONE
-            binding.rvWildRoutes.visibility = android.view.View.VISIBLE
+            binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
         }
 
-        // Build adapter items: tier headers + pokemon
-        val items = mutableListOf<RouteDetailItem>()
-        val showHeaders = route.tiers.size > 1
-        for (tier in route.tiers) {
-            if (showHeaders && tier.label.isNotEmpty()) {
-                items.add(RouteDetailItem.Header(tier.label))
-            }
-            tier.pokemon.forEach { items.add(RouteDetailItem.PokemonRow(it)) }
-        }
-
+        val items = pokemon.map { RouteDetailItem.PokemonRow(it) }
         binding.rvRoutePokemon.layoutManager =
-            androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3).apply {
-                spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int) =
-                        if (items[position] is RouteDetailItem.Header) 3 else 1
-                }
-            }
+            androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
         val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: com.pokemonbp.data.AppTheme.COLORFUL)
         binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c)
     }
