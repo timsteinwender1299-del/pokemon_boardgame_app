@@ -35,12 +35,17 @@
             android:textColor="#FFFFFF"
             android:includeFontPadding="false"/>
 
-        <!-- Theme button -->
-        <com.google.android.material.button.MaterialButton android:id="@+id/btn_theme"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content" android:layout_height="36dp"
-            android:text="🎨" android:textSize="18sp" android:textAllCaps="false"
-            android:textColor="#FFFFFF"/>
+        <!-- Wild Pokémon button -->
+        <ImageView
+            android:id="@+id/iv_wild_button"
+            android:layout_width="48dp" android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_wild_pokemon_menu"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>
 
     <!-- Hinge / divider line -->
@@ -73,22 +78,6 @@
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Player" android:textSize="15sp" android:textStyle="bold"
                     android:includeFontPadding="false"/>
-            </LinearLayout>
-
-            <!-- Wild Pokémon image button (above Choose Trainer column) -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingBottom="4dp">
-                <Space android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="2"/>
-                <ImageView
-                    android:id="@+id/iv_wild_button"
-                    android:layout_width="0dp" android:layout_height="34dp" android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:src="@drawable/ic_wild_pokemon_menu"
-                    android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"/>
             </LinearLayout>
 
             <!-- Team A action buttons -->

@@ -10,11 +10,11 @@ import com.pokemonbp.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    var currentTheme: AppTheme = AppTheme.DARK
+    var currentTheme: AppTheme = AppTheme.COLORFUL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        currentTheme = ThemeManager.load(this)
+        currentTheme = AppTheme.COLORFUL
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         applyThemeBackground()

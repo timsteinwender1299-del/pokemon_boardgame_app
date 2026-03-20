@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pokemonbp.R
 import com.pokemonbp.data.*
 import com.pokemonbp.databinding.FragmentTeamSetupBinding
@@ -33,6 +32,7 @@ class TeamSetupFragment : Fragment() {
     private var teamATrainer: PlayerTrainer? = null
     private var teamBLabel: String = "Enemy Trainer"
     private var currentEnemyTrainer: EnemyTrainer? = null
+    private var wildMode = false
 
     private val mainActivity get() = activity as? MainActivity
 
@@ -43,7 +43,7 @@ class TeamSetupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val theme = mainActivity?.currentTheme ?: AppTheme.DARK
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         applyTheme(theme)
 
         adapterA = PokemonListAdapter(teamAList, theme,
@@ -84,11 +84,20 @@ class TeamSetupFragment : Fragment() {
         binding.recyclerTeamB.adapter = adapterB
 
         binding.ivWildButton.setOnClickListener {
-            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Test")
-                .setPositiveButton("OK", null)
-                .show()
+            wildMode = !wildMode
+            val childVisibility = if (wildMode) android.view.View.GONE else android.view.View.VISIBLE
+            if (wildMode) {
+                binding.root.setBackgroundColor(Color.parseColor("#2983d3"))
+                binding.ivWildButton.setImageResource(R.drawable.ic_battle_calculator_menu)
+            } else {
+                binding.root.setBackgroundColor(requireContext().getColor(R.color.pokedex_red))
+                binding.ivWildButton.setImageResource(R.drawable.ic_wild_pokemon_menu)
+            }
+            for (i in 0 until binding.screenPanel.childCount) {
+                binding.screenPanel.getChildAt(i).visibility = childVisibility
+            }
         }
+
         binding.btnAddPokemonA.setOnClickListener { showAddPokemonDialog(Team.TEAM_A) }
         binding.btnAddPlayerA.setOnClickListener { showAddTrainerDialog() }
         binding.btnChooseTrainerA.setOnClickListener { showChooseTrainerDialog() }
@@ -106,7 +115,6 @@ class TeamSetupFragment : Fragment() {
             (activity as MainActivity).navigateToResults(ResultFragment.newInstance(result))
         }
 
-        binding.btnTheme.setOnClickListener { showThemePicker() }
         updateBattleButton()
     }
 
@@ -117,7 +125,6 @@ class TeamSetupFragment : Fragment() {
         binding.tvTeamALabel.setTextColor(c.teamA)
         binding.tvTeamBLabel.setTextColor(c.teamB)
         binding.divider.setBackgroundColor(c.divider)
-        binding.btnTheme.setTextColor(c.onSurfaceSecondary)
 
         fun styleOutlined(btn: com.google.android.material.button.MaterialButton, color: Int) {
             btn.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
@@ -173,7 +180,7 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun showAddPokemonDialog(team: Team) {
-        val theme = mainActivity?.currentTheme ?: AppTheme.DARK
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         AddPokemonDialogFragment(team, theme) { pokemon ->
             if (team == Team.TEAM_A) {
                 teamAList.add(pokemon)
@@ -188,7 +195,7 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun showAddTrainerDialog() {
-        val theme = mainActivity?.currentTheme ?: AppTheme.DARK
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         AddPlayerDialog(theme) { trainer ->
             Toast.makeText(requireContext(), "Trainer '${trainer.name}' saved!", Toast.LENGTH_SHORT).show()
         }.show(parentFragmentManager, "AddPlayer")
@@ -200,7 +207,7 @@ class TeamSetupFragment : Fragment() {
             Toast.makeText(requireContext(), "No trainers saved yet! Use 'Add Trainer' first.", Toast.LENGTH_SHORT).show()
             return
         }
-        val theme = mainActivity?.currentTheme ?: AppTheme.DARK
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         ChooseTrainerDialog(theme, onBattle = { trainer ->
             teamATrainer = trainer
             teamAList.clear()
@@ -224,7 +231,7 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun showEnemyTrainerDialog() {
-        val theme = mainActivity?.currentTheme ?: AppTheme.DARK
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         EnemyTrainerDialog(theme,
             onTrainerSelected = { enemyTrainer, badge ->
             currentEnemyTrainer = enemyTrainer
@@ -300,23 +307,10 @@ class TeamSetupFragment : Fragment() {
         ).show(parentFragmentManager, "EnemyTrainer")
     }
 
-    private fun showThemePicker() {
-        val themes = AppTheme.values()
-        val labels = themes.map { "${it.emoji} ${it.displayName}" }.toTypedArray()
-        val current = mainActivity?.currentTheme ?: AppTheme.DARK
-        var selected = themes.indexOf(current)
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Choose Theme")
-            .setSingleChoiceItems(labels, selected) { _, which -> selected = which }
-            .setPositiveButton("Apply") { _, _ -> mainActivity?.changeTheme(themes[selected]) }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
     private fun updateBattleButton() {
         val canBattle = teamAList.isNotEmpty() && teamBList.isNotEmpty()
         binding.btnCalculate.isEnabled = canBattle
-        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.DARK)
+        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
         binding.btnCalculate.backgroundTintList =
             ColorStateList.valueOf(if (canBattle) c.accent else Color.GRAY)
 
