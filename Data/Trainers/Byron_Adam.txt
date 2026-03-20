@@ -1,0 +1,55 @@
+Adam / Byron
+_______________________________
+Badge 1
+Schilterus / Shieldon
+BP    3
+_______________________________
+Badge 2
+Schilterus / Shieldon
+BP    4
+_______________________________
+Badge 3
+Bastiodon / Bastiodon
+BP    5
+_______________________________
+Badge 4
+Panzaeron / Bronzong
+BP    4
+
+Bastiodon / Bastiodon
+BP    5
+_______________________________
+Badge 5
+Panzaeron / Bronzong
+BP    5
+
+Bastiodon / Bastiodon
+BP    6
+_______________________________
+Badge 6
+Panzaeron / Bronzong
+BP    6
+
+Bastiodon / Bastiodon
+BP    7
+_______________________________
+Badge 7
+Panzaeron / Bronzong
+BP    7
+
+Impoleon / Empoleon
+BP    7
+
+Bastiodon / Bastiodon
+BP    8
+_______________________________
+Badge 8
+Panzaeron / Bronzong
+BP    8
+
+Impoleon / Empoleon
+BP    8
+
+Bastiodon / Bastiodon
+BP    9
+_______________________________

@@ -1,0 +1,55 @@
+Veit / Roark
+_______________________________
+Badge 1
+Koknodon / Cranidos
+BP    3
+_______________________________
+Badge 2
+Aerodactyl / Aerodactyl
+BP    4
+_______________________________
+Badge 3
+Rameidos / Rampardos
+BP    5
+_______________________________
+Badge 4
+Aerodactyl / Aerodactyl
+BP    4
+
+Rameidos / Rampardos
+BP    5
+_______________________________
+Badge 5
+Aerodactyl / Aerodactyl
+BP    5
+
+Rameidos / Rampardos
+BP    6
+_______________________________
+Badge 6
+Aerodactyl / Aerodactyl
+BP    6
+
+Rameidos / Rampardos
+BP    7
+_______________________________
+Badge 7
+Aerodactyl / Aerodactyl
+BP    7
+
+Despotar / Tyranitar
+BP    7
+
+Rameidos / Rampardos
+BP    8
+_______________________________
+Badge 8
+Aerodactyl / Aerodactyl
+BP    8
+
+Despotar / Tyranitar
+BP    8
+
+Rameidos / Rampardos
+BP    9
+_______________________________

@@ -1,0 +1,55 @@
+Frida / Candice
+_______________________________
+Badge 1
+Sniebel / Sneasel
+BP    3
+_______________________________
+Badge 2
+Sniebel / Sneasel
+BP    4
+_______________________________
+Badge 3
+Glaziola / Glaceon
+BP    5
+_______________________________
+Badge 4
+Sniebel / Sneasel
+BP    4
+
+Glaziola / Glaceon
+BP    5
+_______________________________
+Badge 5
+Glaziola / Glaceon
+BP    5
+
+Snibunna / Weavile
+BP    6
+_______________________________
+Badge 6
+Glaziola / Glaceon
+BP    6
+
+Snibunna / Weavile
+BP    7
+_______________________________
+Badge 7
+Glaziola / Glaceon
+BP    7
+
+Mamutel / Mamoswine
+BP    7
+
+Snibunna / Weavile
+BP    8
+_______________________________
+Badge 8
+Glaziola / Glaceon
+BP    8
+
+Mamutel / Mamoswine
+BP    8
+
+Snibunna / Weavile
+BP    9
+_______________________________

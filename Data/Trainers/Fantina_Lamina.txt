@@ -1,0 +1,55 @@
+Lamina / Fantina
+_______________________________
+Badge 1
+Nebulak / Gastly
+BP    3
+_______________________________
+Badge 2
+Nebulak / Gastly
+BP    4
+_______________________________
+Badge 3
+Alpollo / Haunter
+BP    5
+_______________________________
+Badge 4
+Dritflon / Drifloon
+BP    4
+
+Alpollo / Haunter
+BP    5
+_______________________________
+Badge 5
+Dritflon / Drifloon
+BP    5
+
+Gengar / Gengar
+BP    6
+_______________________________
+Badge 6
+Drifzepeli / Drifblim
+BP    6
+
+Gengar / Gengar
+BP    7
+_______________________________
+Badge 7
+Drifzepeli / Drifblim
+BP    7
+
+Frosdedje / Froslass
+BP    7
+
+Gengar / Gengar
+BP    8
+_______________________________
+Badge 8
+Drifzepeli / Drifblim
+BP    8
+
+Frosdedje / Froslass
+BP    8
+
+Gengar / Gengar
+BP    9
+_______________________________

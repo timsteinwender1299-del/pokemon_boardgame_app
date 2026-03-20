@@ -1,0 +1,55 @@
+Maylene / Hilda
+_______________________________
+Badge 1
+Glibunkel / Croagunk
+BP    3
+_______________________________
+Badge 2
+Glibunkel / Croagunk
+BP    4
+_______________________________
+Badge 3
+Toxiquak / Toxicroak
+BP    5
+_______________________________
+Badge 4
+Panpyro / Monferno
+BP    4
+
+Toxiquak / Toxicroak
+BP    5
+_______________________________
+Badge 5
+Panpyro / Monferno
+BP    5
+
+Toxiquak / Toxicroak
+BP    6
+_______________________________
+Badge 6
+Panferno / Infernape
+BP    6
+
+Toxiquak / Toxicroak
+BP    7
+_______________________________
+Badge 7
+Toxiquak / Toxicroak
+BP    7
+
+Panferno / Infernape
+BP    7
+
+Galagladi / Gallade
+BP    8
+_______________________________
+Badge 8
+Toxiquak / Toxicroak
+BP    8
+
+Panferno / Infernape
+BP    8
+
+Galagladi / Gallade
+BP    9
+_______________________________

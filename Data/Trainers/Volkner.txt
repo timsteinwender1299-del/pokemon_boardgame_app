@@ -1,0 +1,55 @@
+Volkner / Volkner
+_______________________________
+Badge 1
+Sheinux / Shinx
+BP    3
+_______________________________
+Badge 2
+Sheinux / Shinx
+BP    4
+_______________________________
+Badge 3
+Luxio / Luxio
+BP    5
+_______________________________
+Badge 4
+Lampi / Chinchou
+BP    4
+
+Luxio / Luxio
+BP    5
+_______________________________
+Badge 5
+Lanturn / Lanturn
+BP    5
+
+Luxtra / Luxray
+BP    6
+_______________________________
+Badge 6
+Lanturn / Lanturn
+BP    6
+
+Luxtra / Luxray
+BP    7
+_______________________________
+Badge 7
+Lanturn / Lanturn
+BP    7
+
+Elevoltek / Electivire
+BP    7
+
+Luxtra / Luxray
+BP    8
+_______________________________
+Badge 8
+Lanturn / Lanturn
+BP    8
+
+Elevoltek / Electivire
+BP    8
+
+Luxtra / Luxray
+BP    9
+_______________________________

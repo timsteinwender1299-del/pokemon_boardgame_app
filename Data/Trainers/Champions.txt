@@ -1,0 +1,29 @@
+Champion Cynthia
+_______________________________
+Kryppuk / Spiritomb
+BP    10
+
+Milotic / Milotic
+BP    11
+
+Lucario / Lucario
+BP    11
+
+Knackrack / Garchomp
+BP    12
+_______________________________
+
+Champion Tim
+_______________________________
+Bisasam / Bulbasaur
+BP    10
+
+Aggrostella / Toxapex
+BP    11
+
+Colossand / Palossand
+BP    11
+
+Aranestro / Araquanid
+BP    12
+_______________________________

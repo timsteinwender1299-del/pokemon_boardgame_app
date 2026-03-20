@@ -1,0 +1,55 @@
+Silvana / Gardenia
+_______________________________
+Badge 1
+Kikugi / Cherubi
+BP    3
+_______________________________
+Badge 2
+Kikugi / Cherubi
+BP    4
+_______________________________
+Badge 3
+Roselia / Roselia
+BP    5
+_______________________________
+Badge 4
+Folipurba / Leafeon
+BP    4
+
+Roselia / Roselia
+BP    5
+_______________________________
+Badge 5
+Folipurba / Leafeon
+BP    5
+
+Roserade / Roserade
+BP    6
+_______________________________
+Badge 6
+Folipurba / Leafeon
+BP    6
+
+Roserade / Roserade
+BP    7
+_______________________________
+Badge 7
+Folipurba / Leafeon
+BP    7
+
+Chelterrar / Torterra
+BP    7
+
+Roserade / Roserade
+BP    8
+_______________________________
+Badge 8
+Folipurba / Leafeon
+BP    8
+
+Chelterrar / Torterra
+BP    8
+
+Roserade / Roserade
+BP    9
+_______________________________

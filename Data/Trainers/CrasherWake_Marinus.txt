@@ -1,0 +1,55 @@
+Wellenbrecher Marinus / Crasher Wake
+_______________________________
+Badge 1
+Bamelin / Buizel
+BP    3
+_______________________________
+Badge 2
+Bamelin / Buizel
+BP    4
+_______________________________
+Badge 3
+Garados / Gyarados
+BP    5
+_______________________________
+Badge 4
+Bamelin / Buizel
+BP    4
+
+Garados / Gyarados
+BP    5
+_______________________________
+Badge 5
+Garados / Gyarados
+BP    5
+
+Bojelin / Floatzel
+BP    6
+_______________________________
+Badge 6
+Garados / Gyarados
+BP    6
+
+Bojelin / Floatzel
+BP    7
+_______________________________
+Badge 7
+Morlord / Quagsire
+BP    7
+
+Garados / Gyarados
+BP    7
+
+Bojelin / Floatzel
+BP    8
+_______________________________
+Badge 8
+Morlord / Quagsire
+BP    8
+
+Garados / Gyarados
+BP    8
+
+Bojelin / Floatzel
+BP    9
+_______________________________

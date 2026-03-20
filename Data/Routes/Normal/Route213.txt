@@ -1,0 +1,13 @@
+Route 213
+  Bamelin / Buizel (BP: 3)
+  Felino / Wooper (BP: 3)
+  Schallelos / Shellos (BP: 3)
+  Wingull / Wingull (BP: ?)
+  Remoraid / Remoraid (BP: 3)
+  Karnivanha / Carvanha (BP: 3)
+  Bojelin / Floatzel (BP: 5)
+  Morlord / Quagsire (BP: 5)
+  Gastrodon / Gastrodon (BP: 5)
+  Pelipper / Pelipper (BP: 5)
+  Octillery / Octillery (BP: 5)
+  Tohaido / Sharpedo (BP: 5)

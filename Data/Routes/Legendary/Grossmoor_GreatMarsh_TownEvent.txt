@@ -1,0 +1,13 @@
+Grossmoor / Great Marsh | TownEvent
+  Morlord / Quagsire (BP: 5)
+  Yanmega / Yanmega (BP: 6)
+  Piondragi / Drapion (BP: 5)
+  Toxiquak / Toxicroak (BP: 6)
+  Sichlor / Scyther (BP: 6)
+  Skaraborn / Heracross (BP: 6)
+  Morlord / Quagsire (BP: 7)
+  Yanmega / Yanmega (BP: 7)
+  Piondragi / Drapion (BP: 7)
+  Toxiquak / Toxicroak (BP: 7)
+  Scherox / Scizor (BP: 7)
+  Skaraborn / Heracross (BP: 7)
