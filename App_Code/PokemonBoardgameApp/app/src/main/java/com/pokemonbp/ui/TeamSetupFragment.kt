@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -94,18 +95,22 @@ class TeamSetupFragment : Fragment() {
             }
         }
 
+        setupWildRouteGrid()
+
         binding.ivWildButton.setOnClickListener {
             wildMode = !wildMode
-            val childVisibility = if (wildMode) android.view.View.GONE else android.view.View.VISIBLE
             if (wildMode) {
                 binding.root.setBackgroundColor(Color.parseColor("#2983d3"))
                 binding.ivWildButton.setImageResource(R.drawable.ic_battle_calculator_menu)
+                binding.layoutMainContent.visibility = android.view.View.GONE
+                binding.layoutRouteDetail.visibility = android.view.View.GONE
+                binding.rvWildRoutes.visibility = android.view.View.VISIBLE
             } else {
                 binding.root.setBackgroundColor(requireContext().getColor(R.color.pokedex_red))
                 binding.ivWildButton.setImageResource(R.drawable.ic_wild_pokemon_menu)
-            }
-            for (i in 0 until binding.screenPanel.childCount) {
-                binding.screenPanel.getChildAt(i).visibility = childVisibility
+                binding.layoutMainContent.visibility = android.view.View.VISIBLE
+                binding.rvWildRoutes.visibility = android.view.View.GONE
+                binding.layoutRouteDetail.visibility = android.view.View.GONE
             }
         }
 
@@ -127,6 +132,16 @@ class TeamSetupFragment : Fragment() {
         }
 
         updateBattleButton()
+    }
+
+    private fun setupWildRouteGrid() {
+        val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
+        val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
+        binding.rvWildRoutes.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.rvWildRoutes.adapter = WildRouteAdapter(routes, c) { route ->
+            showRouteDetail(route)
+        }
+
     }
 
     private fun applyTheme(theme: AppTheme) {
@@ -318,6 +333,37 @@ class TeamSetupFragment : Fragment() {
         ).show(parentFragmentManager, "EnemyTrainer")
     }
 
+    private fun showRouteDetail(route: com.pokemonbp.data.RouteLocation) {
+        binding.rvWildRoutes.visibility = android.view.View.GONE
+        binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
+        binding.tvRouteDetailName.text = route.displayName
+
+        binding.tvRouteBack.setOnClickListener {
+            binding.layoutRouteDetail.visibility = android.view.View.GONE
+            binding.rvWildRoutes.visibility = android.view.View.VISIBLE
+        }
+
+        // Build adapter items: tier headers + pokemon
+        val items = mutableListOf<RouteDetailItem>()
+        val showHeaders = route.tiers.size > 1
+        for (tier in route.tiers) {
+            if (showHeaders && tier.label.isNotEmpty()) {
+                items.add(RouteDetailItem.Header(tier.label))
+            }
+            tier.pokemon.forEach { items.add(RouteDetailItem.PokemonRow(it)) }
+        }
+
+        binding.rvRoutePokemon.layoutManager =
+            androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3).apply {
+                spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int) =
+                        if (items[position] is RouteDetailItem.Header) 3 else 1
+                }
+            }
+        val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: com.pokemonbp.data.AppTheme.COLORFUL)
+        binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c)
+    }
+
     private fun updateBattleButton() {
         val canBattle = teamAList.isNotEmpty() && teamBList.isNotEmpty()
         binding.btnCalculate.isEnabled = canBattle
@@ -336,4 +382,127 @@ class TeamSetupFragment : Fragment() {
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }
+}
+
+class WildRouteAdapter(
+    private val routes: List<com.pokemonbp.data.RouteLocation>,
+    private val c: com.pokemonbp.data.ThemeColors,
+    private val onClick: (com.pokemonbp.data.RouteLocation) -> Unit
+) : androidx.recyclerview.widget.RecyclerView.Adapter<WildRouteAdapter.VH>() {
+
+    inner class VH(val view: android.view.View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+        val card = view as com.google.android.material.card.MaterialCardView
+        val tvName: android.widget.TextView = view.findViewById(R.id.tv_route_name)
+    }
+
+    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int) =
+        VH(android.view.LayoutInflater.from(parent.context).inflate(R.layout.item_wild_route, parent, false))
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val route = routes[position]
+        holder.tvName.text = route.displayName
+        holder.tvName.setTextColor(c.textPrimary)
+        val accentColor = if (route.isLegendary) Color.parseColor("#9b59b6") else Color.parseColor("#2983d3")
+        holder.card.setCardBackgroundColor(c.surface)
+        holder.card.strokeColor = accentColor
+        holder.card.strokeWidth = if (route.isLegendary) 2 else 1
+        holder.itemView.setOnClickListener { onClick(route) }
+    }
+
+    override fun getItemCount() = routes.size
+}
+
+// ── Route detail item types ────────────────────────────────────────────────────
+
+sealed class RouteDetailItem {
+    data class Header(val label: String) : RouteDetailItem()
+    data class PokemonRow(val pokemon: com.pokemonbp.data.RoutePokemon) : RouteDetailItem()
+}
+
+// ── Route Pokemon detail adapter (3-col grid, sprite + types + BP) ─────────────
+
+class RoutePokemonDetailAdapter(
+    private val items: List<RouteDetailItem>,
+    private val c: com.pokemonbp.data.ThemeColors
+) : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+
+    companion object {
+        private const val TYPE_HEADER  = 0
+        private const val TYPE_POKEMON = 1
+    }
+
+    inner class HeaderVH(v: android.view.View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {
+        val tv: android.widget.TextView = v as android.widget.TextView
+    }
+
+    inner class PokemonVH(v: android.view.View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {
+        val ivSprite: android.widget.ImageView = v.findViewById(R.id.iv_route_sprite)
+        val ivType1:  android.widget.ImageView = v.findViewById(R.id.iv_route_type1)
+        val ivType2:  android.widget.ImageView = v.findViewById(R.id.iv_route_type2)
+        val tvBP:     android.widget.TextView  = v.findViewById(R.id.tv_route_bp)
+        val tvName:   android.widget.TextView  = v.findViewById(R.id.tv_route_pokemon_name)
+    }
+
+    override fun getItemViewType(position: Int) =
+        if (items[position] is RouteDetailItem.Header) TYPE_HEADER else TYPE_POKEMON
+
+    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int) =
+        if (viewType == TYPE_HEADER) {
+            val tv = android.widget.TextView(parent.context).apply {
+                layoutParams = android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(6, 8, 6, 4)
+                textSize = 11f
+                setTypeface(null, android.graphics.Typeface.BOLD)
+                setTextColor(c.textPrimary)
+            }
+            HeaderVH(tv)
+        } else {
+            PokemonVH(android.view.LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_route_pokemon, parent, false))
+        }
+
+    override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+        when (val item = items[position]) {
+            is RouteDetailItem.Header -> (holder as HeaderVH).tv.text = item.label
+            is RouteDetailItem.PokemonRow -> {
+                val vh  = holder as PokemonVH
+                val p   = item.pokemon
+                val ctx = holder.itemView.context
+
+                vh.tvName.text = "${p.nameDE}\n${p.nameEN}"
+                vh.tvName.setTextColor(c.textSecondary)
+                vh.tvBP.text = if (p.bp > 0) "BP: ${p.bp}" else "BP: ?"
+
+                val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
+
+                if (entry != null && entry.spriteId > 0) {
+                    vh.ivSprite.loadPokemonSprite(ctx, entry.spriteId)
+                } else {
+                    vh.ivSprite.setImageResource(R.drawable.ic_pokeball)
+                }
+
+                val types = entry?.types ?: emptyList()
+                if (types.isNotEmpty()) {
+                    com.bumptech.glide.Glide.with(ctx)
+                        .load(com.pokemonbp.data.SpriteUrls.typeIconUrl(types[0].name))
+                        .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                        .into(vh.ivType1)
+                }
+                if (types.size >= 2) {
+                    vh.ivType2.visibility = android.view.View.VISIBLE
+                    com.bumptech.glide.Glide.with(ctx)
+                        .load(com.pokemonbp.data.SpriteUrls.typeIconUrl(types[1].name))
+                        .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                        .into(vh.ivType2)
+                } else {
+                    vh.ivType2.visibility = android.view.View.GONE
+                }
+            }
+        }
+    }
+
+    override fun getItemCount() = items.size
 }

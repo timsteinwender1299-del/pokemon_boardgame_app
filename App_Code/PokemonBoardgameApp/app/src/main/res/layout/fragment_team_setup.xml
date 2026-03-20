@@ -72,6 +72,50 @@
         android:padding="10dp"
         android:background="@drawable/pokedex_screen_bg">
 
+        <!-- Wild Pokémon route grid (visible only in wild mode) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_wild_routes"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone"
+            android:clipToPadding="false"/>
+
+        <!-- Route Detail (visible when a route is tapped in wild mode) -->
+        <LinearLayout
+            android:id="@+id/layout_route_detail"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+                <TextView
+                    android:id="@+id/tv_route_back"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="← Back" android:textSize="13sp" android:textStyle="bold"
+                    android:textColor="#2983d3" android:paddingEnd="12dp"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <TextView
+                    android:id="@+id/tv_route_detail_name"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="11sp" android:textStyle="bold"
+                    android:maxLines="2"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_route_pokemon"
+                android:layout_width="match_parent" android:layout_height="match_parent"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+
+        <!-- BP Calculator content (hidden in wild mode) -->
+        <LinearLayout android:id="@+id/layout_main_content"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:orientation="vertical">
+
         <!-- Team A -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1" android:orientation="vertical">
@@ -181,6 +225,8 @@
             app:iconGravity="textStart"
             app:iconTint="@null"/>
 
-    </LinearLayout>
+        </LinearLayout><!-- end layout_main_content -->
+
+    </LinearLayout><!-- end screen_panel -->
 
 </LinearLayout>
