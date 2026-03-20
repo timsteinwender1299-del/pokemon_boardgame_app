@@ -46,7 +46,7 @@ class EnemyTrainerDialog(
     }
 
     private fun buildOptions(): List<EnemyOption> = buildList {
-        SinnohData.gymLeaders.forEach { add(EnemyOption.GymLeaderOption(it)) }
+        com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext()).forEach { add(EnemyOption.GymLeaderOption(it)) }
         add(EnemyOption.ChampionMenu)
         add(EnemyOption.WildOption)
         add(EnemyOption.RandomOption)
@@ -65,7 +65,7 @@ class EnemyTrainerDialog(
     }
 
     private fun showChampionDialog() {
-        val champions = SinnohData.champions.filter { it.nameEN != "Hilda" }
+        val champions = com.pokemonbp.data.TrainerParser.loadChampions(requireContext()).filter { it.nameEN != "Hilda" }
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_enemy_trainer, null)
         view.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(ThemeManager.colorsFor(theme).surface)

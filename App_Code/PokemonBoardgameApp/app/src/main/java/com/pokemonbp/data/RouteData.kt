@@ -54,7 +54,9 @@ object RouteData {
     }
 
     private fun parseNormalFile(context: Context): Map<String, List<RoutePokemon>> {
-        val text = context.assets.open("RoutesNormal.txt").bufferedReader().readText()
+        val cached = DataSyncManager.routesNormalFile(context)
+        val text = if (cached.exists()) cached.readText()
+                   else context.assets.open("RoutesNormal.txt").bufferedReader().readText()
         val result = linkedMapOf<String, MutableList<RoutePokemon>>()
         var currentKey: String? = null
         for (line in text.lines()) {
@@ -71,7 +73,9 @@ object RouteData {
     }
 
     private fun parseLegendaryFile(context: Context): Map<String, List<RouteTier>> {
-        val text = context.assets.open("RoutesLegendary.txt").bufferedReader().readText()
+        val cached = DataSyncManager.routesLegendaryFile(context)
+        val text = if (cached.exists()) cached.readText()
+                   else context.assets.open("RoutesLegendary.txt").bufferedReader().readText()
         val result = linkedMapOf<String, MutableList<RouteTier>>()
         var currentBase: String? = null
         var currentTierLabel: String? = null

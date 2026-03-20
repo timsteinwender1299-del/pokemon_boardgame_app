@@ -35,11 +35,23 @@
             android:textColor="#FFFFFF"
             android:includeFontPadding="false"/>
 
+        <!-- Update data button -->
+        <ImageView
+            android:id="@+id/iv_update_button"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/ic_update"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
         <!-- Wild Pokémon button -->
         <ImageView
             android:id="@+id/iv_wild_button"
             android:layout_width="48dp" android:layout_height="48dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="6dp"
             android:src="@drawable/ic_wild_pokemon_menu"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"

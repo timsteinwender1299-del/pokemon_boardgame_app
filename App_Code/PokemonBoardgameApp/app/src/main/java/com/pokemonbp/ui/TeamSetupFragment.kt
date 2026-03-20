@@ -83,6 +83,17 @@ class TeamSetupFragment : Fragment() {
         binding.recyclerTeamB.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerTeamB.adapter = adapterB
 
+        binding.ivUpdateButton.setOnClickListener {
+            binding.ivUpdateButton.isEnabled = false
+            Toast.makeText(requireContext(), "Updating data…", Toast.LENGTH_SHORT).show()
+            com.pokemonbp.data.DataSyncManager.syncAll(requireContext()) { updated, failed ->
+                binding.ivUpdateButton.isEnabled = true
+                val msg = if (failed == 0) "Updated $updated files successfully!"
+                          else "Updated $updated files, $failed failed."
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+            }
+        }
+
         binding.ivWildButton.setOnClickListener {
             wildMode = !wildMode
             val childVisibility = if (wildMode) android.view.View.GONE else android.view.View.VISIBLE
