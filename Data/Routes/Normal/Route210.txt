@@ -1,13 +1,16 @@
 Route 210
-  Kleinstein / Geodude (BP: 3)
-  Zirpurze / Kricketot (BP: 3)
-  Enton / Psyduck (BP: 3)
-  Ponita / Ponyta (BP: 3)
-  Meditie / Meditite (BP: 3)
-  Wablu / Swablu (BP: 3)
-  Georok / Graveler (BP: 5)
-  Zirpeise / Kricketune (BP: 5)
-  Entoron / Golduck (BP: 5)
-  Galoppa / Rapidash (BP: 5)
-  Meditalis / Medicham (BP: 5)
-  Altaria / Altaria (BP: 5)
+ | Badge 1-4
+  Kleinstein / Geodude (BP: 3) (Value: 1/4)
+  Zirpurze / Kricketot (BP: 3) (Value: 5/8)
+  Enton / Psyduck (BP: 3) (Value: 9/12)
+  Ponita / Ponyta (BP: 3) (Value: 13/16)
+  Meditie / Meditite (BP: 3) (Value: 17/18)
+  Wablu / Swablu (BP: 3) (Value: 19/20)
+
+ | Badge 5+
+  Georok / Graveler (BP: 5) (Value: 1/4)
+  Zirpeise / Kricketune (BP: 5) (Value: 5/8)
+  Entoron / Golduck (BP: 5) (Value: 9/12)
+  Galoppa / Rapidash (BP: 5) (Value: 13/16)
+  Meditalis / Medicham (BP: 5) (Value: 17/18)
+  Altaria / Altaria (BP: 5) (Value: 19/20)

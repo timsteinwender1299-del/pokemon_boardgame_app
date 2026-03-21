@@ -1,13 +1,16 @@
 Route 206
-  Kleinstein / Geodude (BP: 2)
-  Zubat / Zubat (BP: 3)
-  Machollo / Machop (BP: 2)
-  Haspiror / Buneary (BP: 3)
-  Elekid / Elekid (BP: 3)
-  Kaumalat / Gible (BP: 4)
-  Georok / Graveler (BP: 4)
-  Golbat / Golbat (BP: 5)
-  Maschok / Machoke (BP: 4)
-  Haspiror / Buneary (BP: 5)
-  Elektek / Electabuzz (BP: 5)
-  Knarksel / Gabite (BP: 6)
+ | Badge 1-4
+  Kleinstein / Geodude (BP: 2) (Value: 1/5)
+  Zubat / Zubat (BP: 3) (Value: 6/9)
+  Machollo / Machop (BP: 2) (Value: 10/13)
+  Haspiror / Buneary (BP: 3) (Value: 14/16)
+  Elekid / Elekid (BP: 3) (Value: 17/19)
+  Kaumalat / Gible (BP: 4) (Value: 20/20)
+
+ | Badge 5+
+  Georok / Graveler (BP: 4) (Value: 1/5)
+  Golbat / Golbat (BP: 5) (Value: 6/9)
+  Maschok / Machoke (BP: 4) (Value: 10/13)
+  Haspiror / Buneary (BP: 5) (Value: 14/16)
+  Elektek / Electabuzz (BP: 5) (Value: 17/19)
+  Knarksel / Gabite (BP: 6) (Value: 20/20)

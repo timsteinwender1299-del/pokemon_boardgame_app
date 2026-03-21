@@ -1,13 +1,16 @@
 Route 213
-  Bamelin / Buizel (BP: 3)
-  Felino / Wooper (BP: 3)
-  Schallelos / Shellos (BP: 3)
-  Wingull / Wingull (BP: ?)
-  Remoraid / Remoraid (BP: 3)
-  Karnivanha / Carvanha (BP: 3)
-  Bojelin / Floatzel (BP: 5)
-  Morlord / Quagsire (BP: 5)
-  Gastrodon / Gastrodon (BP: 5)
-  Pelipper / Pelipper (BP: 5)
-  Octillery / Octillery (BP: 5)
-  Tohaido / Sharpedo (BP: 5)
+ | Badge 1-4
+  Bamelin / Buizel (BP: 3) (Value: 1/4)
+  Felino / Wooper (BP: 3) (Value: 5/8)
+  Schallelos / Shellos (BP: 3) (Value: 9/12)
+  Wingull / Wingull (BP: ?) (Value: 13/15)
+  Remoraid / Remoraid (BP: 3) (Value: 16/18)
+  Karnivanha / Carvanha (BP: 3) (Value: 19/20)
+
+ | Badge 5+
+  Bojelin / Floatzel (BP: 5) (Value: 1/4)
+  Morlord / Quagsire (BP: 5) (Value: 5/8)
+  Gastrodon / Gastrodon (BP: 5) (Value: 9/12)
+  Pelipper / Pelipper (BP: 5) (Value: 13/15)
+  Octillery / Octillery (BP: 5) (Value: 16/18)
+  Tohaido / Sharpedo (BP: 5) (Value: 19/20)

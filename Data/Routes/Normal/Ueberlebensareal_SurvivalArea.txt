@@ -1,12 +1,16 @@
 Ueberlebensareal / Survival Area
-  Skunkapuh / Stunky (BP: 3)
-  Rattfratz / Rattata (BP: 3)
-  Menki / Mankey (BP: 3)
-  Evoli / Eevee (BP: 3)
-  Taubsi / Pidgey (BP: 3)
-  Skuntank / Skuntank (BP: 5)
-  Rattikarl / Raticate (BP: 5)
-  Rattikarl / Raticate (Alola) (BP: 5)
-  Rasaff / Primeape (BP: 5)
-  Evoli / Eevee (BP: 5)
-  Tauboga / Pidgeotto (BP: 5)
+ | Badge 1-4
+  Skunkapuh / Stunky (BP: 3) (Value: 1/4)
+  Rattfratz / Rattata (BP: 3) (Value: 5/9)
+  Menki / Mankey (BP: 3) (Value: 10/13)
+  Habitak / Spearow (BP:3) (Value: 14/17)
+  Evoli / Eevee (BP: 3) (Value: 18/19)
+  Taubsi / Pidgey (BP: 3) (Value: 20/20)
+
+ | Badge 5+
+  Skuntank / Skuntank (BP: 5) (Value: 1/4)
+  Rattikarl / Raticate (BP: 5) (Value: 5/9)
+  Rasaff / Primeape (BP: 5) (Value: 10/13)
+  Ibitak / Fearow (BP: 5) (Value: 14/17)
+  Evoli / Eevee (BP: 5) (Value: 18/19)
+  Tauboga / Pidgeotto (BP: 5) (Value: 20/20)

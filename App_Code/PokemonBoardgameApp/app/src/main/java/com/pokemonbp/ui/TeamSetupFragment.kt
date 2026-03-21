@@ -449,11 +449,14 @@ class RoutePokemonDetailAdapter(
     }
 
     inner class PokemonVH(v: android.view.View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {
-        val ivSprite: android.widget.ImageView = v.findViewById(R.id.iv_route_sprite)
-        val ivType1:  android.widget.ImageView = v.findViewById(R.id.iv_route_type1)
-        val ivType2:  android.widget.ImageView = v.findViewById(R.id.iv_route_type2)
-        val tvBP:     android.widget.TextView  = v.findViewById(R.id.tv_route_bp)
-        val tvName:   android.widget.TextView  = v.findViewById(R.id.tv_route_pokemon_name)
+        val ivSprite:  android.widget.ImageView = v.findViewById(R.id.iv_route_sprite)
+        val ivType1:   android.widget.ImageView = v.findViewById(R.id.iv_route_type1)
+        val ivType2:   android.widget.ImageView = v.findViewById(R.id.iv_route_type2)
+        val tvBP:      android.widget.TextView  = v.findViewById(R.id.tv_route_bp)
+        val tvName:    android.widget.TextView  = v.findViewById(R.id.tv_route_pokemon_name)
+        val tvNameEn:  android.widget.TextView  = v.findViewById(R.id.tv_route_pokemon_name_en)
+        val tvValue1:  android.widget.TextView  = v.findViewById(R.id.tv_route_value1)
+        val tvValue2:  android.widget.TextView  = v.findViewById(R.id.tv_route_value2)
     }
 
     override fun getItemViewType(position: Int) =
@@ -485,9 +488,14 @@ class RoutePokemonDetailAdapter(
                 val p   = item.pokemon
                 val ctx = holder.itemView.context
 
-                vh.tvName.text = "${p.nameDE}\n${p.nameEN}"
+                vh.tvName.text = p.nameDE
+                vh.tvNameEn.text = p.nameEN
                 vh.tvName.setTextColor(c.textSecondary)
+                vh.tvNameEn.setTextColor(c.textSecondary)
                 vh.tvBP.text = if (p.bp > 0) "BP: ${p.bp}" else "BP: ?"
+                val valueParts = p.value?.split("/")
+                vh.tvValue1.text = valueParts?.getOrNull(0)?.trim() ?: ""
+                vh.tvValue2.text = valueParts?.getOrNull(1)?.trim() ?: ""
 
                 val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
 

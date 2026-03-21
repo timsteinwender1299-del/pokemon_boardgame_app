@@ -1,13 +1,16 @@
 Route 208
-  Zubat / Zubat (BP: 3)
-  Enton / Psyduck (BP: 3)
-  Knospi / Budew (BP: 3)
-  Meditie / Meditite (BP: 3)
-  Bronzel / Bronzor (BP: 3)
-  Trasla / Ralts (BP: 2)
-  Golbat / Golbat (BP: 5)
-  Entoron / Golduck (BP: 5)
-  Roselia / Roselia (BP: 5)
-  Meditalis / Medicham (BP: 5)
-  Bronzong / Bronzong (BP: 5)
-  Kirlia / Kirlia (BP: 5)
+ | Badge 1-4
+  Zubat / Zubat (BP: 3) (Value: 1/5)
+  Enton / Psyduck (BP: 3) (Value: 6/9)
+  Knospi / Budew (BP: 3) (Value: 10/13)
+  Meditie / Meditite (BP: 3) (Value: 14/16)
+  Bronzel / Bronzor (BP: 3) (Value: 17/19)
+  Trasla / Ralts (BP: 2) (Value: 20/20)
+
+ | Badge 5+
+  Golbat / Golbat (BP: 5) (Value: 1/5)
+  Entoron / Golduck (BP: 5) (Value: 6/9)
+  Roselia / Roselia (BP: 5) (Value: 10/13)
+  Meditalis / Medicham (BP: 5) (Value: 14/16)
+  Bronzong / Bronzong (BP: 5) (Value: 17/19)
+  Kirlia / Kirlia (BP: 5) (Value: 20/20)

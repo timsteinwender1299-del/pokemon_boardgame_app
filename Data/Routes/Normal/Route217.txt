@@ -1,13 +1,16 @@
 Route 217
-  Botogel / Delibird (BP: 3)
-  Shnebedeck / Snover (BP: 3)
-  Hoothoot / Hoothoot (BP: 3)
-  Kussilla / Smoochum (BP: 3)
-  Quiekel / Swinub (BP: 3)
-  Sniebel / Sneasel (BP: 3)
-  Botogel / Delibird (BP: 5)
-  Rexlisar / Abomasnow (BP: 5)
-  Noctuh / Noctowl (BP: 5)
-  Rossanna / Jynx (BP: 5)
-  Keifel / Piloswine (BP: 5)
-  Snibunna / Weavile (BP: 5)
+ | Badge 1-4
+  Botogel / Delibird (BP: 3) (Value: 1/5)
+  Shnebedeck / Snover (BP: 3) (Value: 6/8)
+  Hoothoot / Hoothoot (BP: 3) (Value: 9/11)
+  Kussilla / Smoochum (BP: 3) (Value: 12/14)
+  Quiekel / Swinub (BP: 3) (Value: 15/17)
+  Sniebel / Sneasel (BP: 3) (Value: 18/20)
+
+ | Badge 5+
+  Botogel / Delibird (BP: 5) (Value: 1/5)
+  Rexlisar / Abomasnow (BP: 5) (Value: 6/8)
+  Noctuh / Noctowl (BP: 5) (Value: 9/11)
+  Rossanna / Jynx (BP: 5) (Value: 12/14)
+  Keifel / Piloswine (BP: 5) (Value: 15/17)
+  Snibunna / Weavile (BP: 5) (Value: 18/20)

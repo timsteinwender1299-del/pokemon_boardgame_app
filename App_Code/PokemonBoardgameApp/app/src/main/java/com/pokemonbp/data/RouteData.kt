@@ -2,10 +2,10 @@ package com.pokemonbp.data
 
 import android.content.Context
 
-data class RoutePokemon(val nameDE: String, val nameEN: String, val bp: Int)
+data class RoutePokemon(val nameDE: String, val nameEN: String, val bp: Int, val value: String? = null)
 
 data class RouteTier(
-    val label: String,     // "" for normal; "Badge 1-4"/"Badge 5+" for legendary; "Regular"/"Town Event" for GreatMarsh
+    val label: String,     // "" for single-tier; "Badge 1-4"/"Badge 5+" for tiered routes; "Regular"/"Town Event" for GreatMarsh
     val pokemon: List<RoutePokemon>
 )
 
@@ -31,6 +31,8 @@ object RouteData {
         "Großmoor / GreatMarsh",
         "Route 213",
         "Kühnheitsufer / Valor Lakefront",
+        "Route 216",
+        "Route 217",
         "See der Kühnheit / Lake Valor",
         "See der Stärke / Lake Acuity",
         "Eiseninsel / Iron Island",
@@ -39,36 +41,55 @@ object RouteData {
     )
 
     fun loadRoutes(context: Context): List<RouteLocation> {
-        val normalMap  = parseNormalFile(context)
+        val normalMap    = parseNormalFile(context)
         val legendaryMap = parseLegendaryFile(context)
 
         return routeOrder.mapNotNull { name ->
             when {
-                normalMap.containsKey(name) ->
-                    RouteLocation(name, false, listOf(RouteTier("", normalMap[name]!!)))
-                legendaryMap.containsKey(name) ->
-                    RouteLocation(name, true, legendaryMap[name]!!)
+                normalMap.containsKey(name)    -> RouteLocation(name, false, normalMap[name]!!)
+                legendaryMap.containsKey(name) -> RouteLocation(name, true,  legendaryMap[name]!!)
                 else -> null
             }
         }
     }
 
-    private fun parseNormalFile(context: Context): Map<String, List<RoutePokemon>> {
+    // Parses RoutesNormal.txt — supports optional | Badge X tier lines within each route
+    private fun parseNormalFile(context: Context): Map<String, List<RouteTier>> {
         val cached = DataSyncManager.routesNormalFile(context)
         val text = if (cached.exists()) cached.readText()
                    else context.assets.open("RoutesNormal.txt").bufferedReader().readText()
-        val result = linkedMapOf<String, MutableList<RoutePokemon>>()
+
+        val result = linkedMapOf<String, MutableList<RouteTier>>()
         var currentKey: String? = null
-        for (line in text.lines()) {
-            when {
-                line.startsWith("Route:") -> {
-                    currentKey = line.removePrefix("Route:").trim()
-                    result[currentKey] = mutableListOf()
-                }
-                line.trim().isNotEmpty() && currentKey != null ->
-                    parsePokemonLine(line.trim())?.let { result[currentKey!!]?.add(it) }
+        var currentTierLabel: String? = null
+        var currentPokemon: MutableList<RoutePokemon>? = null
+
+        fun flush() {
+            if (currentKey != null && currentPokemon != null && currentPokemon!!.isNotEmpty()) {
+                result.getOrPut(currentKey!!) { mutableListOf() }
+                    .add(RouteTier(currentTierLabel ?: "", currentPokemon!!.toList()))
             }
         }
+
+        for (line in text.lines()) {
+            val trimmed = line.trim()
+            when {
+                trimmed.startsWith("Route:") -> {
+                    flush()
+                    currentKey = trimmed.removePrefix("Route:").trim()
+                    currentTierLabel = null
+                    currentPokemon = mutableListOf()
+                }
+                trimmed.startsWith("|") -> {
+                    flush()
+                    currentTierLabel = trimmed.removePrefix("|").trim()
+                    currentPokemon = mutableListOf()
+                }
+                trimmed.isNotEmpty() && currentPokemon != null ->
+                    parsePokemonLine(trimmed)?.let { currentPokemon!!.add(it) }
+            }
+        }
+        flush()
         return result
     }
 
@@ -113,11 +134,14 @@ object RouteData {
     }
 
     private fun parsePokemonLine(line: String): RoutePokemon? {
-        val match = Regex("""\(BP:\s*(\d+|\?)\)\s*$""").find(line) ?: return null
-        val bp = match.groupValues[1].toIntOrNull() ?: 0
-        val namePart = line.substring(0, match.range.first).trim()
+        // Match (BP: X) anywhere in the line (not necessarily at end)
+        val bpMatch = Regex("""\(BP:\s*(\d+|\?)\)""").find(line) ?: return null
+        val bp = bpMatch.groupValues[1].toIntOrNull() ?: 0
+        val namePart = line.substring(0, bpMatch.range.first).trim()
+        val valueMatch = Regex("""\(Value:\s*([^)]+)\)""").find(line)
+        val value = valueMatch?.groupValues?.get(1)?.trim()
         val (de, en) = splitName(namePart)
-        return RoutePokemon(de.trim(), en.trim(), bp)
+        return RoutePokemon(de.trim(), en.trim(), bp, value)
     }
 
     private fun splitName(raw: String): Pair<String, String> = when {

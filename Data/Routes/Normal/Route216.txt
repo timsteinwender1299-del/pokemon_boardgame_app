@@ -1,13 +1,16 @@
 Route 216
-  Shnebedeck / Snover (BP: 3)
-  Teddiursa / Teddiursa (BP: 3)
-  Kussilla / Smoochum (BP: 3)
-  Quiekel / Swinub (BP: 3)
-  Sniebel / Sneasel (BP: 3)
-  Sandan / Sandshrew (Alola) (BP: 3)
-  Rexlisar / Abomasnow (BP: 5)
-  Ursaring / Ursaring (BP: 5)
-  Rossanna / Jynx (BP: 5)
-  Keifel / Piloswine (BP: 5)
-  Snibunna / Weavile (BP: 5)
-  Sandamer / Sandslash (BP: 5)
+ | Badge 1-4
+  Shnebedeck / Snover (BP: 3) (Value: 1/4)
+  Teddiursa / Teddiursa (BP: 3) (Value: 5/8)
+  Kussilla / Smoochum (BP: 3) (Value: 9/12)
+  Quiekel / Swinub (BP: 3) (Value: 13/15)
+  Sniebel / Sneasel (BP: 3) (Value: 16/18)
+  Sandan / Sandshrew (Alola) (BP: 3) (Value: 19/20)
+
+ | Badge 5+
+  Rexlisar / Abomasnow (BP: 5) (Value: 1/4)
+  Ursaring / Ursaring (BP: 5) (Value: 5/8)
+  Rossanna / Jynx (BP: 5) (Value: 9/12)
+  Keifel / Piloswine (BP: 5) (Value: 13/15)
+  Snibunna / Weavile (BP: 5) (Value: 16/18)
+  Sandamer / Sandslash (BP: 5) (Value: 19/20)

@@ -1,13 +1,16 @@
 Route 201
-  Zirpurze / Kricketot (BP: 3)
-  Staralili / Starly (BP: 3)
-  Bidiza / Bidoof (BP: 3)
-  Charmian / Glameow (BP: 3)
-  Sheinux / Shinx (BP: 3)
-  Fukano / Growlithe (BP: 3)
-  Zirpeise / Kricketune (BP: 5)
-  Staravia / Staravia (BP: 5)
-  Bidifass / Bibarel (BP: 5)
-  Shnurgarst / Purugly (BP: 5)
-  Luxio / Luxio (BP: 5)
-  Fukano / Growlithe (BP: 6)
+ | Badge 1-4
+  Zirpurze / Kricketot (BP: 3) (Value: 1/8)
+  Staralili / Starly (BP: 3) (Value: 9/11)
+  Bidiza / Bidoof (BP: 3) (Value: 12/14)
+  Charmian / Glameow (BP: 3) (Value: 15/17)
+  Sheinux / Shinx (BP: 3) (Value: 18/19)
+  Fukano / Growlithe (BP: 3) (Value: 20/20)
+
+ | Badge 5+
+  Zirpeise / Kricketune (BP: 5) (Value: 1/8)
+  Staravia / Staravia (BP: 5) (Value: 9/11)
+  Bidifass / Bibarel (BP: 5) (Value: 12/14)
+  Shnurgarst / Purugly (BP: 5) (Value: 15/17)
+  Luxio / Luxio (BP: 5) (Value: 18/19)
+  Fukano / Growlithe (BP: 6) (Value: 20/20)
