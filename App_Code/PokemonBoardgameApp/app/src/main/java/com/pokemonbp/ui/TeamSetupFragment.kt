@@ -450,6 +450,28 @@ class TeamSetupFragment : Fragment() {
                 }
             }.show(childFragmentManager, "RoutePicker")
         }
+        b.btnPickStarter.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
+        b.btnPickStarter.setTextColor(Color.WHITE)
+        b.btnPickStarter.setOnClickListener {
+            StarterPickerDialog(theme) { nameDE, nameEN ->
+                val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+                val types = entry?.types ?: emptyList()
+                if (types.isNotEmpty()) {
+                    val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
+                        types = types, baseBP = 3, team = team, pokedexId = entry?.id ?: 0)
+                    if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
+                    else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
+                    updateBattleButton(); hidePanels()
+                } else {
+                    // types not found — fill form so user can set manually
+                    currentName = nameEN; currentNameDE = nameDE; currentPokedexId = entry?.id ?: 0
+                    b.btnPickPokemon.text = if (currentPokedexId > 0) "  $nameEN  #$currentPokedexId" else "  $nameEN"
+                    if (currentPokedexId > 0) b.tvDexId.text = "#$currentPokedexId"
+                    selectedTypes.clear(); selectedTypes.addAll(entry?.types ?: emptyList())
+                    typeAdapter.notifyDataSetChanged(); selectBP(3)
+                }
+            }.show(childFragmentManager, "StarterPicker")
+        }
         b.btnSavePreset.setOnClickListener { savePreset() }
         b.btnAddPlayerPreset.setOnClickListener { savePreset() }
         b.btnCancelPokemon.setOnClickListener { hidePanels() }
@@ -548,12 +570,78 @@ class TeamSetupFragment : Fragment() {
         var openPicker: (Int, Int) -> Unit = { _, _ -> }
 
         openPicker = { i, curBp ->
-            PokemonPickerDialog(theme) { picked ->
-                pokemonEntries[i] = TrainerPokemonEntry(preset = com.pokemonbp.model.PokemonPreset(
-                    name = picked.name, nameDE = picked.nameDE,
-                    pokedexId = picked.id, types = picked.types, baseBP = curBp))
-                refreshSlots()
-            }.show(childFragmentManager, "PickerSlot$i")
+            val ctx = requireContext()
+            val cc = ThemeManager.colorsFor(theme)
+            val d = (resources.displayMetrics.density).toInt()
+            fun dpPx(v: Int) = (v * resources.displayMetrics.density).toInt()
+            val container = android.widget.LinearLayout(ctx).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(dpPx(16), dpPx(14), dpPx(16), dpPx(10))
+                setBackgroundColor(cc.surface)
+            }
+            android.widget.TextView(ctx).apply {
+                text = "Add Pokémon"
+                textSize = 14f
+                setTextColor(cc.textPrimary)
+                android.view.Gravity.CENTER.let { gravity = it }
+                setPadding(0, 0, 0, dpPx(12))
+                container.addView(this)
+            }
+            var srcDialog: android.app.AlertDialog? = null
+            listOf(
+                Triple("📖 Pokédex", null as String?, null as String?),
+                Triple("🌿 Route",   null,              null),
+                Triple("⭐ Starter", null,              null)
+            ).forEachIndexed { idx, (label, _, _) ->
+                com.google.android.material.button.MaterialButton(ctx).apply {
+                    text = label; isAllCaps = false; textSize = 13f
+                    setTextColor(android.graphics.Color.WHITE)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
+                    cornerRadius = dpPx(22)
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(44)
+                    ).also { it.bottomMargin = dpPx(6) }
+                    setOnClickListener {
+                        srcDialog?.dismiss()
+                        when (idx) {
+                            0 -> PokemonPickerDialog(theme) { picked ->
+                                pokemonEntries[i] = TrainerPokemonEntry(preset = com.pokemonbp.model.PokemonPreset(
+                                    name = picked.name, nameDE = picked.nameDE,
+                                    pokedexId = picked.id, types = picked.types, baseBP = curBp))
+                                refreshSlots()
+                            }.show(childFragmentManager, "PickerSlot$i")
+                            1 -> RoutePickerDialog(theme) { nameDE, nameEN, bp ->
+                                val entry2 = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
+                                val types2 = entry2?.types ?: emptyList()
+                                val actualBp = if (bp > 0) bp else curBp
+                                pokemonEntries[i] = TrainerPokemonEntry(
+                                    preset = com.pokemonbp.model.PokemonPreset(name = nameEN, nameDE = nameDE,
+                                        pokedexId = entry2?.id ?: 0, types = types2, baseBP = actualBp),
+                                    bp = actualBp)
+                                refreshSlots()
+                            }.show(childFragmentManager, "RouteSlot$i")
+                            2 -> StarterPickerDialog(theme) { nameDE, nameEN ->
+                                val entry2 = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+                                val types2 = entry2?.types ?: emptyList()
+                                pokemonEntries[i] = TrainerPokemonEntry(
+                                    preset = com.pokemonbp.model.PokemonPreset(name = nameEN, nameDE = nameDE,
+                                        pokedexId = entry2?.id ?: 0, types = types2, baseBP = 3),
+                                    bp = 3)
+                                refreshSlots()
+                            }.show(childFragmentManager, "StarterSlot$i")
+                        }
+                    }
+                    container.addView(this)
+                }
+            }
+            srcDialog = android.app.AlertDialog.Builder(ctx).setView(container).create()
+            srcDialog.setOnShowListener {
+                val dm = ctx.resources.displayMetrics
+                val w = (dm.widthPixels * 0.72).toInt()
+                srcDialog.window?.setLayout(w, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+                srcDialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+            }
+            srcDialog.show()
         }
 
         refreshSlots = {

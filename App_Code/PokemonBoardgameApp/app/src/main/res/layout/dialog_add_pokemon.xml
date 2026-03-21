@@ -45,9 +45,9 @@
                     android:orientation="horizontal" android:layout_marginBottom="4dp">
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_pick_pokemon"
-                        android:layout_width="0dp" android:layout_height="52dp"
-                        android:layout_weight="1" android:layout_marginEnd="4dp"
-                        android:text="Choose from Pokédex" android:textSize="12sp"
+                        android:layout_width="0dp" android:layout_height="44dp"
+                        android:layout_weight="1" android:layout_marginEnd="2dp"
+                        android:text="Pokédex" android:textSize="10sp"
                         android:textStyle="bold" android:gravity="center"
                         android:textAlignment="center" android:textAllCaps="false"
                         android:textColor="#FFFFFF"
@@ -55,9 +55,19 @@
                         app:cornerRadius="10dp"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_pick_from_route"
-                        android:layout_width="0dp" android:layout_height="52dp"
-                        android:layout_weight="1"
-                        android:text="Choose from Route" android:textSize="12sp"
+                        android:layout_width="0dp" android:layout_height="44dp"
+                        android:layout_weight="1" android:layout_marginHorizontal="2dp"
+                        android:text="Route" android:textSize="10sp"
+                        android:textStyle="bold" android:gravity="center"
+                        android:textAlignment="center" android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#CC0000"
+                        app:cornerRadius="10dp"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_pick_starter"
+                        android:layout_width="0dp" android:layout_height="44dp"
+                        android:layout_weight="1" android:layout_marginStart="2dp"
+                        android:text="Starter" android:textSize="10sp"
                         android:textStyle="bold" android:gravity="center"
                         android:textAlignment="center" android:textAllCaps="false"
                         android:textColor="#FFFFFF"
