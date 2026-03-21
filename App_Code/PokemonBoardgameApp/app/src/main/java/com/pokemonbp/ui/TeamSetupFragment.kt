@@ -951,7 +951,7 @@ class TeamSetupFragment : Fragment() {
         val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         val c = ThemeManager.colorsFor(theme)
         pushSubPanel("Pokédex", buildContent = {
-            val view = layoutInflater.inflate(R.layout.dialog_pokemon_pick2er, binding.layoutPanelSub, false)
+            val view = layoutInflater.inflate(R.layout.dialog_pokemon_picker, binding.layoutPanelSub, false)
             view.layoutParams = android.widget.FrameLayout.LayoutParams(
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
