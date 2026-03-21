@@ -269,7 +269,10 @@ class TeamSetupFragment : Fragment() {
 
     // ── Inline panels ──────────────────────────────────────────────────────────
 
-    private fun showPanel(panel: android.widget.FrameLayout) {
+    private fun showPanel(panel: android.widget.FrameLayout, title: String) {
+        binding.tvAppTitle.text = title
+        binding.ivLens.isClickable = true
+        binding.ivLens.setOnClickListener { hidePanels() }
         binding.layoutMainContent.visibility = android.view.View.GONE
         binding.layoutWildRoutes.visibility  = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.GONE
@@ -280,10 +283,25 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun hidePanels() {
+        binding.tvAppTitle.text = "BP Calculator"
+        binding.ivLens.setOnClickListener(null)
+        binding.ivLens.isClickable = false
         binding.layoutPanelAddPokemon.visibility     = android.view.View.GONE
         binding.layoutPanelAddTrainer.visibility     = android.view.View.GONE
         binding.layoutPanelChooseTrainer.visibility  = android.view.View.GONE
         binding.layoutMainContent.visibility = android.view.View.VISIBLE
+    }
+
+    /** Removes the nested Pokédex shell (header + hinge + screen background) from a dialog
+     *  layout inflated inline, so the content blends into the outer screen panel. */
+    private fun stripDialogChrome(root: android.view.View) {
+        root.setBackgroundResource(0)
+        root.setPadding(0, 0, 0, 0)
+        (root as? android.widget.LinearLayout)?.let { ll ->
+            ll.getChildAt(0)?.visibility = android.view.View.GONE  // mini-header
+            ll.getChildAt(1)?.visibility = android.view.View.GONE  // hinge divider
+            ll.getChildAt(2)?.setBackgroundResource(0)              // screen_panel background
+        }
     }
 
     private fun updateDeloadButton() {
@@ -313,7 +331,9 @@ class TeamSetupFragment : Fragment() {
         binding.layoutPanelAddPokemon.addView(b.root, android.widget.FrameLayout.LayoutParams(
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
-        showPanel(binding.layoutPanelAddPokemon)
+        stripDialogChrome(b.root)
+        val panelTitle = if (team == Team.TEAM_A) "Add Pokémon" else "Add Pokémon — Enemy"
+        showPanel(binding.layoutPanelAddPokemon, panelTitle)
 
         val teamColor = if (team == Team.TEAM_A) c.teamA else c.teamB
         val selectedTypes = mutableSetOf<com.pokemonbp.data.PokemonType>()
@@ -322,10 +342,6 @@ class TeamSetupFragment : Fragment() {
         var currentNameDE = ""
         var selectedBP = -1
 
-        b.screenPanel.setBackgroundColor(c.surface)
-        b.tvDialogTitle.setTextColor(teamColor)
-        b.tvDialogTitle.text = if (team == Team.TEAM_A) "Add Pokémon — Player" else "Add Pokémon — Enemy"
-        if (theme == AppTheme.RETRO) b.tvDialogTitle.typeface = android.graphics.Typeface.MONOSPACE
         b.tvTypesLabel.setTextColor(c.textSecondary)
         b.tvPresetsLabel.setTextColor(c.textSecondary)
         b.btnPickPokemon.backgroundTintList  = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
@@ -463,15 +479,15 @@ class TeamSetupFragment : Fragment() {
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
         binding.layoutPanelAddTrainer.removeAllViews()
         binding.layoutPanelAddTrainer.addView(v)
-        showPanel(binding.layoutPanelAddTrainer)
+        stripDialogChrome(v)
+        val addTrainerTitle = if (existingTrainer != null) "Edit Trainer" else "Add Trainer"
+        showPanel(binding.layoutPanelAddTrainer, addTrainerTitle)
 
-        v.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
         var selAvatarId = existingTrainer?.avatarId ?: 1
         var selGender = existingTrainer?.gender ?: com.pokemonbp.model.TrainerGender.MALE
         val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
         var avatarPickerVisible = false
 
-        val tvTitle         = v.findViewById<android.widget.TextView>(R.id.tv_add_player_title)
         val etName          = v.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_trainer_name)
         val btnChooseAvatar = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_choose_avatar)
         val layoutAvatar    = v.findViewById<android.widget.LinearLayout>(R.id.layout_avatar_picker)
@@ -481,8 +497,6 @@ class TeamSetupFragment : Fragment() {
         val btnSave         = v.findViewById<android.widget.Button>(R.id.btn_save_player)
         val btnCancel       = v.findViewById<android.widget.Button>(R.id.btn_cancel_player)
 
-        tvTitle.setTextColor(c.teamA)
-        tvTitle.text = if (existingTrainer != null) "Edit Trainer" else "Add Trainer"
         etName.setTextColor(c.textPrimary); etName.setHintTextColor(c.textSecondary)
         existingTrainer?.let { etName.setText(it.name) }
         btnChooseAvatar.strokeColor = android.content.res.ColorStateList.valueOf(c.accent)
@@ -641,9 +655,9 @@ class TeamSetupFragment : Fragment() {
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
         binding.layoutPanelChooseTrainer.removeAllViews()
         binding.layoutPanelChooseTrainer.addView(v)
-        showPanel(binding.layoutPanelChooseTrainer)
+        stripDialogChrome(v)
+        showPanel(binding.layoutPanelChooseTrainer, "Choose Trainer")
 
-        v.findViewById<android.widget.LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
         val recycler = v.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_trainer_chooser)
         // Expand recycler to fill remaining height
         (recycler.layoutParams as? android.widget.LinearLayout.LayoutParams)?.let {

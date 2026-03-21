@@ -11,11 +11,15 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_marginBottom="6dp">
 
-        <!-- Blue camera lens -->
+        <!-- Blue camera lens — back button when a panel is open -->
         <View
+            android:id="@+id/iv_lens"
             android:layout_width="42dp" android:layout_height="42dp"
             android:background="@drawable/pokedex_lens"
-            android:layout_marginEnd="10dp"/>
+            android:layout_marginEnd="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"/>
 
         <!-- LED indicators -->
         <View android:layout_width="10dp" android:layout_height="10dp"
