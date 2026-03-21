@@ -767,7 +767,7 @@ class TeamSetupFragment : Fragment() {
             updateDeloadButton()
             },
             onAddSinglePokemon = {
-                showAddPokemonDialog(Team.TEAM_B)
+                showAddPokemonPanel(Team.TEAM_B)
             }
         ).show(parentFragmentManager, "EnemyTrainer")
     }
