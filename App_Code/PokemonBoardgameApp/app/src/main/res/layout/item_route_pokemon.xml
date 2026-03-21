@@ -4,41 +4,39 @@
     android:orientation="vertical"
     android:padding="3dp">
 
-    <!-- Card row: sprite (left) | types + BP (right) -->
+    <!-- TOP card: sprite (left) | types + BP (right) -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <!-- Sprite -->
         <ImageView
             android:id="@+id/iv_route_sprite"
-            android:layout_width="72dp" android:layout_height="72dp"
+            android:layout_width="60dp" android:layout_height="60dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
 
-        <!-- Right column: types + BP -->
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="6dp">
+            android:layout_marginStart="4dp">
 
-            <!-- Row 1: type icons -->
+            <!-- Type icons row -->
             <LinearLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
                 <ImageView
                     android:id="@+id/iv_route_type1"
-                    android:layout_width="30dp" android:layout_height="30dp"
+                    android:layout_width="28dp" android:layout_height="28dp"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"/>
 
                 <ImageView
                     android:id="@+id/iv_route_type2"
-                    android:layout_width="30dp" android:layout_height="30dp"
+                    android:layout_width="28dp" android:layout_height="28dp"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
                     android:layout_marginStart="2dp"
@@ -46,7 +44,7 @@
 
             </LinearLayout>
 
-            <!-- Row 2: BP -->
+            <!-- BP row -->
             <TextView
                 android:id="@+id/tv_route_bp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -58,45 +56,55 @@
 
     </LinearLayout>
 
-    <!-- Name + values row (below sprite section) -->
+    <!-- BOTTOM card: GER+ENG names (left) | Value1 | Value2 (right) -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="2dp">
+        android:layout_marginTop="3dp"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tv_route_pokemon_name"
+        <!-- Left: GER name on top, ENG name below -->
+        <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="9sp" android:textStyle="bold"
-            android:gravity="start"
-            android:maxLines="1" android:ellipsize="end"
-            android:paddingStart="2dp"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_route_value1"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:textSize="11sp" android:textStyle="bold"
-            android:textColor="#00B0F0"/>
+            <TextView
+                android:id="@+id/tv_route_pokemon_name"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="9sp" android:textStyle="bold"
+                android:maxLines="1" android:ellipsize="end"/>
 
-        <TextView
-            android:id="@+id/tv_route_value2"
+            <TextView
+                android:id="@+id/tv_route_pokemon_name_en"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="8sp"
+                android:maxLines="1" android:ellipsize="end"/>
+
+        </LinearLayout>
+
+        <!-- Right: Value1 (blue) | Value2 (red) side by side -->
+        <LinearLayout
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:textSize="11sp" android:textStyle="bold"
-            android:textColor="#FF0000"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="4dp">
+
+            <TextView
+                android:id="@+id/tv_route_value1"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textStyle="bold"
+                android:textColor="#00B0F0"/>
+
+            <TextView
+                android:id="@+id/tv_route_value2"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:textSize="12sp" android:textStyle="bold"
+                android:textColor="#FF0000"/>
+
+        </LinearLayout>
 
     </LinearLayout>
-
-    <!-- English name -->
-    <TextView
-        android:id="@+id/tv_route_pokemon_name_en"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:textSize="8sp"
-        android:gravity="start"
-        android:maxLines="1" android:ellipsize="end"
-        android:paddingStart="2dp"/>
 
 </LinearLayout>
