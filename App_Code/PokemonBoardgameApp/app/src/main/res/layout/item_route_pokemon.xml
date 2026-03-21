@@ -44,12 +44,10 @@
                     android:layout_marginStart="2dp"
                     android:visibility="gone"/>
 
-                <Space android:layout_width="0dp" android:layout_height="1dp"
-                    android:layout_weight="1"/>
-
                 <TextView
                     android:id="@+id/tv_route_value1"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:textSize="11sp" android:textStyle="bold"
                     android:textColor="#00B0F0"/>
 
@@ -68,12 +66,10 @@
                     android:textSize="11sp" android:textStyle="bold"
                     android:textColor="#CC0000"/>
 
-                <Space android:layout_width="0dp" android:layout_height="1dp"
-                    android:layout_weight="1"/>
-
                 <TextView
                     android:id="@+id/tv_route_value2"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:textSize="11sp" android:textStyle="bold"
                     android:textColor="#FF0000"/>
 

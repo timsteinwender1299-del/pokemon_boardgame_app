@@ -146,6 +146,24 @@
                 android:clipToPadding="false"/>
         </LinearLayout>
 
+        <!-- Panel: Add Pokémon inline -->
+        <FrameLayout
+            android:id="@+id/layout_panel_add_pokemon"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+        <!-- Panel: Add Trainer inline -->
+        <FrameLayout
+            android:id="@+id/layout_panel_add_trainer"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+        <!-- Panel: Choose Trainer inline -->
+        <FrameLayout
+            android:id="@+id/layout_panel_choose_trainer"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone"/>
+
         <!-- BP Calculator content (hidden in wild mode) -->
         <LinearLayout android:id="@+id/layout_main_content"
             android:layout_width="match_parent" android:layout_height="match_parent"
@@ -225,9 +243,19 @@
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"/>
                 <TextView android:id="@+id/tv_team_b_label"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Enemy Trainer" android:textSize="15sp" android:textStyle="bold"
                     android:includeFontPadding="false"/>
+                <ImageView
+                    android:id="@+id/iv_deload_enemy"
+                    android:layout_width="28dp" android:layout_height="28dp"
+                    android:src="@drawable/ic_garbage_bin"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:visibility="gone"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton android:id="@+id/btn_choose_enemy_b"
