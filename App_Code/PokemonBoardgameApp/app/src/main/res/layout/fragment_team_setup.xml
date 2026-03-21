@@ -80,42 +80,77 @@
         <LinearLayout
             android:id="@+id/layout_wild_routes"
             android:layout_width="match_parent" android:layout_height="match_parent"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:visibility="gone">
 
-            <!-- Legendary routes — left column -->
+            <!-- Route columns row -->
             <LinearLayout
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1" android:orientation="vertical">
-                <TextView
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="⭐ Legendary" android:textSize="10sp" android:textStyle="bold"
-                    android:textColor="#9b59b6" android:gravity="center"
-                    android:paddingBottom="4dp"/>
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_legendary_routes"
-                    android:layout_width="match_parent" android:layout_height="match_parent"
-                    android:clipToPadding="false"/>
+                android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <!-- Legendary routes — left column -->
+                <LinearLayout
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="⭐ Legendary" android:textSize="10sp" android:textStyle="bold"
+                        android:textColor="#9b59b6" android:gravity="center"
+                        android:paddingBottom="4dp"/>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_legendary_routes"
+                        android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:clipToPadding="false"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp" android:layout_height="match_parent"
+                    android:background="#33FFFFFF" android:layout_marginHorizontal="4dp"/>
+
+                <!-- Normal routes — right column -->
+                <LinearLayout
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Normal" android:textSize="10sp" android:textStyle="bold"
+                        android:textColor="#2983d3" android:gravity="center"
+                        android:paddingBottom="4dp"/>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_normal_routes"
+                        android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:clipToPadding="false"/>
+                </LinearLayout>
+
             </LinearLayout>
 
-            <View
-                android:layout_width="1dp" android:layout_height="match_parent"
-                android:background="#33FFFFFF" android:layout_marginHorizontal="4dp"/>
-
-            <!-- Normal routes — right column -->
+            <!-- Random buttons row -->
             <LinearLayout
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1" android:orientation="vertical">
-                <TextView
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Normal" android:textSize="10sp" android:textStyle="bold"
-                    android:textColor="#2983d3" android:gravity="center"
-                    android:paddingBottom="4dp"/>
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_normal_routes"
-                    android:layout_width="match_parent" android:layout_height="match_parent"
-                    android:clipToPadding="false"/>
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="4dp" android:paddingBottom="2dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_random_route"
+                    android:layout_width="0dp" android:layout_height="36dp"
+                    android:layout_weight="1" android:layout_marginEnd="2dp"
+                    android:text="🎲 Random Route" android:textSize="11sp"
+                    android:textAllCaps="false"
+                    app:backgroundTint="#2983d3"
+                    app:cornerRadius="18dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_random_town"
+                    android:layout_width="0dp" android:layout_height="36dp"
+                    android:layout_weight="1" android:layout_marginStart="2dp"
+                    android:text="🏙️ Random Town" android:textSize="11sp"
+                    android:textAllCaps="false"
+                    app:backgroundTint="#9b59b6"
+                    app:cornerRadius="18dp"/>
+
             </LinearLayout>
+
         </LinearLayout>
 
         <!-- Route Detail (visible when a route is tapped in wild mode) -->
@@ -165,6 +200,12 @@
         <!-- Panel: Choose Trainer inline -->
         <FrameLayout
             android:id="@+id/layout_panel_choose_trainer"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+        <!-- Generic sub-panel for pickers (Pokédex, Route, Starter, Enemy Trainer, etc.) -->
+        <FrameLayout
+            android:id="@+id/layout_panel_sub"
             android:layout_width="match_parent" android:layout_height="match_parent"
             android:visibility="gone"/>
 

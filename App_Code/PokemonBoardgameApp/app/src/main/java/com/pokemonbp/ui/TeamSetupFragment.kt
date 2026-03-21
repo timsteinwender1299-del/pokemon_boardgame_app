@@ -35,6 +35,8 @@ class TeamSetupFragment : Fragment() {
     private var currentEnemyTrainer: EnemyTrainer? = null
     private var wildMode = false
 
+    private val panelBackStack = ArrayDeque<() -> Unit>()
+
     private val mainActivity get() = activity as? MainActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -139,6 +141,7 @@ class TeamSetupFragment : Fragment() {
         }
 
         updateBattleButton()
+        restoreTrainerDisplay()
     }
 
     private fun setupWildRouteGrid() {
@@ -154,6 +157,25 @@ class TeamSetupFragment : Fragment() {
         binding.rvNormalRoutes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNormalRoutes.adapter = WildRouteAdapter(normal, c) { route ->
             handleRouteClick(route)
+        }
+
+        binding.btnRandomRoute.setOnClickListener {
+            val allRoutes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
+            val route = allRoutes.randomOrNull() ?: return@setOnClickListener
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("🎲 Random Route")
+                .setMessage(route.displayName)
+                .setPositiveButton("OK", null)
+                .show()
+        }
+        binding.btnRandomTown.setOnClickListener {
+            val towns = loadTowns()
+            val town = towns.randomOrNull() ?: return@setOnClickListener
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("🏙️ Random Town")
+                .setMessage(town)
+                .setPositiveButton("OK", null)
+                .show()
         }
     }
 
@@ -269,27 +291,79 @@ class TeamSetupFragment : Fragment() {
 
     // ── Inline panels ──────────────────────────────────────────────────────────
 
-    private fun showPanel(panel: android.widget.FrameLayout, title: String) {
+    private fun allSubPanels() = listOf(
+        binding.layoutPanelAddPokemon,
+        binding.layoutPanelAddTrainer,
+        binding.layoutPanelChooseTrainer,
+        binding.layoutPanelSub)
+
+    private fun switchToPanel(panel: android.widget.FrameLayout, title: String) {
         binding.tvAppTitle.text = title
-        binding.ivLens.isClickable = true
-        binding.ivLens.setOnClickListener { hidePanels() }
         binding.layoutMainContent.visibility = android.view.View.GONE
         binding.layoutWildRoutes.visibility  = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.GONE
-        binding.layoutPanelAddPokemon.visibility     = android.view.View.GONE
-        binding.layoutPanelAddTrainer.visibility     = android.view.View.GONE
-        binding.layoutPanelChooseTrainer.visibility  = android.view.View.GONE
+        allSubPanels().forEach { it.visibility = android.view.View.GONE }
         panel.visibility = android.view.View.VISIBLE
+        binding.ivLens.isClickable = true
+        binding.ivLens.setOnClickListener { popBack() }
+    }
+
+    private fun showPanel(panel: android.widget.FrameLayout, title: String) {
+        panelBackStack.clear()
+        switchToPanel(panel, title)
+    }
+
+    private fun rebuildSubPanelContent(title: String, buildContent: () -> Unit) {
+        binding.layoutPanelSub.removeAllViews()
+        buildContent()
+        binding.tvAppTitle.text = title
+        allSubPanels().forEach { it.visibility = android.view.View.GONE }
+        binding.layoutPanelSub.visibility = android.view.View.VISIBLE
+    }
+
+    private fun pushSubPanel(title: String, buildContent: () -> Unit, onBack: () -> Unit) {
+        panelBackStack.addLast(onBack)
+        rebuildSubPanelContent(title, buildContent)
+        binding.ivLens.isClickable = true
+        binding.ivLens.setOnClickListener { popBack() }
+    }
+
+    private fun popBack() {
+        if (panelBackStack.isNotEmpty()) {
+            panelBackStack.removeLast().invoke()
+        } else {
+            hidePanels()
+        }
     }
 
     private fun hidePanels() {
+        panelBackStack.clear()
         binding.tvAppTitle.text = "BP Calculator"
         binding.ivLens.setOnClickListener(null)
         binding.ivLens.isClickable = false
-        binding.layoutPanelAddPokemon.visibility     = android.view.View.GONE
-        binding.layoutPanelAddTrainer.visibility     = android.view.View.GONE
-        binding.layoutPanelChooseTrainer.visibility  = android.view.View.GONE
+        allSubPanels().forEach { it.visibility = android.view.View.GONE }
         binding.layoutMainContent.visibility = android.view.View.VISIBLE
+    }
+
+    private fun dpPx(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private fun buildBackRow(): android.widget.LinearLayout {
+        val tv = android.widget.TextView(requireContext()).apply {
+            text = "← Back"; textSize = 13f
+            setTextColor(android.graphics.Color.parseColor("#2983d3"))
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            isClickable = true; isFocusable = true
+            setOnClickListener { popBack() }
+        }
+        return android.widget.LinearLayout(requireContext()).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(dpPx(8), dpPx(4), dpPx(8), dpPx(4))
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+            addView(tv)
+        }
     }
 
     /** Removes the nested Pokédex shell (header + hinge + screen background) from a dialog
@@ -323,7 +397,10 @@ class TeamSetupFragment : Fragment() {
 
     // ── Add Pokémon panel ──────────────────────────────────────────────────────
 
-    private fun showAddPokemonPanel(team: Team) {
+    private fun showAddPokemonPanel(
+        team: Team,
+        onAdded: ((name: String, nameDE: String, types: List<com.pokemonbp.data.PokemonType>, bp: Int, pokedexId: Int) -> Unit)? = null
+    ) {
         val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         val c = ThemeManager.colorsFor(theme)
         val b = com.pokemonbp.databinding.DialogAddPokemonBinding.inflate(layoutInflater)
@@ -333,7 +410,10 @@ class TeamSetupFragment : Fragment() {
             android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
         stripDialogChrome(b.root)
         val panelTitle = if (team == Team.TEAM_A) "Add Pokémon" else "Add Pokémon — Enemy"
-        showPanel(binding.layoutPanelAddPokemon, panelTitle)
+        // onAdded != null means we're in sub-panel mode (called from trainer slot):
+        // preserve the back-stack so lens can navigate back to Add Trainer
+        if (onAdded != null) switchToPanel(binding.layoutPanelAddPokemon, panelTitle)
+        else showPanel(binding.layoutPanelAddPokemon, panelTitle)
 
         val teamColor = if (team == Team.TEAM_A) c.teamA else c.teamB
         val selectedTypes = mutableSetOf<com.pokemonbp.data.PokemonType>()
@@ -428,11 +508,12 @@ class TeamSetupFragment : Fragment() {
 
         loadPresets()
 
+        val backToAddPokemon = { switchToPanel(binding.layoutPanelAddPokemon, panelTitle) }
         b.btnPickPokemon.setOnClickListener {
-            PokemonPickerDialog(theme) { entry -> applyEntry(entry) }.show(childFragmentManager, "PokPicker")
+            showPokemonPickerInline(onBack = backToAddPokemon) { entry -> applyEntry(entry); switchToPanel(binding.layoutPanelAddPokemon, panelTitle) }
         }
         b.btnPickFromRoute.setOnClickListener {
-            RoutePickerDialog(theme) { nameDE, nameEN, bp ->
+            showRoutePickerInline(onBack = backToAddPokemon) { nameDE, nameEN, bp ->
                 val entry = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty() && bp > 0) {
@@ -447,13 +528,14 @@ class TeamSetupFragment : Fragment() {
                     if (e2 != null) { currentPokedexId = e2.id; b.btnPickPokemon.text = "  $nameEN  #${e2.id}"; b.tvDexId.text = "#${e2.id}"; selectedTypes.clear(); selectedTypes.addAll(e2.types) }
                     else { currentPokedexId = 0; b.btnPickPokemon.text = "  $nameEN"; b.tvDexId.text = "" }
                     typeAdapter.notifyDataSetChanged(); if (bp > 0) selectBP(bp)
+                    switchToPanel(binding.layoutPanelAddPokemon, panelTitle)
                 }
-            }.show(childFragmentManager, "RoutePicker")
+            }
         }
         b.btnPickStarter.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
         b.btnPickStarter.setTextColor(Color.WHITE)
         b.btnPickStarter.setOnClickListener {
-            StarterPickerDialog(theme) { nameDE, nameEN ->
+            showStarterPickerInline(onBack = backToAddPokemon) { nameDE, nameEN ->
                 val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty()) {
@@ -463,26 +545,30 @@ class TeamSetupFragment : Fragment() {
                     else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
                     updateBattleButton(); hidePanels()
                 } else {
-                    // types not found — fill form so user can set manually
                     currentName = nameEN; currentNameDE = nameDE; currentPokedexId = entry?.id ?: 0
                     b.btnPickPokemon.text = if (currentPokedexId > 0) "  $nameEN  #$currentPokedexId" else "  $nameEN"
                     if (currentPokedexId > 0) b.tvDexId.text = "#$currentPokedexId"
                     selectedTypes.clear(); selectedTypes.addAll(entry?.types ?: emptyList())
                     typeAdapter.notifyDataSetChanged(); selectBP(3)
+                    switchToPanel(binding.layoutPanelAddPokemon, panelTitle)
                 }
-            }.show(childFragmentManager, "StarterPicker")
+            }
         }
         b.btnSavePreset.setOnClickListener { savePreset() }
         b.btnAddPlayerPreset.setOnClickListener { savePreset() }
-        b.btnCancelPokemon.setOnClickListener { hidePanels() }
+        b.btnCancelPokemon.setOnClickListener { popBack() }
         b.btnAddPokemon.setOnClickListener {
             if (selectedTypes.isEmpty()) { Toast.makeText(requireContext(), "Pick a Pokémon or select types!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
             if (selectedBP < 1) { Toast.makeText(requireContext(), "Select a BP value!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = currentName, nameDE = currentNameDE,
-                types = selectedTypes.toList(), baseBP = selectedBP, team = team, pokedexId = currentPokedexId)
-            if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
-            else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
-            updateBattleButton(); hidePanels()
+            if (onAdded != null) {
+                onAdded(currentName, currentNameDE, selectedTypes.toList(), selectedBP, currentPokedexId)
+            } else {
+                val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = currentName, nameDE = currentNameDE,
+                    types = selectedTypes.toList(), baseBP = selectedBP, team = team, pokedexId = currentPokedexId)
+                if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
+                else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
+                updateBattleButton(); hidePanels()
+            }
         }
     }
 
@@ -569,79 +655,20 @@ class TeamSetupFragment : Fragment() {
         var refreshSlots: () -> Unit = {}
         var openPicker: (Int, Int) -> Unit = { _, _ -> }
 
-        openPicker = { i, curBp ->
-            val ctx = requireContext()
-            val cc = ThemeManager.colorsFor(theme)
-            val d = (resources.displayMetrics.density).toInt()
-            fun dpPx(v: Int) = (v * resources.displayMetrics.density).toInt()
-            val container = android.widget.LinearLayout(ctx).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(dpPx(16), dpPx(14), dpPx(16), dpPx(10))
-                setBackgroundColor(cc.surface)
-            }
-            android.widget.TextView(ctx).apply {
-                text = "Add Pokémon"
-                textSize = 14f
-                setTextColor(cc.textPrimary)
-                android.view.Gravity.CENTER.let { gravity = it }
-                setPadding(0, 0, 0, dpPx(12))
-                container.addView(this)
-            }
-            var srcDialog: android.app.AlertDialog? = null
-            listOf(
-                Triple("📖 Pokédex", null as String?, null as String?),
-                Triple("🌿 Route",   null,              null),
-                Triple("⭐ Starter", null,              null)
-            ).forEachIndexed { idx, (label, _, _) ->
-                com.google.android.material.button.MaterialButton(ctx).apply {
-                    text = label; isAllCaps = false; textSize = 13f
-                    setTextColor(android.graphics.Color.WHITE)
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
-                    cornerRadius = dpPx(22)
-                    layoutParams = android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(44)
-                    ).also { it.bottomMargin = dpPx(6) }
-                    setOnClickListener {
-                        srcDialog?.dismiss()
-                        when (idx) {
-                            0 -> PokemonPickerDialog(theme) { picked ->
-                                pokemonEntries[i] = TrainerPokemonEntry(preset = com.pokemonbp.model.PokemonPreset(
-                                    name = picked.name, nameDE = picked.nameDE,
-                                    pokedexId = picked.id, types = picked.types, baseBP = curBp))
-                                refreshSlots()
-                            }.show(childFragmentManager, "PickerSlot$i")
-                            1 -> RoutePickerDialog(theme) { nameDE, nameEN, bp ->
-                                val entry2 = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
-                                val types2 = entry2?.types ?: emptyList()
-                                val actualBp = if (bp > 0) bp else curBp
-                                pokemonEntries[i] = TrainerPokemonEntry(
-                                    preset = com.pokemonbp.model.PokemonPreset(name = nameEN, nameDE = nameDE,
-                                        pokedexId = entry2?.id ?: 0, types = types2, baseBP = actualBp),
-                                    bp = actualBp)
-                                refreshSlots()
-                            }.show(childFragmentManager, "RouteSlot$i")
-                            2 -> StarterPickerDialog(theme) { nameDE, nameEN ->
-                                val entry2 = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
-                                val types2 = entry2?.types ?: emptyList()
-                                pokemonEntries[i] = TrainerPokemonEntry(
-                                    preset = com.pokemonbp.model.PokemonPreset(name = nameEN, nameDE = nameDE,
-                                        pokedexId = entry2?.id ?: 0, types = types2, baseBP = 3),
-                                    bp = 3)
-                                refreshSlots()
-                            }.show(childFragmentManager, "StarterSlot$i")
-                        }
-                    }
-                    container.addView(this)
-                }
-            }
-            srcDialog = android.app.AlertDialog.Builder(ctx).setView(container).create()
-            srcDialog.setOnShowListener {
-                val dm = ctx.resources.displayMetrics
-                val w = (dm.widthPixels * 0.72).toInt()
-                srcDialog.window?.setLayout(w, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
-                srcDialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-            }
-            srcDialog.show()
+        openPicker = { i, _ ->
+            // Push "back to Add Trainer" so the lens navigates correctly
+            panelBackStack.addLast { switchToPanel(binding.layoutPanelAddTrainer, addTrainerTitle) }
+            showAddPokemonPanel(Team.TEAM_A, onAdded = { name, nameDE, types, bp, pokedexId ->
+                pokemonEntries[i] = TrainerPokemonEntry(
+                    preset = com.pokemonbp.model.PokemonPreset(
+                        name = name, nameDE = nameDE,
+                        pokedexId = pokedexId, types = types, baseBP = bp),
+                    bp = bp)
+                refreshSlots()
+                // Pop the "back to trainer" entry we added, then go back to trainer
+                if (panelBackStack.isNotEmpty()) panelBackStack.removeLast()
+                switchToPanel(binding.layoutPanelAddTrainer, addTrainerTitle)
+            })
         }
 
         refreshSlots = {
@@ -796,82 +823,639 @@ class TeamSetupFragment : Fragment() {
         v.findViewById<android.widget.Button>(R.id.btn_close_dialog).setOnClickListener { hidePanels() }
     }
 
+    private fun handleEnemySelected(enemyTrainer: EnemyTrainer, badge: Int?) {
+        currentEnemyTrainer = enemyTrainer
+        teamBList.clear()
+        val trainerImageUrl: String?
+        when (enemyTrainer) {
+            is EnemyTrainer.GymLeader -> {
+                val b = badge ?: 1
+                val team = enemyTrainer.badgeTeams[b]
+                    ?: enemyTrainer.badgeTeams.values.firstOrNull() ?: emptyList()
+                teamBLabel = "${enemyTrainer.nameDE} / ${enemyTrainer.nameEN} (Badge $b)"
+                team.forEach { gp ->
+                    teamBList.add(Pokemon(
+                        id = System.currentTimeMillis().toInt() + teamBList.size,
+                        name = gp.nameEN, nameDE = gp.nameDE,
+                        types = gp.types, baseBP = gp.baseBP,
+                        team = Team.TEAM_B, pokedexId = gp.pokedexId
+                    ))
+                }
+                trainerImageUrl = SpriteUrls.gymLeaderImageUrl(enemyTrainer.id)
+            }
+            is EnemyTrainer.Champion -> {
+                teamBLabel = "Champion ${enemyTrainer.nameEN}"
+                enemyTrainer.team.forEach { gp ->
+                    teamBList.add(Pokemon(
+                        id = System.currentTimeMillis().toInt() + teamBList.size,
+                        name = gp.nameEN, nameDE = gp.nameDE,
+                        types = gp.types, baseBP = gp.baseBP,
+                        team = Team.TEAM_B, pokedexId = gp.pokedexId
+                    ))
+                }
+                trainerImageUrl = SpriteUrls.championImageUrl(enemyTrainer.nameEN)
+            }
+            is EnemyTrainer.WildPokemon -> {
+                teamBLabel = "Wild Pokémon"
+                trainerImageUrl = SpriteUrls.trainerIconUrl("wild")
+            }
+            is EnemyTrainer.RandomTrainer -> {
+                teamBLabel = "Random Trainer"
+                trainerImageUrl = SpriteUrls.randomTrainerImageUrl()
+            }
+            is EnemyTrainer.SavedTrainer -> {
+                teamBLabel = enemyTrainer.trainer.name
+                enemyTrainer.trainer.pokemon.forEach { preset ->
+                    teamBList.add(Pokemon(
+                        id = System.currentTimeMillis().toInt() + teamBList.size,
+                        name = preset.name, nameDE = preset.nameDE,
+                        types = preset.types, baseBP = preset.baseBP,
+                        team = Team.TEAM_B, pokedexId = preset.pokedexId
+                    ))
+                }
+                trainerImageUrl = SpriteUrls.playerTrainerImageUrl(enemyTrainer.trainer.avatarId)
+            }
+        }
+        val labelIconUrl = when (enemyTrainer) {
+            is EnemyTrainer.GymLeader     -> SpriteUrls.trainerIconUrl(enemyTrainer.id)
+            is EnemyTrainer.Champion      -> SpriteUrls.trainerIconUrl(enemyTrainer.nameEN.lowercase())
+            is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
+            is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
+            is EnemyTrainer.SavedTrainer  -> SpriteUrls.avatarUrl(enemyTrainer.trainer.avatarId)
+        }
+        activeIndexB = 0
+        adapterB.activeIndex = 0
+        adapterB.notifyDataSetChanged()
+        binding.tvTeamBLabel.text = teamBLabel
+        loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
+        loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
+        updateBattleButton()
+        updateDeloadButton()
+    }
+
     private fun showEnemyTrainerDialog() {
         val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
-        EnemyTrainerDialog(theme,
-            onTrainerSelected = { enemyTrainer, badge ->
-            currentEnemyTrainer = enemyTrainer
-            teamBList.clear()
-            val trainerImageUrl: String?
-            when (enemyTrainer) {
-                is EnemyTrainer.GymLeader -> {
-                    val b = badge ?: 1
-                    val team = enemyTrainer.badgeTeams[b]
-                        ?: enemyTrainer.badgeTeams.values.firstOrNull() ?: emptyList()
-                    teamBLabel = "${enemyTrainer.nameDE} / ${enemyTrainer.nameEN} (Badge $b)"
-                    team.forEach { gp ->
-                        teamBList.add(Pokemon(
-                            id = System.currentTimeMillis().toInt() + teamBList.size,
-                            name = gp.nameEN, nameDE = gp.nameDE,
-                            types = gp.types, baseBP = gp.baseBP,
-                            team = Team.TEAM_B, pokedexId = gp.pokedexId
-                        ))
+        val c = ThemeManager.colorsFor(theme)
+
+        fun buildEnemyGrid() {
+            val view = layoutInflater.inflate(R.layout.dialog_enemy_trainer, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)?.setBackgroundColor(c.surface)
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_enemy_options)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
+
+            val options: List<EnemyOption> = buildList {
+                com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext()).forEach { add(EnemyOption.GymLeaderOption(it)) }
+                add(EnemyOption.ChampionMenu)
+                add(EnemyOption.WildOption)
+                add(EnemyOption.RandomOption)
+                add(EnemyOption.SavedTrainerMenu)
+            }
+
+            recycler.adapter = EnemyGridAdapter(options, c) { option ->
+                when (option) {
+                    is EnemyOption.GymLeaderOption -> showBadgePickerInline(option.gym,
+                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.ChampionMenu -> showChampionPickerInline(
+                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.WildOption -> {
+                        handleEnemySelected(EnemyTrainer.WildPokemon, null)
+                        showAddPokemonPanel(Team.TEAM_B)
                     }
-                    trainerImageUrl = SpriteUrls.gymLeaderImageUrl(enemyTrainer.id)
-                }
-                is EnemyTrainer.Champion -> {
-                    teamBLabel = "Champion ${enemyTrainer.nameEN}"
-                    enemyTrainer.team.forEach { gp ->
-                        teamBList.add(Pokemon(
-                            id = System.currentTimeMillis().toInt() + teamBList.size,
-                            name = gp.nameEN, nameDE = gp.nameDE,
-                            types = gp.types, baseBP = gp.baseBP,
-                            team = Team.TEAM_B, pokedexId = gp.pokedexId
-                        ))
+                    is EnemyOption.RandomOption -> {
+                        handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+                        showAddPokemonPanel(Team.TEAM_B)
                     }
-                    trainerImageUrl = SpriteUrls.championImageUrl(enemyTrainer.nameEN)
-                }
-                is EnemyTrainer.WildPokemon -> {
-                    teamBLabel = "Wild Pokémon"
-                    trainerImageUrl = SpriteUrls.trainerIconUrl("wild")
-                }
-                is EnemyTrainer.RandomTrainer -> {
-                    teamBLabel = "Random Trainer"
-                    trainerImageUrl = SpriteUrls.randomTrainerImageUrl()
-                }
-                is EnemyTrainer.SavedTrainer -> {
-                    teamBLabel = enemyTrainer.trainer.name
-                    enemyTrainer.trainer.pokemon.forEach { preset ->
-                        teamBList.add(Pokemon(
-                            id = System.currentTimeMillis().toInt() + teamBList.size,
-                            name = preset.name, nameDE = preset.nameDE,
-                            types = preset.types, baseBP = preset.baseBP,
-                            team = Team.TEAM_B, pokedexId = preset.pokedexId
-                        ))
-                    }
-                    trainerImageUrl = SpriteUrls.playerTrainerImageUrl(enemyTrainer.trainer.avatarId)
+                    is EnemyOption.SavedTrainerMenu -> showSavedTrainerInline(
+                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.ChampionOption -> { /* not shown in root grid */ }
                 }
             }
-            val labelIconUrl = when (enemyTrainer) {
-                is EnemyTrainer.GymLeader    -> SpriteUrls.trainerIconUrl(enemyTrainer.id)
-                is EnemyTrainer.Champion     -> SpriteUrls.trainerIconUrl(enemyTrainer.nameEN.lowercase())
-                is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
-                is EnemyTrainer.WildPokemon  -> SpriteUrls.trainerIconUrl("wild")
-                is EnemyTrainer.SavedTrainer -> SpriteUrls.avatarUrl(enemyTrainer.trainer.avatarId)
+
+            view.findViewById<android.widget.Button>(R.id.btn_close_dialog)?.setOnClickListener { hidePanels() }
+            binding.layoutPanelSub.addView(view)
+        }
+
+        binding.layoutPanelSub.removeAllViews()
+        buildEnemyGrid()
+        showPanel(binding.layoutPanelSub, "Enemy Trainer")
+    }
+
+    // ── Inline sub-panel builders ──────────────────────────────────────────────
+
+    private fun showPokemonPickerInline(onBack: () -> Unit, onPicked: (PokedexEntry) -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        pushSubPanel("Pokédex", buildContent = {
+            val view = layoutInflater.inflate(R.layout.dialog_pokemon_pick2er, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val sp = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
+            sp?.setBackgroundColor(c.surface)
+            sp?.addView(buildBackRow(), 0)
+
+            val filteredList = PokedexData.allPokemon.toMutableList()
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_picker)
+            val etSearch = view.findViewById<android.widget.EditText>(R.id.et_picker_search)
+            val tvTitle  = view.findViewById<android.widget.TextView>(R.id.tv_picker_title)
+
+            tvTitle?.setTextColor(c.textPrimary)
+            if (theme == AppTheme.RETRO) tvTitle?.typeface = android.graphics.Typeface.MONOSPACE
+            etSearch.setTextColor(c.textPrimary)
+            etSearch.setHintTextColor(c.textSecondary)
+            etSearch.setBackgroundColor(c.surfaceVariant)
+
+            val adapter = PickerAdapter(filteredList, theme) { entry -> onPicked(entry) }
+            recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            recycler.adapter = adapter
+
+            etSearch.addTextChangedListener(object : android.text.TextWatcher {
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val q = s.toString().trim().lowercase()
+                    filteredList.clear()
+                    filteredList.addAll(if (q.isEmpty()) PokedexData.allPokemon
+                    else PokedexData.allPokemon.filter {
+                        it.name.lowercase().contains(q) || it.nameDE.lowercase().contains(q) ||
+                        it.id.toString().contains(q) || it.types.any { t -> t.displayName.lowercase().contains(q) }
+                    })
+                    adapter.notifyDataSetChanged()
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+
+            view.findViewById<android.widget.Button>(R.id.btn_close_picker).setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }, onBack = onBack)
+    }
+
+    private fun showRoutePickerInline(onBack: () -> Unit, onPicked: (nameDE: String, nameEN: String, bp: Int) -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
+
+        fun buildRouteGrid() {
+            val view = layoutInflater.inflate(R.layout.dialog_route_picker, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val spRoute = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
+            spRoute?.setBackgroundColor(c.surface)
+            spRoute?.addView(buildBackRow(), 0)
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_routes)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+
+            fun handleRoute(location: com.pokemonbp.data.RouteLocation) {
+                if (!location.isLegendary) {
+                    showRoutePokemonGridInline(location.displayName, location.tiers[0].pokemon,
+                        onBack = { rebuildSubPanelContent("Route") { buildRouteGrid() } },
+                        onPicked = { p -> onPicked(p.nameDE, p.nameEN, p.bp) })
+                } else {
+                    showRouteTierPickerInline(location,
+                        onBack = { rebuildSubPanelContent("Route") { buildRouteGrid() } },
+                        onPicked = onPicked)
+                }
             }
-            activeIndexB = 0
-            adapterB.activeIndex = 0
-            adapterB.notifyDataSetChanged()
-            binding.tvTeamBLabel.text = teamBLabel
-            loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
-            loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
-            updateBattleButton()
-            updateDeloadButton()
-            },
-            onAddSinglePokemon = {
-                showAddPokemonPanel(Team.TEAM_B)
+
+            recycler.adapter = RouteGridAdapter(routes, c,
+                onRouteClick = { location -> handleRoute(location) },
+                onRandomClick = { handleRoute(routes.random()) })
+
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
+                .setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }
+
+        pushSubPanel("Route", buildContent = { buildRouteGrid() }, onBack = onBack)
+    }
+
+    private fun showRouteTierPickerInline(
+        location: com.pokemonbp.data.RouteLocation,
+        onBack: () -> Unit,
+        onPicked: (nameDE: String, nameEN: String, bp: Int) -> Unit
+    ) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+
+        fun buildTierPicker() {
+            val container = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(dpPx(16), dpPx(10), dpPx(16), dpPx(10))
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
             }
-        ).show(parentFragmentManager, "EnemyTrainer")
+            container.addView(buildBackRow())
+            android.widget.TextView(requireContext()).apply {
+                text = location.displayName; textSize = 13f
+                setTextColor(c.textPrimary); gravity = android.view.Gravity.CENTER
+                setPadding(0, 0, 0, dpPx(14))
+                container.addView(this)
+            }
+            for (tier in location.tiers) {
+                com.google.android.material.button.MaterialButton(requireContext()).apply {
+                    text = tier.label; isAllCaps = false; textSize = 14f
+                    setTextColor(android.graphics.Color.WHITE)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
+                    cornerRadius = dpPx(22)
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(48)
+                    ).also { it.bottomMargin = dpPx(8) }
+                    setOnClickListener {
+                        showRoutePokemonGridInline("${location.displayName} — ${tier.label}", tier.pokemon,
+                            onBack = { rebuildSubPanelContent(location.displayName) { buildTierPicker() } },
+                            onPicked = { p -> onPicked(p.nameDE, p.nameEN, p.bp) })
+                    }
+                    container.addView(this)
+                }
+            }
+            binding.layoutPanelSub.addView(container)
+        }
+
+        pushSubPanel(location.displayName, buildContent = { buildTierPicker() }, onBack = onBack)
+    }
+
+    private fun showRoutePokemonGridInline(
+        title: String,
+        pokemon: List<com.pokemonbp.data.RoutePokemon>,
+        onBack: () -> Unit,
+        onPicked: (com.pokemonbp.data.RoutePokemon) -> Unit
+    ) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        pushSubPanel(title, buildContent = {
+            val view = layoutInflater.inflate(R.layout.dialog_route_pokemon_grid, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val spGrid = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel_grid)
+            spGrid?.setBackgroundColor(c.surface)
+            spGrid?.addView(buildBackRow(), 0)
+            view.findViewById<android.widget.TextView>(R.id.tv_pokemon_grid_title)?.visibility = android.view.View.GONE
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_pokemon_grid)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+            recycler.adapter = RoutePokemonGridAdapter(pokemon, c) { p -> onPicked(p) }
+
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_back_pokemon_grid)
+                .setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }, onBack = onBack)
+    }
+
+    private fun showStarterPickerInline(onBack: () -> Unit, onPicked: (nameDE: String, nameEN: String) -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+
+        fun buildTypeSelection() {
+            val container = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(dpPx(16), dpPx(16), dpPx(16), dpPx(12))
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            }
+            container.addView(buildBackRow())
+            android.widget.TextView(requireContext()).apply {
+                text = "Choose Starter Type"; textSize = 14f
+                setTextColor(c.textPrimary); gravity = android.view.Gravity.CENTER
+                setPadding(0, 0, 0, dpPx(14))
+                container.addView(this, android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+            }
+            val typeRow = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER
+            }
+            data class TypeOpt(val label: String, val file: String, val key: String)
+            val types = listOf(TypeOpt("Grass","Starter_Grass.txt","GRASS"), TypeOpt("Water","Starter_Water.txt","WATER"), TypeOpt("Fire","Starter_Fire.txt","FIRE"))
+            types.forEachIndexed { idx, opt ->
+                val btn = android.widget.LinearLayout(requireContext()).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL; gravity = android.view.Gravity.CENTER
+                    isClickable = true; isFocusable = true
+                    val tv = android.util.TypedValue()
+                    requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true)
+                    foreground = requireContext().getDrawable(tv.resourceId)
+                    setPadding(dpPx(8), dpPx(8), dpPx(8), dpPx(8))
+                    layoutParams = android.widget.LinearLayout.LayoutParams(0, dpPx(80)).also {
+                        it.weight = 1f; if (idx < types.size - 1) it.marginEnd = dpPx(4)
+                    }
+                }
+                android.widget.ImageView(requireContext()).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(48), dpPx(48))
+                    scaleType = android.widget.ImageView.ScaleType.FIT_CENTER; adjustViewBounds = true
+                    Glide.with(requireContext()).load(SpriteUrls.typeIconUrl(opt.key))
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(this)
+                    btn.addView(this)
+                }
+                android.widget.TextView(requireContext()).apply {
+                    text = opt.label; textSize = 12f; setTextColor(c.textPrimary)
+                    gravity = android.view.Gravity.CENTER; setPadding(0, dpPx(4), 0, 0)
+                    btn.addView(this, android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+                }
+                btn.setOnClickListener {
+                    val lines = parseStarterLines(opt.file)
+                    showStarterLinesInline(opt.label, opt.key, lines,
+                        onBack = { rebuildSubPanelContent("Starter") { buildTypeSelection() } },
+                        onPicked = onPicked)
+                }
+                typeRow.addView(btn)
+            }
+            container.addView(typeRow, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+            binding.layoutPanelSub.addView(container)
+        }
+
+        pushSubPanel("Starter", buildContent = { buildTypeSelection() }, onBack = onBack)
+    }
+
+    private fun parseStarterLines(filename: String): List<StarterLine> {
+        return try {
+            val text = requireContext().assets.open(filename).bufferedReader().readText()
+            val pokemonLines = text.lines().map { it.trim() }
+                .filter { it.contains('/') && !it.trimEnd().endsWith(':') }
+            pokemonLines.chunked(3).mapNotNull { group ->
+                if (group.isEmpty()) null else {
+                    fun parse(s: String): StarterPokemon {
+                        val parts = s.split("/", limit = 2)
+                        return StarterPokemon(parts[0].trim(), parts.getOrElse(1) { "" }.trim())
+                    }
+                    StarterLine(parse(group[0]), group.getOrNull(1)?.let { parse(it) }, group.getOrNull(2)?.let { parse(it) })
+                }
+            }
+        } catch (e: Exception) { emptyList() }
+    }
+
+    private fun showStarterLinesInline(
+        typeName: String, typeKey: String,
+        lines: List<StarterLine>,
+        onBack: () -> Unit,
+        onPicked: (nameDE: String, nameEN: String) -> Unit
+    ) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+
+        fun buildLines() {
+            val outerContainer = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            }
+            // Header: back + type icon + title
+            val headerRow = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(dpPx(8), dpPx(8), dpPx(8), dpPx(8))
+            }
+            headerRow.addView(buildBackRow().also {
+                it.layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+            })
+            android.widget.ImageView(requireContext()).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(26), dpPx(26)).also { it.marginEnd = dpPx(6) }
+                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                Glide.with(requireContext()).load(SpriteUrls.typeIconUrl(typeKey))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(this)
+                headerRow.addView(this)
+            }
+            android.widget.TextView(requireContext()).apply {
+                text = "$typeName Starters"; textSize = 13f; setTextColor(c.textPrimary)
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+                    .also { it.weight = 1f }
+                headerRow.addView(this)
+            }
+            outerContainer.addView(headerRow, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+            // Divider
+            outerContainer.addView(android.view.View(requireContext()).apply {
+                setBackgroundColor(android.graphics.Color.parseColor("#33FFFFFF"))
+            }, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(1)))
+
+            val scrollView = android.widget.ScrollView(requireContext())
+            val innerContainer = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(dpPx(10), dpPx(8), dpPx(10), dpPx(8))
+            }
+            scrollView.addView(innerContainer, android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT))
+
+            lines.forEach { line ->
+                val lineRow = android.widget.LinearLayout(requireContext()).apply {
+                    orientation = android.widget.LinearLayout.HORIZONTAL
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).also { it.bottomMargin = dpPx(6) }
+                }
+                val allPokemon = listOfNotNull(line.base, line.evo2, line.evo3)
+                allPokemon.forEachIndexed { index, pokemon ->
+                    val isBase = index == 0
+                    val col = android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.VERTICAL
+                        gravity = android.view.Gravity.CENTER_HORIZONTAL
+                        isClickable = isBase; isFocusable = isBase
+                        if (isBase) {
+                            val tv = android.util.TypedValue()
+                            requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true)
+                            foreground = requireContext().getDrawable(tv.resourceId)
+                            setOnClickListener { onPicked(pokemon.nameDE, pokemon.nameEN) }
+                        }
+                        alpha = if (isBase) 1f else 0.35f
+                        setPadding(dpPx(4), dpPx(4), dpPx(4), dpPx(4))
+                    }
+                    val entry = PokedexData.allPokemon.find { it.name.equals(pokemon.nameEN, ignoreCase = true) }
+                    android.widget.ImageView(requireContext()).apply {
+                        layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(58), dpPx(58))
+                        scaleType = android.widget.ImageView.ScaleType.FIT_CENTER; adjustViewBounds = true
+                        if (entry != null && entry.spriteId > 0) loadPokemonSprite(requireContext(), entry.spriteId)
+                        else setImageResource(R.drawable.ic_pokeball)
+                        col.addView(this)
+                    }
+                    if (entry != null) {
+                        val typesRow = android.widget.LinearLayout(requireContext()).apply {
+                            orientation = android.widget.LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = dpPx(2) }
+                        }
+                        entry.types.forEach { type ->
+                            android.widget.ImageView(requireContext()).apply {
+                                layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(20), dpPx(20)).also { it.marginEnd = dpPx(2) }
+                                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                                Glide.with(requireContext()).load(SpriteUrls.typeIconUrl(type.name))
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(this)
+                                typesRow.addView(this)
+                            }
+                        }
+                        col.addView(typesRow)
+                    }
+                    android.widget.TextView(requireContext()).apply {
+                        text = pokemon.nameDE; textSize = 8.5f; setTextColor(c.textPrimary)
+                        gravity = android.view.Gravity.CENTER; maxLines = 1
+                        layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = dpPx(2) }
+                        col.addView(this)
+                    }
+                    android.widget.TextView(requireContext()).apply {
+                        text = pokemon.nameEN; textSize = 7.5f; setTextColor(c.textSecondary)
+                        gravity = android.view.Gravity.CENTER; maxLines = 1
+                        col.addView(this)
+                    }
+                    lineRow.addView(col, android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+                        .also { it.weight = 1f; if (index < allPokemon.size - 1) it.marginEnd = dpPx(2) })
+                }
+                innerContainer.addView(lineRow)
+            }
+            outerContainer.addView(scrollView, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 0).also { it.weight = 1f })
+            binding.layoutPanelSub.addView(outerContainer)
+        }
+
+        pushSubPanel("$typeName Starters", buildContent = { buildLines() }, onBack = onBack)
+    }
+
+    private fun showBadgePickerInline(gym: EnemyTrainer.GymLeader, onBack: () -> Unit) {
+        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
+        pushSubPanel("${gym.nameDE} / ${gym.nameEN}", buildContent = {
+            val view = layoutInflater.inflate(R.layout.dialog_badge_select, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val spBadge = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
+            spBadge?.setBackgroundColor(c.surface)
+            spBadge?.addView(buildBackRow(), 0)
+            view.findViewById<android.widget.TextView>(R.id.tv_badge_title)?.text =
+                "${gym.nameDE} / ${gym.nameEN} — Badge"
+
+            val container = view.findViewById<android.widget.LinearLayout>(R.id.badge_container)
+            for (i in 1..8) {
+                com.google.android.material.button.MaterialButton(requireContext()).apply {
+                    text = "Badge $i"; textSize = 14f; isAllCaps = false
+                    setTextColor(android.graphics.Color.WHITE)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
+                    cornerRadius = dpPx(22)
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(44)
+                    ).also { it.bottomMargin = dpPx(6) }
+                    setOnClickListener { handleEnemySelected(gym, i); hidePanels() }
+                    container.addView(this)
+                }
+            }
+            view.findViewById<android.widget.Button>(R.id.btn_back_badge)?.setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }, onBack = onBack)
+    }
+
+    private fun showChampionPickerInline(onBack: () -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        val champions = com.pokemonbp.data.TrainerParser.loadChampions(requireContext()).filter { it.nameEN != "Hilda" }
+        pushSubPanel("Choose Champion", buildContent = {
+            val view = layoutInflater.inflate(R.layout.dialog_enemy_trainer, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val spChamp = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
+            spChamp?.setBackgroundColor(c.surface)
+            spChamp?.addView(buildBackRow(), 0)
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_enemy_options)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+            recycler.adapter = ChampionPickerAdapter(champions, c) { champion ->
+                handleEnemySelected(champion, null)
+                hidePanels()
+            }
+            view.findViewById<android.widget.Button>(R.id.btn_close_dialog)?.setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }, onBack = onBack)
+    }
+
+    private fun showSavedTrainerInline(onBack: () -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        val trainers = TrainerManager.loadTrainers(requireContext())
+        if (trainers.isEmpty()) {
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("No Trainers Saved")
+                .setMessage("Create a trainer first using 'Add Trainer'.")
+                .setPositiveButton("OK", null).show()
+            return
+        }
+        pushSubPanel("Choose Trainer", buildContent = {
+            val view = layoutInflater.inflate(R.layout.dialog_choose_trainer, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            val spSaved = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
+            spSaved?.setBackgroundColor(c.surface)
+            spSaved?.addView(buildBackRow(), 0)
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_trainer_chooser)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+            recycler.adapter = TrainerRowAdapter(
+                trainers = trainers.toMutableList(), theme = theme, c = c,
+                onBattle = { trainer ->
+                    handleEnemySelected(EnemyTrainer.SavedTrainer(trainer), null)
+                    hidePanels()
+                },
+                onManage = { /* not supported inline */ },
+                onDelete = { /* not supported inline */ })
+
+            view.findViewById<android.widget.Button>(R.id.btn_close_dialog)?.setOnClickListener { popBack() }
+            binding.layoutPanelSub.addView(view)
+        }, onBack = onBack)
+    }
+
+    private fun showSourcePickerInline(onBack: () -> Unit, onSource: (Int) -> Unit) {
+        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
+        pushSubPanel("Add Pokémon", buildContent = {
+            val container = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(dpPx(16), dpPx(14), dpPx(16), dpPx(10))
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            }
+            android.widget.TextView(requireContext()).apply {
+                text = "Add Pokémon"; textSize = 14f; setTextColor(c.textPrimary)
+                gravity = android.view.Gravity.CENTER; setPadding(0, 0, 0, dpPx(12))
+                container.addView(this)
+            }
+            listOf("📖 Pokédex", "🌿 Route", "⭐ Starter").forEachIndexed { idx, label ->
+                com.google.android.material.button.MaterialButton(requireContext()).apply {
+                    text = label; isAllCaps = false; textSize = 13f
+                    setTextColor(android.graphics.Color.WHITE)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
+                    cornerRadius = dpPx(22)
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(44)
+                    ).also { it.bottomMargin = dpPx(6) }
+                    setOnClickListener { onSource(idx) }
+                    container.addView(this)
+                }
+            }
+            binding.layoutPanelSub.addView(container)
+        }, onBack = onBack)
     }
 
     private fun showRouteDetail(title: String, pokemon: List<com.pokemonbp.data.RoutePokemon>) {
@@ -908,8 +1492,48 @@ class TeamSetupFragment : Fragment() {
         }
     }
 
+    private fun loadTowns(): List<String> {
+        return try {
+            requireContext().assets.open("towns.txt").bufferedReader().readLines()
+                .map { it.trim() }.filter { it.isNotEmpty() }
+        } catch (e: Exception) { emptyList() }
+    }
+
+    private fun restoreTrainerDisplay() {
+        val aTrainer = teamATrainer
+        if (aTrainer != null) {
+            binding.tvTeamALabel.text = "🔴 ${aTrainer.name}"
+            loadLabelIcon(SpriteUrls.avatarUrl(aTrainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
+            loadTrainerImage(SpriteUrls.playerTrainerImageUrl(aTrainer.avatarId), binding.ivTrainerA)
+        }
+        val enemy = currentEnemyTrainer
+        if (enemy != null) {
+            binding.tvTeamBLabel.text = teamBLabel
+            val labelIconUrl = when (enemy) {
+                is EnemyTrainer.GymLeader     -> SpriteUrls.trainerIconUrl(enemy.id)
+                is EnemyTrainer.Champion      -> SpriteUrls.trainerIconUrl(enemy.nameEN.lowercase())
+                is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
+                is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
+                is EnemyTrainer.SavedTrainer  -> SpriteUrls.avatarUrl(enemy.trainer.avatarId)
+            }
+            val trainerImageUrl = when (enemy) {
+                is EnemyTrainer.GymLeader     -> SpriteUrls.gymLeaderImageUrl(enemy.id)
+                is EnemyTrainer.Champion      -> SpriteUrls.championImageUrl(enemy.nameEN)
+                is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
+                is EnemyTrainer.RandomTrainer -> SpriteUrls.randomTrainerImageUrl()
+                is EnemyTrainer.SavedTrainer  -> SpriteUrls.playerTrainerImageUrl(enemy.trainer.avatarId)
+            }
+            loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
+            loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
+        }
+        updateDeloadButton()
+    }
+
     override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }
+
+data class StarterPokemon(val nameDE: String, val nameEN: String)
+data class StarterLine(val base: StarterPokemon, val evo2: StarterPokemon?, val evo3: StarterPokemon?)
 
 class WildRouteAdapter(
     private val routes: List<com.pokemonbp.data.RouteLocation>,
