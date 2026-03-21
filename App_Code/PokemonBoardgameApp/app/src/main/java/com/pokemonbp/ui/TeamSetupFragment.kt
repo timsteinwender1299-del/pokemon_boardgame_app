@@ -137,7 +137,37 @@ class TeamSetupFragment : Fragment() {
             val pokemonA = teamAList[activeIndexA]
             val pokemonB = teamBList[activeIndexB]
             val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB))
-            (activity as MainActivity).navigateToResults(ResultFragment.newInstance(result))
+            val resultFrag = ResultFragment.newInstance(result)
+
+            // Team A trainer info
+            val aTrainer = teamATrainer
+            if (aTrainer != null) {
+                resultFrag.teamALabel = aTrainer.name
+                resultFrag.teamALabelIconUrl = SpriteUrls.avatarUrl(aTrainer.avatarId)
+                resultFrag.teamATrainerImageUrl = SpriteUrls.playerTrainerImageUrl(aTrainer.avatarId)
+            }
+
+            // Team B trainer info
+            val enemy = currentEnemyTrainer
+            if (enemy != null) {
+                resultFrag.teamBLabel = teamBLabel
+                resultFrag.teamBLabelIconUrl = when (enemy) {
+                    is EnemyTrainer.GymLeader     -> SpriteUrls.trainerIconUrl(enemy.id)
+                    is EnemyTrainer.Champion      -> SpriteUrls.trainerIconUrl(enemy.nameEN.lowercase())
+                    is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
+                    is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
+                    is EnemyTrainer.SavedTrainer  -> SpriteUrls.avatarUrl(enemy.trainer.avatarId)
+                }
+                resultFrag.teamBTrainerImageUrl = when (enemy) {
+                    is EnemyTrainer.GymLeader     -> SpriteUrls.gymLeaderImageUrl(enemy.id)
+                    is EnemyTrainer.Champion      -> SpriteUrls.championImageUrl(enemy.nameEN)
+                    is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
+                    is EnemyTrainer.RandomTrainer -> SpriteUrls.randomTrainerImageUrl()
+                    is EnemyTrainer.SavedTrainer  -> SpriteUrls.playerTrainerImageUrl(enemy.trainer.avatarId)
+                }
+            }
+
+            (activity as MainActivity).navigateToResults(resultFrag)
         }
 
         updateBattleButton()

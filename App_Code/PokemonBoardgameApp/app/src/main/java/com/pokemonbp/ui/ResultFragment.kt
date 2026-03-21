@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.pokemonbp.R
 import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.databinding.FragmentResultBinding
@@ -17,6 +20,14 @@ class ResultFragment : Fragment() {
     private var _binding: FragmentResultBinding? = null
     private val binding get() = _binding!!
     var battleResult: TeamBattleResult? = null
+
+    // Trainer display info — set by TeamSetupFragment before navigating
+    var teamALabel: String = "Player"
+    var teamALabelIconUrl: String? = null
+    var teamATrainerImageUrl: String? = null
+    var teamBLabel: String = "Enemy Trainer"
+    var teamBLabelIconUrl: String? = null
+    var teamBTrainerImageUrl: String? = null
 
     companion object {
         fun newInstance(result: TeamBattleResult) = ResultFragment().also { it.battleResult = result }
@@ -49,13 +60,45 @@ class ResultFragment : Fragment() {
             null -> { binding.tvWinner.text = "⚔️ It's a Tie!"; binding.tvWinner.setTextColor(c.accent) }
         }
 
-        binding.tvTotalA.text = "Player: ${result.teamATotalBP} BP"
+        binding.tvTotalA.text = "$teamALabel: ${result.teamATotalBP} BP"
         binding.tvTotalA.setTextColor(c.teamA)
-        binding.tvTotalB.text = "Enemy Trainer: ${result.teamBTotalBP} BP"
+        binding.tvTotalB.text = "$teamBLabel: ${result.teamBTotalBP} BP"
         binding.tvTotalB.setTextColor(c.teamB)
 
+        binding.tvTeamAResultLabel.text = teamALabel
         binding.tvTeamAResultLabel.setTextColor(c.teamA)
+        binding.tvTeamBResultLabel.text = teamBLabel
         binding.tvTeamBResultLabel.setTextColor(c.teamB)
+
+        // Team A label icon
+        if (teamALabelIconUrl != null) {
+            Glide.with(this).load(teamALabelIconUrl)
+                .placeholder(R.drawable.ic_player).error(R.drawable.ic_player)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter()
+                .into(binding.ivResultLabelA)
+        }
+        // Team A trainer image
+        if (teamATrainerImageUrl != null) {
+            binding.ivResultTrainerA.visibility = android.view.View.VISIBLE
+            Glide.with(this).load(teamATrainerImageUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter()
+                .into(binding.ivResultTrainerA)
+        }
+
+        // Team B label icon
+        if (teamBLabelIconUrl != null) {
+            Glide.with(this).load(teamBLabelIconUrl)
+                .placeholder(R.drawable.ic_battle).error(R.drawable.ic_battle)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter()
+                .into(binding.ivResultLabelB)
+        }
+        // Team B trainer image
+        if (teamBTrainerImageUrl != null) {
+            binding.ivResultTrainerB.visibility = android.view.View.VISIBLE
+            Glide.with(this).load(teamBTrainerImageUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter()
+                .into(binding.ivResultTrainerB)
+        }
 
         binding.recyclerResultA.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerResultA.adapter = BattleResultAdapter(result.teamA, theme)

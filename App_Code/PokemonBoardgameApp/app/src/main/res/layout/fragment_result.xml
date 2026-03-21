@@ -74,26 +74,71 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView android:id="@+id/tv_team_a_result_label"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="🔴 Player" android:textSize="14sp" android:textStyle="bold"
-                    android:paddingBottom="6dp"/>
+                <!-- Team A label row: icon + name -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+                    <ImageView
+                        android:id="@+id/iv_result_label_a"
+                        android:layout_width="24dp" android:layout_height="24dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_player"
+                        android:scaleType="fitCenter"
+                        android:adjustViewBounds="true"/>
+                    <TextView android:id="@+id/tv_team_a_result_label"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Player" android:textSize="14sp" android:textStyle="bold"/>
+                </LinearLayout>
 
-                <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_result_a"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"/>
+                <!-- Team A trainer image + results -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:paddingBottom="4dp">
+                    <ImageView
+                        android:id="@+id/iv_result_trainer_a"
+                        android:layout_width="70dp" android:layout_height="wrap_content"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"
+                        android:layout_marginEnd="4dp"
+                        android:visibility="gone"/>
+                    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_result_a"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:nestedScrollingEnabled="false"/>
+                </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp"
                     android:background="#33FFFFFF" android:layout_marginVertical="10dp"/>
 
-                <TextView android:id="@+id/tv_team_b_result_label"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="🔵 Enemy Trainer" android:textSize="14sp" android:textStyle="bold"
-                    android:paddingBottom="6dp"/>
+                <!-- Team B label row: icon + name -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+                    <ImageView
+                        android:id="@+id/iv_result_label_b"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_battle"
+                        android:scaleType="fitCenter"
+                        android:adjustViewBounds="true"/>
+                    <TextView android:id="@+id/tv_team_b_result_label"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Enemy Trainer" android:textSize="14sp" android:textStyle="bold"/>
+                </LinearLayout>
 
-                <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_result_b"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"/>
+                <!-- Team B trainer image + results -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:id="@+id/iv_result_trainer_b"
+                        android:layout_width="70dp" android:layout_height="wrap_content"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"
+                        android:layout_marginEnd="4dp"
+                        android:visibility="gone"/>
+                    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_result_b"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:nestedScrollingEnabled="false"/>
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
 
