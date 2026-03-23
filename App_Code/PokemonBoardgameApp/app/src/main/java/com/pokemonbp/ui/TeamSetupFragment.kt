@@ -718,7 +718,6 @@ class TeamSetupFragment : Fragment() {
                 val ivSprite = frame.findViewById<android.widget.ImageView>(R.id.iv_slot_sprite)
                 val llTypes  = frame.findViewById<android.widget.LinearLayout>(R.id.ll_slot_types)
                 val tvName     = frame.findViewById<android.widget.TextView>(R.id.tv_slot_name)
-                val tvNameEN   = frame.findViewById<android.widget.TextView>(R.id.tv_slot_name_en)
                 val tvBpValue  = frame.findViewById<android.widget.TextView>(R.id.tv_slot_bp_value)
                 val btnBpMinus = frame.findViewById<android.widget.TextView>(R.id.btn_slot_bp_minus)
                 val btnBpPlus  = frame.findViewById<android.widget.TextView>(R.id.btn_slot_bp_plus)
@@ -735,14 +734,23 @@ class TeamSetupFragment : Fragment() {
                     ivSprite.loadPokemonSprite(requireContext(), preset.pokedexId)
                     llTypes.removeAllViews()
                     preset.types.forEach { type ->
-                        val chip = android.widget.ImageView(requireContext())
-                        val sz = (14 * resources.displayMetrics.density).toInt()
-                        chip.layoutParams = android.widget.LinearLayout.LayoutParams(sz, sz).also { it.marginEnd = (2 * resources.displayMetrics.density).toInt() }
-                        Glide.with(requireContext()).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(chip)
-                        llTypes.addView(chip)
+                        val cell = android.widget.FrameLayout(requireContext())
+                        cell.layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                        val icon = android.widget.ImageView(requireContext())
+                        icon.layoutParams = android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+                        icon.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                        icon.adjustViewBounds = true
+                        Glide.with(requireContext())
+                            .load(SpriteUrls.typeIconUrl(type.name))
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(icon)
+                        cell.addView(icon)
+                        llTypes.addView(cell)
                     }
-                    tvName.text = preset.nameDE
-                    tvNameEN.text = preset.name
+                    tvName.text = if (preset.nameDE == preset.name) preset.name else "${preset.nameDE} / ${preset.name}"
                     tvBpValue.text = "${entry.bp}"
                     btnBpMinus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp <= 1) 12 else entry.bp - 1); refreshSlots() }
                     btnBpPlus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp >= 12) 1 else entry.bp + 1); refreshSlots() }

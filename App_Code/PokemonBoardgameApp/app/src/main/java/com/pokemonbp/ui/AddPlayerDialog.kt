@@ -130,7 +130,6 @@ class AddPlayerDialog(
                 val ivSprite   = frame.findViewById<ImageView>(R.id.iv_slot_sprite)
                 val llTypes    = frame.findViewById<LinearLayout>(R.id.ll_slot_types)
                 val tvName     = frame.findViewById<TextView>(R.id.tv_slot_name)
-                val tvNameEN   = frame.findViewById<TextView>(R.id.tv_slot_name_en)
                 val tvBpValue  = frame.findViewById<TextView>(R.id.tv_slot_bp_value)
                 val btnBpMinus = frame.findViewById<TextView>(R.id.btn_slot_bp_minus)
                 val btnBpPlus  = frame.findViewById<TextView>(R.id.btn_slot_bp_plus)
@@ -151,24 +150,27 @@ class AddPlayerDialog(
                     // Sprite
                     ivSprite.loadPokemonSprite(requireContext(), preset.pokedexId)
 
-                    // Types
+                    // Type icons — one per type, equal-height cells stacked vertically
                     llTypes.removeAllViews()
                     preset.types.forEach { type ->
-                        val chip = ImageView(requireContext())
-                        val size = (14 * resources.displayMetrics.density).toInt()
-                        val lp = LinearLayout.LayoutParams(size, size)
-                        lp.marginEnd = (2 * resources.displayMetrics.density).toInt()
-                        chip.layoutParams = lp
+                        val cell = android.widget.FrameLayout(requireContext())
+                        cell.layoutParams = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                        val icon = ImageView(requireContext())
+                        icon.layoutParams = android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+                        icon.scaleType = ImageView.ScaleType.FIT_CENTER
+                        icon.adjustViewBounds = true
                         Glide.with(requireContext())
                             .load(SpriteUrls.typeIconUrl(type.name))
                             .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
-                            .into(chip)
-                        llTypes.addView(chip)
+                            .into(icon)
+                        cell.addView(icon)
+                        llTypes.addView(cell)
                     }
 
-                    // Names (DE + EN)
-                    tvName.text = preset.nameDE
-                    tvNameEN.text = preset.name
+                    tvName.text = if (preset.nameDE == preset.name) preset.name else "${preset.nameDE} / ${preset.name}"
 
                     // BP control
                     tvBpValue.text = "${entry.bp}"
