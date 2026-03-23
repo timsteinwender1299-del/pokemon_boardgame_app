@@ -20,10 +20,14 @@ class PokemonListAdapter(
     private val pokemonList: MutableList<Pokemon>,
     private val theme: AppTheme,
     private val onDelete: (Int) -> Unit,
-    private val onSelected: (Int) -> Unit = {}
+    private val onSelected: (Int) -> Unit = {},
+    private val onRevive: (Int) -> Unit = {}
 ) : RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
 
     var activeIndex: Int = 0
+        set(value) { field = value; notifyDataSetChanged() }
+
+    var faintedIndices: Set<Int> = emptySet()
         set(value) { field = value; notifyDataSetChanged() }
 
     inner class PokemonViewHolder(val binding: ItemPokemonBinding) : RecyclerView.ViewHolder(binding.root)
@@ -36,8 +40,8 @@ class PokemonListAdapter(
         val c = ThemeManager.colorsFor(theme)
         val typeColor = Color.parseColor(pokemon.types.first().colorHex)
         val isActive = position == activeIndex
+        val isFainted = position in faintedIndices
 
-        // Active = full color border + normal alpha; inactive = grey border + dimmed
         if (isActive) {
             holder.binding.cardPokemon.setCardBackgroundColor(c.surface)
             holder.binding.cardPokemon.strokeColor = typeColor
@@ -57,8 +61,17 @@ class PokemonListAdapter(
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
         loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView)
-        holder.binding.tvBaseBp.text = "BP: ${pokemon.baseBP}"
-        holder.binding.tvBaseBp.setTextColor(c.accent)
+        if (isFainted) {
+            holder.binding.tvBaseBp.visibility = android.view.View.GONE
+            holder.binding.ivFainted.visibility = android.view.View.VISIBLE
+            holder.binding.btnRevive.visibility = android.view.View.VISIBLE
+        } else {
+            holder.binding.tvBaseBp.visibility = android.view.View.VISIBLE
+            holder.binding.ivFainted.visibility = android.view.View.GONE
+            holder.binding.btnRevive.visibility = android.view.View.GONE
+            holder.binding.tvBaseBp.text = "BP: ${pokemon.baseBP}"
+            holder.binding.tvBaseBp.setTextColor(c.accent)
+        }
 
         if (theme == AppTheme.RETRO) {
             holder.binding.tvPokemonName.typeface = Typeface.MONOSPACE
@@ -74,10 +87,10 @@ class PokemonListAdapter(
             holder.binding.ivSprite.visibility = android.view.View.GONE
         }
 
-        // Tap card to select as active
+        // Tap card to select as active (fainted cards are not selectable)
         holder.binding.cardPokemon.setOnClickListener {
             val pos = holder.adapterPosition
-            if (pos != RecyclerView.NO_ID.toInt() && pos != activeIndex) {
+            if (pos != RecyclerView.NO_ID.toInt() && pos != activeIndex && pos !in faintedIndices) {
                 activeIndex = pos
                 onSelected(pos)
             }
@@ -86,6 +99,11 @@ class PokemonListAdapter(
         holder.binding.btnDelete.setOnClickListener {
             val pos = holder.adapterPosition
             if (pos != RecyclerView.NO_ID.toInt()) onDelete(pos)
+        }
+
+        holder.binding.btnRevive.setOnClickListener {
+            val pos = holder.adapterPosition
+            if (pos != RecyclerView.NO_ID.toInt()) onRevive(pos)
         }
     }
 

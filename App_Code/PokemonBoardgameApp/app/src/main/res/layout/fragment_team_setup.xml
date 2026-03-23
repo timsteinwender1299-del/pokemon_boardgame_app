@@ -51,6 +51,18 @@
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
+        <!-- Reload all Pokémon button -->
+        <ImageView
+            android:id="@+id/iv_reload_button"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/ic_reload"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
         <!-- Wild Pokémon button -->
         <ImageView
             android:id="@+id/iv_wild_button"

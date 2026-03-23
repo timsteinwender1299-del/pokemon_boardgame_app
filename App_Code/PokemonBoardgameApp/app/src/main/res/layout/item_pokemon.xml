@@ -58,6 +58,25 @@
             android:textStyle="bold"
             android:paddingEnd="10dp"/>
 
+        <ImageView android:id="@+id/iv_fainted"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_fainted"
+            android:scaleType="fitCenter"
+            android:paddingEnd="6dp"
+            android:visibility="gone"/>
+
+        <ImageButton android:id="@+id/btn_revive"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_revive"
+            android:scaleType="fitCenter"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:paddingEnd="6dp"
+            android:contentDescription="Revive"
+            android:visibility="gone"/>
+
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_delete"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="32dp"

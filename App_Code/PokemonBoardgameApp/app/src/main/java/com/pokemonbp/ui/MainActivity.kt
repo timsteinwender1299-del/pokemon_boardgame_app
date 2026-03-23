@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     fun navigateToResults(resultFragment: ResultFragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, resultFragment)
+            .add(R.id.fragment_container, resultFragment)
             .addToBackStack(null)
             .commit()
     }

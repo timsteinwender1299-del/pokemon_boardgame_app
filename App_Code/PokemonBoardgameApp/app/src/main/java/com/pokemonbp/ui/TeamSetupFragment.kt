@@ -31,9 +31,14 @@ class TeamSetupFragment : Fragment() {
     private var activeIndexB = 0
 
     private var teamATrainer: PlayerTrainer? = null
+    private var teamBSavedTrainer: PlayerTrainer? = null
     private var teamBLabel: String = "Enemy Trainer"
     private var currentEnemyTrainer: EnemyTrainer? = null
     private var wildMode = false
+
+    // Fainted Pokémon tracking (in-memory per battle session)
+    private val faintedIndicesA = mutableSetOf<Int>()
+    private val faintedIndicesB = mutableSetOf<Int>()
 
     private val panelBackStack = ArrayDeque<() -> Unit>()
 
@@ -61,6 +66,11 @@ class TeamSetupFragment : Fragment() {
             onSelected = { pos ->
                 activeIndexA = pos
                 updateBattleButton()
+            },
+            onRevive = { pos ->
+                faintedIndicesA.remove(pos)
+                adapterA.faintedIndices = faintedIndicesA.toSet()
+                updateBattleButton()
             }
         )
 
@@ -74,6 +84,11 @@ class TeamSetupFragment : Fragment() {
             },
             onSelected = { pos ->
                 activeIndexB = pos
+                updateBattleButton()
+            },
+            onRevive = { pos ->
+                faintedIndicesB.remove(pos)
+                adapterB.faintedIndices = faintedIndicesB.toSet()
                 updateBattleButton()
             }
         )
@@ -95,6 +110,11 @@ class TeamSetupFragment : Fragment() {
                           else "Updated $updated files, $failed failed."
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
             }
+        }
+
+        binding.ivReloadButton.setOnClickListener {
+            resetAllFainted()
+            Toast.makeText(requireContext(), "All Pokémon restored!", Toast.LENGTH_SHORT).show()
         }
 
         setupWildRouteGrid()
@@ -167,11 +187,51 @@ class TeamSetupFragment : Fragment() {
                 }
             }
 
+            // Faint callbacks
+            val capturedA = activeIndexA
+            val capturedB = activeIndexB
+            resultFrag.teamAPokemonCount = teamAList.size
+            resultFrag.teamBPokemonCount = teamBList.size
+            resultFrag.onYouLost  = { applyFaintA(capturedA) }
+            resultFrag.onYouWon   = { applyFaintB(capturedB) }
+            resultFrag.onAllFaintedA = { resetAllFainted() }
+            resultFrag.onAllFaintedB = { resetAllFainted() }
+
             (activity as MainActivity).navigateToResults(resultFrag)
         }
 
         updateBattleButton()
         restoreTrainerDisplay()
+    }
+
+    private fun resetAllFainted() {
+        faintedIndicesA.clear()
+        faintedIndicesB.clear()
+        adapterA.faintedIndices = emptySet()
+        adapterB.faintedIndices = emptySet()
+        // Auto-select first available Pokémon
+        if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
+        if (teamBList.isNotEmpty()) { activeIndexB = 0; adapterB.activeIndex = 0 }
+        updateBattleButton()
+    }
+
+    private fun applyFaintA(pokemonIndex: Int): Boolean {
+        faintedIndicesA.add(pokemonIndex)
+        adapterA.faintedIndices = faintedIndicesA.toSet()
+        // Advance active to next non-fainted
+        val next = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA }
+        if (next != null) { activeIndexA = next; adapterA.activeIndex = next }
+        updateBattleButton()
+        return faintedIndicesA.size >= teamAList.size
+    }
+
+    private fun applyFaintB(pokemonIndex: Int): Boolean {
+        faintedIndicesB.add(pokemonIndex)
+        adapterB.faintedIndices = faintedIndicesB.toSet()
+        val next = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB }
+        if (next != null) { activeIndexB = next; adapterB.activeIndex = next }
+        updateBattleButton()
+        return faintedIndicesB.size >= teamBList.size
     }
 
     private fun setupWildRouteGrid() {
@@ -837,6 +897,8 @@ class TeamSetupFragment : Fragment() {
                 trainers = all.toMutableList(), theme = theme, c = c,
                 onBattle = { trainer ->
                     teamATrainer = trainer; teamAList.clear()
+                    // Reset fainted state when trainer is (re)loaded
+                    faintedIndicesA.clear(); adapterA.faintedIndices = emptySet()
                     trainer.pokemon.forEach { preset ->
                         teamAList.add(Pokemon(id = System.currentTimeMillis().toInt() + teamAList.size,
                             name = preset.name, nameDE = preset.nameDE,
@@ -877,6 +939,7 @@ class TeamSetupFragment : Fragment() {
     private fun handleEnemySelected(enemyTrainer: EnemyTrainer, badge: Int?) {
         currentEnemyTrainer = enemyTrainer
         teamBList.clear()
+        faintedIndicesB.clear(); adapterB.faintedIndices = emptySet()
         val trainerImageUrl: String?
         when (enemyTrainer) {
             is EnemyTrainer.GymLeader -> {
