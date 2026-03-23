@@ -241,9 +241,19 @@
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"/>
                 <TextView android:id="@+id/tv_team_a_label"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Player" android:textSize="15sp" android:textStyle="bold"
                     android:includeFontPadding="false"/>
+                <ImageView
+                    android:id="@+id/iv_deload_player"
+                    android:layout_width="28dp" android:layout_height="28dp"
+                    android:src="@drawable/ic_remove"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:visibility="gone"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
             </LinearLayout>
 
             <!-- Team A action buttons -->
@@ -307,7 +317,7 @@
                 <ImageView
                     android:id="@+id/iv_deload_enemy"
                     android:layout_width="28dp" android:layout_height="28dp"
-                    android:src="@drawable/ic_garbage_bin"
+                    android:src="@drawable/ic_remove"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
                     android:visibility="gone"

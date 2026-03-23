@@ -147,6 +147,7 @@ class TeamSetupFragment : Fragment() {
         binding.btnChooseTrainerA.setOnClickListener { showChooseTrainerPanel() }
         binding.btnChooseEnemyB.setOnClickListener { showEnemyTrainerDialog() }
         binding.ivDeloadEnemy.setOnClickListener { deloadEnemyTrainer() }
+        binding.ivDeloadPlayer.setOnClickListener { deloadPlayerTrainer() }
 
         binding.btnCalculate.setOnClickListener {
             if (teamAList.isEmpty() || teamBList.isEmpty()) {
@@ -482,6 +483,24 @@ class TeamSetupFragment : Fragment() {
         binding.ivLabelB.setImageResource(R.drawable.ic_battle)
         binding.ivTrainerB.visibility = android.view.View.GONE
         updateDeloadButton()
+        updateBattleButton()
+    }
+
+    private fun updateDeloadPlayerButton() {
+        binding.ivDeloadPlayer.visibility =
+            if (teamATrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+    private fun deloadPlayerTrainer() {
+        teamATrainer = null
+        teamAList.clear()
+        faintedIndicesA.clear()
+        adapterA.faintedIndices = emptySet()
+        adapterA.notifyDataSetChanged()
+        updateTeamALabel()
+        binding.ivLabelA.setImageResource(R.drawable.ic_player)
+        binding.ivTrainerA.visibility = android.view.View.GONE
+        updateDeloadPlayerButton()
         updateBattleButton()
     }
 
@@ -907,6 +926,7 @@ class TeamSetupFragment : Fragment() {
                     }
                     activeIndexA = 0; adapterA.activeIndex = 0; adapterA.notifyDataSetChanged()
                     updateTeamALabel()
+                    updateDeloadPlayerButton()
                     loadLabelIcon(SpriteUrls.avatarUrl(trainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
                     loadTrainerImage(SpriteUrls.playerTrainerImageUrl(trainer.avatarId), binding.ivTrainerA)
                     updateBattleButton()
@@ -1620,6 +1640,7 @@ class TeamSetupFragment : Fragment() {
             loadLabelIcon(SpriteUrls.avatarUrl(aTrainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
             loadTrainerImage(SpriteUrls.playerTrainerImageUrl(aTrainer.avatarId), binding.ivTrainerA)
         }
+        updateDeloadPlayerButton()
         val enemy = currentEnemyTrainer
         if (enemy != null) {
             binding.tvTeamBLabel.text = teamBLabel
