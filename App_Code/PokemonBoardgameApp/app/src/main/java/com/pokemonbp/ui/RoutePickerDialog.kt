@@ -170,7 +170,7 @@ class RoutePickerDialog(
 
 // ── Route grid adapter (route name buttons, 2-col) ────────────────────────────
 
-private class RouteGridAdapter(
+class RouteGridAdapter(
     private val routes: List<RouteLocation>,
     private val c: ThemeColors,
     private val onRouteClick: (RouteLocation) -> Unit,
@@ -201,7 +201,7 @@ private class RouteGridAdapter(
 
 // ── Pokémon grid adapter (sprites + types + BP, 3-col) ───────────────────────
 
-private class RoutePokemonGridAdapter(
+class RoutePokemonGridAdapter(
     private val pokemon: List<RoutePokemon>,
     private val c: ThemeColors,
     private val onClick: (RoutePokemon) -> Unit
@@ -213,6 +213,9 @@ private class RoutePokemonGridAdapter(
         val ivType2:  ImageView = v.findViewById(R.id.iv_route_type2)
         val tvBP:     TextView  = v.findViewById(R.id.tv_route_bp)
         val tvName:   TextView  = v.findViewById(R.id.tv_route_pokemon_name)
+        val tvNameEN: TextView  = v.findViewById(R.id.tv_route_pokemon_name_en)
+        val tvValue1: TextView  = v.findViewById(R.id.tv_route_value1)
+        val tvValue2: TextView  = v.findViewById(R.id.tv_route_value2)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
@@ -223,9 +226,16 @@ private class RoutePokemonGridAdapter(
         val p   = pokemon[position]
         val ctx = holder.itemView.context
 
-        holder.tvName.text = "${p.nameDE} / ${p.nameEN}"
-        holder.tvName.setTextColor(c.textSecondary)
+        holder.tvName.text = p.nameDE
+        holder.tvName.setTextColor(c.textPrimary)
+        holder.tvNameEN.text = p.nameEN
+        holder.tvNameEN.setTextColor(c.textSecondary)
         holder.tvBP.text = if (p.bp > 0) "BP: ${p.bp}" else "BP: ?"
+
+        // Values
+        val valueParts = p.value?.split("/")
+        holder.tvValue1.text = valueParts?.getOrNull(0)?.trim() ?: ""
+        holder.tvValue2.text = valueParts?.getOrNull(1)?.trim() ?: ""
 
         val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
 

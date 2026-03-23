@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.SpriteUrls
+import com.pokemonbp.R
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.data.TypeChart
 import android.widget.ImageView
@@ -70,10 +71,15 @@ class BattleResultAdapter(
             else -> c.textSecondary
         })
 
-        // Sprite
-        val spriteUrl = result.pokemon.spriteUrl()
-        if (spriteUrl != null) {
-            Glide.with(holder.itemView.context).load(spriteUrl).into(holder.binding.ivSprite)
+        // Sprite — use artwork images
+        val pokedexId = result.pokemon.pokedexId
+        if (pokedexId > 0) {
+            Glide.with(holder.itemView.context)
+                .load(SpriteUrls.urlFor(pokedexId))
+                .placeholder(R.drawable.ic_pokeball)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(holder.binding.ivSprite)
             holder.binding.ivSprite.visibility = android.view.View.VISIBLE
         } else {
             holder.binding.ivSprite.visibility = android.view.View.GONE

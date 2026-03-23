@@ -108,15 +108,16 @@ class AddPlayerDialog(
         var openPicker: (Int, Int) -> Unit = { _, _ -> }
 
         openPicker = { i, currentBp ->
-            PokemonPickerDialog(theme) { picked ->
+            AddTrainerPokemonDialog(theme) { name, nameDE, types, bp, pokedexId ->
                 pokemonEntries[i] = TrainerPokemonEntry(
                     preset = PokemonPreset(
-                        name = picked.name, nameDE = picked.nameDE,
-                        pokedexId = picked.id, types = picked.types, baseBP = currentBp
+                        name = name, nameDE = nameDE,
+                        pokedexId = pokedexId, types = types,
+                        baseBP = bp
                     )
                 )
                 refreshSlots()
-            }.show(parentFragmentManager, "PickerSlot$i")
+            }.show(parentFragmentManager, "TrainerPokemonSlot$i")
         }
 
         refreshSlots = {
@@ -129,7 +130,10 @@ class AddPlayerDialog(
                 val ivSprite   = frame.findViewById<ImageView>(R.id.iv_slot_sprite)
                 val llTypes    = frame.findViewById<LinearLayout>(R.id.ll_slot_types)
                 val tvName     = frame.findViewById<TextView>(R.id.tv_slot_name)
-                val btnBp      = frame.findViewById<MaterialButton>(R.id.btn_slot_bp)
+                val tvNameEN   = frame.findViewById<TextView>(R.id.tv_slot_name_en)
+                val tvBpValue  = frame.findViewById<TextView>(R.id.tv_slot_bp_value)
+                val btnBpMinus = frame.findViewById<TextView>(R.id.btn_slot_bp_minus)
+                val btnBpPlus  = frame.findViewById<TextView>(R.id.btn_slot_bp_plus)
                 val btnRemove  = frame.findViewById<ImageButton>(R.id.btn_slot_remove)
                 val btnEvolve  = frame.findViewById<ImageButton>(R.id.btn_slot_evolve)
                 val btnDusk    = frame.findViewById<ImageButton>(R.id.btn_slot_duskstone)
@@ -162,12 +166,18 @@ class AddPlayerDialog(
                         llTypes.addView(chip)
                     }
 
-                    // Name
+                    // Names (DE + EN)
                     tvName.text = preset.nameDE
+                    tvNameEN.text = preset.name
 
-                    // BP button
-                    btnBp.text = "${entry.bp}"
-                    btnBp.setOnClickListener {
+                    // BP control
+                    tvBpValue.text = "${entry.bp}"
+                    btnBpMinus.setOnClickListener {
+                        val next = if (entry.bp <= 1) 12 else entry.bp - 1
+                        pokemonEntries[i] = entry.copy(bp = next)
+                        refreshSlots()
+                    }
+                    btnBpPlus.setOnClickListener {
                         val next = if (entry.bp >= 12) 1 else entry.bp + 1
                         pokemonEntries[i] = entry.copy(bp = next)
                         refreshSlots()

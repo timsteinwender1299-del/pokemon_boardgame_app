@@ -56,7 +56,8 @@ object RouteData {
     // Parses RoutesNormal.txt — supports optional | Badge X tier lines within each route
     private fun parseNormalFile(context: Context): Map<String, List<RouteTier>> {
         val cached = DataSyncManager.routesNormalFile(context)
-        val text = if (cached.exists()) cached.readText()
+        val cachedText = if (cached.exists()) cached.readText() else null
+        val text = if (cachedText != null && cachedText.contains("(Value:")) cachedText
                    else context.assets.open("RoutesNormal.txt").bufferedReader().readText()
 
         val result = linkedMapOf<String, MutableList<RouteTier>>()
@@ -95,7 +96,8 @@ object RouteData {
 
     private fun parseLegendaryFile(context: Context): Map<String, List<RouteTier>> {
         val cached = DataSyncManager.routesLegendaryFile(context)
-        val text = if (cached.exists()) cached.readText()
+        val cachedText = if (cached.exists()) cached.readText() else null
+        val text = if (cachedText != null && cachedText.contains("(Value:")) cachedText
                    else context.assets.open("RoutesLegendary.txt").bufferedReader().readText()
         val result = linkedMapOf<String, MutableList<RouteTier>>()
         var currentBase: String? = null

@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash",
       "Read(//c/Users/Tim/Dev/pokemon_boardgame_app/Images/Icons/**)",
@@ -45,7 +46,19 @@
       "Bash(cp -r \"/c/Users/Tim/Dev/pokemon_boardgame_app/App_Code/PokemonBoardgameApp/app/src\" \"/c/Users/Tim/Dev/BackUp/PokemonBoardgameApp_20260320_src\")",
       "Bash(cp \"/c/Users/Tim/Dev/pokemon_boardgame_app/App_Code/PokemonBoardgameApp/app/build.gradle\" \"/c/Users/Tim/Dev/BackUp/PokemonBoardgameApp_20260320_src/\")",
       "Skill(update-config)",
-      "Bash(/c/Users/Tim/.gradle/wrapper/dists/gradle-8.2-bin/bbg7u40eoinfdyxsxr3z4i7ta/gradle-8.2/bin/gradle compileDebugKotlin)"
+      "Bash(/c/Users/Tim/.gradle/wrapper/dists/gradle-8.2-bin/bbg7u40eoinfdyxsxr3z4i7ta/gradle-8.2/bin/gradle compileDebugKotlin)",
+      "Bash(2)",
+      "Bash(cmd /c \"gradlew.bat assembleDebug\")",
+      "Bash(powershell -Command \".\\\\gradlew.bat assembleDebug\")",
+      "Bash(find C:/Users/Tim/Dev -name gradlew*)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\Tim\\\\Dev\\\\pokemon_boardgame_app\\\\App_Code\\\\PokemonBoardgameApp && gradlew.bat assembleDebug 2>&1\")",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\Tim\\\\Dev\\\\pokemon_boardgame_app\\\\App_Code\\\\PokemonBoardgameApp && gradlew assembleDebug\")",
+      "Bash(ls:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/Tim/Dev/pokemon_boardgame_app/App_Code/PokemonBoardgameApp/**)",
+      "Bash(done)",
+      "Bash(find C:/Users/Tim/Dev/pokemon_boardgame_app -iname *.png -o -iname *.jpg -o -iname *.jpeg)"
     ]
   }
 }

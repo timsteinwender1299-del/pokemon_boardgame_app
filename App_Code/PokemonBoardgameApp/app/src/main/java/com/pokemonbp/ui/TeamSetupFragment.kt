@@ -547,11 +547,15 @@ class TeamSetupFragment : Fragment() {
                 val entry = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty() && bp > 0) {
-                    val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
-                        types = types, baseBP = bp, team = team, pokedexId = entry?.id ?: 0)
-                    if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
-                    else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
-                    updateBattleButton(); hidePanels()
+                    if (onAdded != null) {
+                        onAdded(nameEN, nameDE, types, bp, entry?.id ?: 0)
+                    } else {
+                        val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
+                            types = types, baseBP = bp, team = team, pokedexId = entry?.id ?: 0)
+                        if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
+                        else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
+                        updateBattleButton(); hidePanels()
+                    }
                 } else {
                     currentName = nameEN; currentNameDE = nameDE
                     val e2 = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
@@ -569,11 +573,15 @@ class TeamSetupFragment : Fragment() {
                 val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty()) {
-                    val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
-                        types = types, baseBP = 3, team = team, pokedexId = entry?.id ?: 0)
-                    if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
-                    else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
-                    updateBattleButton(); hidePanels()
+                    if (onAdded != null) {
+                        onAdded(nameEN, nameDE, types, 3, entry?.id ?: 0)
+                    } else {
+                        val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
+                            types = types, baseBP = 3, team = team, pokedexId = entry?.id ?: 0)
+                        if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
+                        else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
+                        updateBattleButton(); hidePanels()
+                    }
                 } else {
                     currentName = nameEN; currentNameDE = nameDE; currentPokedexId = entry?.id ?: 0
                     b.btnPickPokemon.text = if (currentPokedexId > 0) "  $nameEN  #$currentPokedexId" else "  $nameEN"
@@ -709,8 +717,11 @@ class TeamSetupFragment : Fragment() {
                 val llFilled = frame.findViewById<android.widget.LinearLayout>(R.id.ll_filled)
                 val ivSprite = frame.findViewById<android.widget.ImageView>(R.id.iv_slot_sprite)
                 val llTypes  = frame.findViewById<android.widget.LinearLayout>(R.id.ll_slot_types)
-                val tvName   = frame.findViewById<android.widget.TextView>(R.id.tv_slot_name)
-                val btnBp    = frame.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_slot_bp)
+                val tvName     = frame.findViewById<android.widget.TextView>(R.id.tv_slot_name)
+                val tvNameEN   = frame.findViewById<android.widget.TextView>(R.id.tv_slot_name_en)
+                val tvBpValue  = frame.findViewById<android.widget.TextView>(R.id.tv_slot_bp_value)
+                val btnBpMinus = frame.findViewById<android.widget.TextView>(R.id.btn_slot_bp_minus)
+                val btnBpPlus  = frame.findViewById<android.widget.TextView>(R.id.btn_slot_bp_plus)
                 val btnRemove= frame.findViewById<android.widget.ImageButton>(R.id.btn_slot_remove)
                 val btnEvolve= frame.findViewById<android.widget.ImageButton>(R.id.btn_slot_evolve)
                 val btnDusk  = frame.findViewById<android.widget.ImageButton>(R.id.btn_slot_duskstone)
@@ -731,8 +742,10 @@ class TeamSetupFragment : Fragment() {
                         llTypes.addView(chip)
                     }
                     tvName.text = preset.nameDE
-                    btnBp.text = "${entry.bp}"
-                    btnBp.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp >= 12) 1 else entry.bp + 1); refreshSlots() }
+                    tvNameEN.text = preset.name
+                    tvBpValue.text = "${entry.bp}"
+                    btnBpMinus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp <= 1) 12 else entry.bp - 1); refreshSlots() }
+                    btnBpPlus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp >= 12) 1 else entry.bp + 1); refreshSlots() }
                     Glide.with(requireContext()).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(btnRemove)
                     btnRemove.setOnClickListener { pokemonEntries[i] = null; refreshSlots() }
                     Glide.with(requireContext()).load(SpriteUrls.dawnstoneUrl).placeholder(R.drawable.ic_dawnstone).error(R.drawable.ic_dawnstone).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(btnEvolve)
