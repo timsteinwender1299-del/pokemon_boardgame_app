@@ -51,18 +51,6 @@
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
-        <!-- Reload all Pokémon button -->
-        <ImageView
-            android:id="@+id/iv_reload_button"
-            android:layout_width="36dp" android:layout_height="36dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_reload"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-
         <!-- Wild Pokémon button -->
         <ImageView
             android:id="@+id/iv_wild_button"
@@ -246,6 +234,15 @@
                     android:text="Player" android:textSize="15sp" android:textStyle="bold"
                     android:includeFontPadding="false"/>
                 <ImageView
+                    android:id="@+id/iv_reload_a"
+                    android:layout_width="28dp" android:layout_height="28dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_reload"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView
                     android:id="@+id/iv_deload_player"
                     android:layout_width="28dp" android:layout_height="28dp"
                     android:src="@drawable/ic_remove"
@@ -314,6 +311,15 @@
                     android:layout_weight="1"
                     android:text="Enemy Trainer" android:textSize="15sp" android:textStyle="bold"
                     android:includeFontPadding="false"/>
+                <ImageView
+                    android:id="@+id/iv_reload_b"
+                    android:layout_width="28dp" android:layout_height="28dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_reload"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
                 <ImageView
                     android:id="@+id/iv_deload_enemy"
                     android:layout_width="28dp" android:layout_height="28dp"

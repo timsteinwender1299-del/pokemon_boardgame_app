@@ -112,9 +112,17 @@ class TeamSetupFragment : Fragment() {
             }
         }
 
-        binding.ivReloadButton.setOnClickListener {
-            resetAllFainted()
-            Toast.makeText(requireContext(), "All Pokémon restored!", Toast.LENGTH_SHORT).show()
+        binding.ivReloadA.setOnClickListener {
+            faintedIndicesA.clear()
+            adapterA.faintedIndices = emptySet()
+            if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
+            updateBattleButton()
+        }
+        binding.ivReloadB.setOnClickListener {
+            faintedIndicesB.clear()
+            adapterB.faintedIndices = emptySet()
+            if (teamBList.isNotEmpty()) { activeIndexB = 0; adapterB.activeIndex = 0 }
+            updateBattleButton()
         }
 
         setupWildRouteGrid()
@@ -353,7 +361,7 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun updateTeamALabel() {
-        binding.tvTeamALabel.text = "🔴 ${teamATrainer?.name ?: "Player"}"
+        binding.tvTeamALabel.text = teamATrainer?.name ?: "Player"
     }
 
     private fun loadLabelIcon(url: String?, imageView: android.widget.ImageView, fallbackRes: Int) {
@@ -470,8 +478,9 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun updateDeloadButton() {
-        binding.ivDeloadEnemy.visibility =
-            if (currentEnemyTrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+        val vis = if (currentEnemyTrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+        binding.ivDeloadEnemy.visibility = vis
+        binding.ivReloadB.visibility = vis
     }
 
     private fun deloadEnemyTrainer() {
@@ -487,8 +496,9 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun updateDeloadPlayerButton() {
-        binding.ivDeloadPlayer.visibility =
-            if (teamATrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+        val vis = if (teamATrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+        binding.ivDeloadPlayer.visibility = vis
+        binding.ivReloadA.visibility = vis
     }
 
     private fun deloadPlayerTrainer() {
@@ -712,15 +722,27 @@ class TeamSetupFragment : Fragment() {
         var selGender = existingTrainer?.gender ?: com.pokemonbp.model.TrainerGender.MALE
         val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
         var avatarPickerVisible = false
+        var teamBodyVisible = false
 
-        val etName          = v.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_trainer_name)
-        val btnChooseAvatar = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_choose_avatar)
-        val layoutAvatar    = v.findViewById<android.widget.LinearLayout>(R.id.layout_avatar_picker)
-        val tabLayout       = v.findViewById<com.google.android.material.tabs.TabLayout>(R.id.tab_gender)
-        val recyclerAvatars = v.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_avatars)
-        val btnConfirmAvatar= v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_confirm_avatar)
-        val btnSave         = v.findViewById<android.widget.Button>(R.id.btn_save_player)
-        val btnCancel       = v.findViewById<android.widget.Button>(R.id.btn_cancel_player)
+        val etName               = v.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_trainer_name)
+        val btnChooseAvatar      = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_choose_avatar)
+        val layoutAvatar         = v.findViewById<android.widget.LinearLayout>(R.id.layout_avatar_picker)
+        val tabLayout            = v.findViewById<com.google.android.material.tabs.TabLayout>(R.id.tab_gender)
+        val recyclerAvatars      = v.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_avatars)
+        val btnConfirmAvatar     = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_confirm_avatar)
+        val btnSave              = v.findViewById<android.widget.Button>(R.id.btn_save_player)
+        val btnCancel            = v.findViewById<android.widget.Button>(R.id.btn_cancel_player)
+        val llTeamHeader         = v.findViewById<android.widget.LinearLayout>(R.id.ll_pokemon_team_header)
+        val tvTeamToggle         = v.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
+        val layoutTeamBody       = v.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
+        val llBadgeHeader        = v.findViewById<android.widget.LinearLayout>(R.id.ll_badge_header)
+        val tvBadgeToggle        = v.findViewById<android.widget.TextView>(R.id.tv_badge_toggle)
+        val layoutBadgeBody      = v.findViewById<android.widget.LinearLayout>(R.id.layout_badge_body)
+        val previewViews         = listOf(
+            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_1),
+            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_2),
+            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_3),
+            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_4))
 
         etName.setTextColor(c.textPrimary); etName.setHintTextColor(c.textSecondary)
         existingTrainer?.let { etName.setText(it.name) }
@@ -758,6 +780,17 @@ class TeamSetupFragment : Fragment() {
             avatarPickerVisible = false; layoutAvatar.visibility = android.view.View.GONE
             val num = if (selGender == com.pokemonbp.model.TrainerGender.MALE) selAvatarId else selAvatarId - 100
             btnChooseAvatar.text = "👤 Character ${if (selGender == com.pokemonbp.model.TrainerGender.MALE) "♂" else "♀"} #$num — tap to change"
+        }
+        llTeamHeader.setOnClickListener {
+            teamBodyVisible = !teamBodyVisible
+            layoutTeamBody.visibility = if (teamBodyVisible) android.view.View.VISIBLE else android.view.View.GONE
+            tvTeamToggle.text = if (teamBodyVisible) "▲ Pokémon Team" else "▼ Pokémon Team"
+        }
+        var badgeBodyVisible = false
+        llBadgeHeader.setOnClickListener {
+            badgeBodyVisible = !badgeBodyVisible
+            layoutBadgeBody.visibility = if (badgeBodyVisible) android.view.View.VISIBLE else android.view.View.GONE
+            tvBadgeToggle.text = if (badgeBodyVisible) "▲ Badge" else "▼ Badge"
         }
 
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
@@ -862,6 +895,15 @@ class TeamSetupFragment : Fragment() {
                     }
                     ivSprite.setOnClickListener { openPicker(i, entry.bp) }
                     tvName.setOnClickListener { openPicker(i, entry.bp) }
+                }
+            }
+            // Update preview sprites in the collapsed header
+            pokemonEntries.forEachIndexed { i, entry ->
+                val preview = previewViews.getOrNull(i) ?: return@forEachIndexed
+                if (entry != null) {
+                    preview.loadPokemonSprite(requireContext(), entry.preset.pokedexId)
+                } else {
+                    preview.setImageResource(R.drawable.ic_pokeball_empty)
                 }
             }
         }
@@ -1636,7 +1678,7 @@ class TeamSetupFragment : Fragment() {
     private fun restoreTrainerDisplay() {
         val aTrainer = teamATrainer
         if (aTrainer != null) {
-            binding.tvTeamALabel.text = "🔴 ${aTrainer.name}"
+            binding.tvTeamALabel.text = aTrainer.name
             loadLabelIcon(SpriteUrls.avatarUrl(aTrainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
             loadTrainerImage(SpriteUrls.playerTrainerImageUrl(aTrainer.avatarId), binding.ivTrainerA)
         }

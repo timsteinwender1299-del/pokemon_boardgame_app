@@ -29,118 +29,196 @@
     <View android:layout_width="match_parent" android:layout_height="2dp"
         android:background="#FFFFFF"/>
 
-    <!-- Screen panel (takes remaining height) -->
-    <LinearLayout android:id="@+id/screen_panel"
+    <!-- Screen panel -->
+    <ScrollView
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
-        android:orientation="vertical"
         android:background="@drawable/pokedex_screen_bg"
-        android:padding="14dp">
+        android:fillViewport="true">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <LinearLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:hint="Trainer Name"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="10dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_trainer_name"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:inputType="textPersonName"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:orientation="vertical"
+            android:padding="14dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_choose_avatar"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent" android:layout_height="44dp"
-            android:text="👤 Choose Character" android:textAllCaps="false"
-            app:cornerRadius="8dp" android:layout_marginBottom="8dp"/>
-
-        <LinearLayout android:id="@+id/layout_avatar_picker"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:visibility="gone"
-            android:layout_marginBottom="8dp">
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_gender"
-                android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_avatars"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"/>
+                android:hint="Trainer Name"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_marginBottom="10dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_trainer_name"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textPersonName"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Choose Character toggle button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_confirm_avatar"
-                android:layout_width="match_parent" android:layout_height="44dp"
-                android:text="Confirm" android:textAllCaps="false"
-                app:cornerRadius="8dp" android:layout_marginTop="8dp"/>
-        </LinearLayout>
-
-        <!-- Push slots to bottom half -->
-        <View android:layout_width="match_parent" android:layout_height="0dp"
-            android:layout_weight="1"/>
-
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Pokémon Team" android:textSize="12sp" android:paddingBottom="6dp"
-            android:textColor="#AAAAAA"/>
-
-        <!-- Row 1 -->
-        <LinearLayout
-            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="3"
-            android:orientation="horizontal" android:layout_marginBottom="4dp">
-            <FrameLayout android:id="@+id/slot_0"
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:background="@drawable/slot_bg"
-                android:clickable="true" android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"/>
-            <FrameLayout android:id="@+id/slot_1"
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/slot_bg"
-                android:clickable="true" android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"/>
-        </LinearLayout>
-
-        <!-- Row 2 -->
-        <LinearLayout
-            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="3"
-            android:orientation="horizontal">
-            <FrameLayout android:id="@+id/slot_2"
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:background="@drawable/slot_bg"
-                android:clickable="true" android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"/>
-            <FrameLayout android:id="@+id/slot_3"
-                android:layout_width="0dp" android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/slot_bg"
-                android:clickable="true" android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"/>
-        </LinearLayout>
-
-        <!-- Hidden compat views -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_trainer_pokemon"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:visibility="gone"/>
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_add_trainer_pokemon"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:visibility="gone"/>
-
-        <!-- Action buttons -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:paddingTop="10dp">
-            <com.google.android.material.button.MaterialButton android:id="@+id/btn_cancel_player"
+                android:id="@+id/btn_choose_avatar"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:text="Close" android:textAllCaps="false" android:textColor="#CC0000"
-                app:strokeColor="#CC0000" app:cornerRadius="22dp"/>
-            <com.google.android.material.button.MaterialButton android:id="@+id/btn_save_player"
-                android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
-                android:text="Save Trainer" android:textAllCaps="false" android:textColor="#FFFFFF"
-                app:backgroundTint="#CC0000" app:cornerRadius="22dp"/>
-        </LinearLayout>
+                android:layout_width="match_parent" android:layout_height="44dp"
+                android:text="👤 Choose Character" android:textAllCaps="false"
+                app:cornerRadius="8dp" android:layout_marginBottom="8dp"/>
 
-    </LinearLayout>
+            <!-- Avatar picker (collapsible) -->
+            <LinearLayout android:id="@+id/layout_avatar_picker"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:visibility="gone"
+                android:layout_marginBottom="8dp">
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_gender"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_avatars"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_confirm_avatar"
+                    android:layout_width="match_parent" android:layout_height="44dp"
+                    android:text="Confirm" android:textAllCaps="false"
+                    app:cornerRadius="8dp" android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+            <!-- Pokémon Team header (toggle, label on top, 4 sprites below) -->
+            <LinearLayout android:id="@+id/ll_pokemon_team_header"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="4dp">
+
+                <TextView android:id="@+id/tv_pokemon_team_toggle"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="▼ Pokémon Team" android:textSize="12sp"
+                    android:textColor="#AAAAAA"
+                    android:paddingTop="4dp" android:paddingBottom="4dp"/>
+
+                <!-- 4 preview sprites -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="56dp"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+                    <ImageView android:id="@+id/iv_team_preview_1"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_pokeball_empty"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
+                    <ImageView android:id="@+id/iv_team_preview_2"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_pokeball_empty"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
+                    <ImageView android:id="@+id/iv_team_preview_3"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_pokeball_empty"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
+                    <ImageView android:id="@+id/iv_team_preview_4"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_pokeball_empty"
+                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Pokémon Team body (collapsible) -->
+            <LinearLayout android:id="@+id/layout_pokemon_team_body"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Row 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="120dp"
+                    android:orientation="horizontal" android:layout_marginBottom="4dp">
+                    <FrameLayout android:id="@+id/slot_0"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1" android:layout_marginEnd="4dp"
+                        android:background="@drawable/slot_bg"
+                        android:clickable="true" android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"/>
+                    <FrameLayout android:id="@+id/slot_1"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/slot_bg"
+                        android:clickable="true" android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"/>
+                </LinearLayout>
+
+                <!-- Row 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="120dp"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <FrameLayout android:id="@+id/slot_2"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1" android:layout_marginEnd="4dp"
+                        android:background="@drawable/slot_bg"
+                        android:clickable="true" android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"/>
+                    <FrameLayout android:id="@+id/slot_3"
+                        android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/slot_bg"
+                        android:clickable="true" android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Badge header (toggle, same style as Pokémon Team) -->
+            <LinearLayout android:id="@+id/ll_badge_header"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="4dp">
+
+                <TextView android:id="@+id/tv_badge_toggle"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="▼ Badge" android:textSize="12sp"
+                    android:textColor="#AAAAAA"
+                    android:paddingTop="4dp" android:paddingBottom="4dp"/>
+            </LinearLayout>
+
+            <!-- Badge body (collapsible) -->
+            <LinearLayout android:id="@+id/layout_badge_body"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:src="@drawable/ic_badge_case_empty"
+                    android:scaleType="fitCenter" android:adjustViewBounds="true"/>
+
+            </LinearLayout>
+
+            <!-- Hidden compat views -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_trainer_pokemon"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:visibility="gone"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_trainer_pokemon"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <!-- Action buttons -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingTop="10dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_cancel_player"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Close" android:textAllCaps="false" android:textColor="#CC0000"
+                    app:strokeColor="#CC0000" app:cornerRadius="22dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_save_player"
+                    android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                    android:text="Save Trainer" android:textAllCaps="false" android:textColor="#FFFFFF"
+                    app:backgroundTint="#CC0000" app:cornerRadius="22dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
