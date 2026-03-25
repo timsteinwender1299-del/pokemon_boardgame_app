@@ -1267,6 +1267,14 @@ class TeamSetupFragment : Fragment() {
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_route)
+                .setOnClickListener { if (routes.isNotEmpty()) handleRoute(routes.random()) }
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_town)
+                .setOnClickListener {
+                    val town = loadTowns().randomOrNull()
+                    if (town != null) android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("🏙️ Random Town").setMessage(town).setPositiveButton("OK", null).show()
+                }
             binding.layoutPanelSub.addView(view)
         }
 

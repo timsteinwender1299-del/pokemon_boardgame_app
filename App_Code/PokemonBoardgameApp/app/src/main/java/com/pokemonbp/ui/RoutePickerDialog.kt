@@ -50,39 +50,23 @@ class RoutePickerDialog(
 
         view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
 
-        view.findViewById<MaterialButton>(R.id.btn_rollsheet_route).setOnClickListener {
-            showRollSheet("RollSheet — Route", listOf(
-                RollSheetEntry("Pokemon-Kampf (Wild)",  "Du kämpfst gegen ein Wildes Pokemon auf deiner Route! (Würfel für Encounter)", "1–5"),
-                RollSheetEntry("Pokemon-Kampf (Trainer)", "Du begegnest einem Trainer auf deiner Route! (Routenpokemon +1/Orden | Reset 4 Orden)", "6–8"),
-                RollSheetEntry("Pokemon fangen",        "Du begegnest einem Wilden Pokemon auf deiner Route! (Würfel für Encounter)", "9–15"),
-                RollSheetEntry("Itemrad (Consumables)", "Du findest ein Item! (Würfle für Item)", "16–20")
-            ))
+        view.findViewById<MaterialButton>(R.id.btn_random_route).setOnClickListener {
+            if (routes.isNotEmpty()) handleRouteClick(routes.random())
         }
 
-        view.findViewById<MaterialButton>(R.id.btn_rollsheet_town).setOnClickListener {
-            showRollSheet("RollSheet — Town EventTime", listOf(
-                RollSheetEntry("Spacial Rend!",              "Du wirst zu einem zufälligen Ort teleportiert!", "1"),
-                RollSheetEntry("Kleiner Meteor",             "Ein Meteor schlägt in eine Zufällige Route ein!", "2"),
-                RollSheetEntry("Uno-Reverse!",               "Alle Type-Matchups sind verdreht diese Runde!", "3–4"),
-                RollSheetEntry("Doppelteam!",                "Du darfst noch einmal würfeln!", "5–6"),
-                RollSheetEntry("Finanzielle Hilfsmittel!",   "Du bekommst Geld anhand deiner Ordenanzahl (Badgesx10)", "7–8"),
-                RollSheetEntry("TownSpecific-Event!",        "TownSpecific-Event!", "9–14"),
-                RollSheetEntry("Itemrad (Type+)!",           "Du findest ein Item! (Würfle für Item)", "15–16"),
-                RollSheetEntry("Itemrad (Permanent)!",       "Du findest ein Item! (Würfle für Item)", "17"),
-                RollSheetEntry("NoSkippingLegDay!",          "Du kämpst trotzdem gegen die/den Arenaleiter/In", "18"),
-                RollSheetEntry("Großer Meteor!",             "Ein Meteor schlägt in eine Zufällige Stadt ein!", "19"),
-                RollSheetEntry("Roar of Time!",              "Dein Stärkstes Pokemon verliert 1BP (Es kann sich auch zurückentwickeln!)", "20")
-            ))
-        }
-
-        view.findViewById<MaterialButton>(R.id.btn_rollsheet_galactic).setOnClickListener {
-            showRollSheet("RollSheet — GalacticTime!", listOf(
-                RollSheetEntry("Raubüberfall!",   "Jeder Spieler verliert Geld! (200G)", "1–4"),
-                RollSheetEntry("Meteor!",         "Ein Meteor schlägt ein! Ein PKMN bei allen Spielern geht K.O.!", "5–8"),
-                RollSheetEntry("Pokemon Kampf!",  "Würfle für einen Trainerkampf! (Von der Route wo du die Stadt betreten hast)", "9–12"),
-                RollSheetEntry("Entführung!",     "Du wirst in das Geheimversteck von Team-Galaktik gebracht! (Schleife)", "13–16"),
-                RollSheetEntry("Diebstahl!",      "Du verlierst ein Item!", "17–20")
-            ))
+        view.findViewById<MaterialButton>(R.id.btn_random_town).setOnClickListener {
+            val towns = try {
+                requireContext().assets.open("towns.txt").bufferedReader().readLines()
+                    .map { it.trim() }.filter { it.isNotEmpty() }
+            } catch (e: Exception) { emptyList() }
+            val town = towns.randomOrNull()
+            if (town != null) {
+                android.app.AlertDialog.Builder(requireContext())
+                    .setTitle("🏙️ Random Town")
+                    .setMessage(town)
+                    .setPositiveButton("OK", null)
+                    .show()
+            }
         }
 
         val dialog = AlertDialog.Builder(requireContext())
