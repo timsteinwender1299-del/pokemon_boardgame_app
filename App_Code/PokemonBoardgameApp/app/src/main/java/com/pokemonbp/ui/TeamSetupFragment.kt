@@ -268,7 +268,7 @@ class TeamSetupFragment : Fragment() {
             val h = recycler.height
             if (h <= 0 || list.isEmpty()) return
             val marginPx = (10 * resources.displayMetrics.density).toInt()
-            val rows = maxOf(1, kotlin.math.ceil(list.size / 2.0).toInt())
+            val rows = 2 // always 2 rows (4 slots = 2×2 grid)
             val itemH = h / rows - marginPx
             if (itemH > 0) {
                 adapter.forcedItemHeight = itemH
