@@ -164,7 +164,7 @@
 
             </LinearLayout>
 
-            <!-- Badge header (toggle, same style as Pokémon Team) -->
+            <!-- Badge header (opens popup) -->
             <LinearLayout android:id="@+id/ll_badge_header"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -172,25 +172,11 @@
                 android:clickable="true" android:focusable="true"
                 android:layout_marginBottom="4dp">
 
-                <TextView android:id="@+id/tv_badge_toggle"
+                <TextView
                     android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="▼ Badge" android:textSize="12sp"
+                    android:text="🏅 Badge" android:textSize="12sp"
                     android:textColor="#AAAAAA"
                     android:paddingTop="4dp" android:paddingBottom="4dp"/>
-            </LinearLayout>
-
-            <!-- Badge body (collapsible) -->
-            <LinearLayout android:id="@+id/layout_badge_body"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:layout_marginBottom="8dp">
-
-                <ImageView
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:src="@drawable/ic_badge_case_empty"
-                    android:scaleType="fitCenter" android:adjustViewBounds="true"/>
-
             </LinearLayout>
 
             <!-- Hidden compat views -->

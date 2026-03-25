@@ -53,7 +53,8 @@ data class PlayerTrainer(
     val name: String,
     val avatarId: Int,
     val gender: TrainerGender,
-    val pokemon: List<PokemonPreset>  // up to 4, stores preset info
+    val pokemon: List<PokemonPreset>,  // up to 4, stores preset info
+    val badges: Set<Int> = emptySet()  // earned badge numbers 1-8
 )
 
 // Enemy trainer options

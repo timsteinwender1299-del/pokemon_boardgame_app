@@ -30,12 +30,29 @@ class PokemonListAdapter(
     var faintedIndices: Set<Int> = emptySet()
         set(value) { field = value; notifyDataSetChanged() }
 
+    var forcedItemHeight: Int = 0  // 0 = wrap_content
+
     inner class PokemonViewHolder(val binding: ItemPokemonBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         PokemonViewHolder(ItemPokemonBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: PokemonViewHolder, position: Int) {
+        val lp = holder.itemView.layoutParams
+        lp.height = if (forcedItemHeight > 0) forcedItemHeight else ViewGroup.LayoutParams.WRAP_CONTENT
+        holder.itemView.layoutParams = lp
+
+        // Scale sprite to fill card height minus padding
+        if (forcedItemHeight > 0) {
+            val density = holder.itemView.context.resources.displayMetrics.density
+            val paddingPx = (8 * density).toInt() * 2
+            val spriteSize = (forcedItemHeight - paddingPx).coerceAtLeast(24)
+            val slp = holder.binding.ivSprite.layoutParams
+            slp.width = spriteSize
+            slp.height = spriteSize
+            holder.binding.ivSprite.layoutParams = slp
+        }
+
         val pokemon = pokemonList[position]
         val c = ThemeManager.colorsFor(theme)
         val typeColor = Color.parseColor(pokemon.types.first().colorHex)

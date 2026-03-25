@@ -44,6 +44,25 @@ class TeamSetupFragment : Fragment() {
 
     private val mainActivity get() = activity as? MainActivity
 
+    // Maps gym leader ID → badge number 1-8
+    private val gymLeaderBadgeMap = mapOf(
+        "roark" to 1, "gardenia" to 2, "fantina" to 3, "hilda" to 4,
+        "crasherwake" to 5, "byron" to 6, "candice" to 7, "volkner" to 8
+    )
+
+    private val badgeDrawables = listOf(
+        R.drawable.ic_badge_1, R.drawable.ic_badge_2, R.drawable.ic_badge_3,
+        R.drawable.ic_badge_4, R.drawable.ic_badge_5, R.drawable.ic_badge_6,
+        R.drawable.ic_badge_7, R.drawable.ic_badge_8
+    )
+
+    private val badgeViews: List<android.widget.ImageView> by lazy {
+        listOf(
+            binding.ivBadge1, binding.ivBadge2, binding.ivBadge3, binding.ivBadge4,
+            binding.ivBadge5, binding.ivBadge6, binding.ivBadge7, binding.ivBadge8
+        )
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTeamSetupBinding.inflate(inflater, container, false)
         return binding.root
@@ -96,10 +115,28 @@ class TeamSetupFragment : Fragment() {
         adapterA.activeIndex = activeIndexA
         adapterB.activeIndex = activeIndexB
 
-        binding.recyclerTeamA.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerTeamA.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerTeamA.adapter = adapterA
-        binding.recyclerTeamB.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerTeamB.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerTeamB.adapter = adapterB
+
+        // Fill section height: recalculate item heights when recycler size or data changes
+        var prevHeightA = 0
+        binding.recyclerTeamA.addOnLayoutChangeListener { _, _, t, _, b, _, _, _, _ ->
+            val h = b - t; if (h != prevHeightA && h > 0) { prevHeightA = h; updateItemHeights() }
+        }
+        var prevHeightB = 0
+        binding.recyclerTeamB.addOnLayoutChangeListener { _, _, t, _, b, _, _, _, _ ->
+            val h = b - t; if (h != prevHeightB && h > 0) { prevHeightB = h; updateItemHeights() }
+        }
+        adapterA.registerAdapterDataObserver(object : androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(p: Int, c: Int) { binding.recyclerTeamA.post { updateItemHeights() } }
+            override fun onItemRangeRemoved(p: Int, c: Int) { binding.recyclerTeamA.post { updateItemHeights() } }
+        })
+        adapterB.registerAdapterDataObserver(object : androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(p: Int, c: Int) { binding.recyclerTeamB.post { updateItemHeights() } }
+            override fun onItemRangeRemoved(p: Int, c: Int) { binding.recyclerTeamB.post { updateItemHeights() } }
+        })
 
         binding.ivUpdateButton.setOnClickListener {
             binding.ivUpdateButton.isEnabled = false
@@ -199,10 +236,28 @@ class TeamSetupFragment : Fragment() {
             // Faint callbacks
             val capturedA = activeIndexA
             val capturedB = activeIndexB
+            val capturedEnemy = currentEnemyTrainer
             resultFrag.teamAPokemonCount = teamAList.size
             resultFrag.teamBPokemonCount = teamBList.size
             resultFrag.onYouLost  = { applyFaintA(capturedA) }
-            resultFrag.onYouWon   = { applyFaintB(capturedB) }
+            resultFrag.onYouWon   = {
+                val allFainted = applyFaintB(capturedB)
+                // Award gym badge if applicable
+                val gym = capturedEnemy as? EnemyTrainer.GymLeader
+                val badgeNum = gym?.let { gymLeaderBadgeMap[it.id] }
+                if (badgeNum != null) {
+                    val trainer = teamATrainer
+                    if (trainer != null && badgeNum !in trainer.badges) {
+                        val updated = trainer.copy(badges = trainer.badges + badgeNum)
+                        teamATrainer = updated
+                        val all = TrainerManager.loadTrainers(requireContext())
+                        val idx = all.indexOfFirst { it.id == updated.id }
+                        if (idx >= 0) { all[idx] = updated; TrainerManager.saveTrainers(requireContext(), all) }
+                        updateBadgeDisplay()
+                    }
+                }
+                allFainted
+            }
             resultFrag.onAllFaintedA = { resetAllFainted() }
             resultFrag.onAllFaintedB = { resetAllFainted() }
 
@@ -211,6 +266,22 @@ class TeamSetupFragment : Fragment() {
 
         updateBattleButton()
         restoreTrainerDisplay()
+    }
+
+    private fun updateItemHeights() {
+        fun apply(recycler: androidx.recyclerview.widget.RecyclerView, list: List<*>, adapter: PokemonListAdapter) {
+            val h = recycler.height
+            if (h <= 0 || list.isEmpty()) return
+            val marginPx = (10 * resources.displayMetrics.density).toInt()
+            val rows = maxOf(1, kotlin.math.ceil(list.size / 2.0).toInt())
+            val itemH = h / rows - marginPx
+            if (itemH > 0) {
+                adapter.forcedItemHeight = itemH
+                adapter.notifyDataSetChanged()
+            }
+        }
+        apply(binding.recyclerTeamA, teamAList, adapterA)
+        apply(binding.recyclerTeamB, teamBList, adapterB)
     }
 
     private fun resetAllFainted() {
@@ -388,6 +459,20 @@ class TeamSetupFragment : Fragment() {
             .into(imageView)
     }
 
+    private fun updateBadgeDisplay() {
+        val trainer = teamATrainer
+        if (trainer == null) {
+            binding.llBadgesDisplay.visibility = android.view.View.GONE
+            return
+        }
+        binding.llBadgesDisplay.visibility = android.view.View.VISIBLE
+        badgeViews.forEachIndexed { idx, iv ->
+            val badgeNum = idx + 1
+            iv.setImageResource(badgeDrawables[idx])
+            iv.alpha = if (badgeNum in trainer.badges) 1f else 0.25f
+        }
+    }
+
     // ── Inline panels ──────────────────────────────────────────────────────────
 
     private fun allSubPanels() = listOf(
@@ -478,9 +563,11 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun updateDeloadButton() {
-        val vis = if (currentEnemyTrainer != null) android.view.View.VISIBLE else android.view.View.GONE
+        val loaded = currentEnemyTrainer != null
+        val vis = if (loaded) android.view.View.VISIBLE else android.view.View.GONE
         binding.ivDeloadEnemy.visibility = vis
         binding.ivReloadB.visibility = vis
+        binding.btnChooseEnemyB.visibility = if (loaded) android.view.View.GONE else android.view.View.VISIBLE
     }
 
     private fun deloadEnemyTrainer() {
@@ -511,6 +598,7 @@ class TeamSetupFragment : Fragment() {
         binding.ivLabelA.setImageResource(R.drawable.ic_player)
         binding.ivTrainerA.visibility = android.view.View.GONE
         updateDeloadPlayerButton()
+        updateBadgeDisplay()
         updateBattleButton()
     }
 
@@ -587,7 +675,7 @@ class TeamSetupFragment : Fragment() {
         b.recyclerTypes.adapter = typeAdapter
 
         fun applyEntry(entry: PokedexEntry) {
-            currentName = entry.name; currentNameDE = entry.nameDE; currentPokedexId = entry.id
+            currentName = entry.name; currentNameDE = entry.nameDE; currentPokedexId = entry.spriteId
             b.btnPickPokemon.text = "  ${entry.name}  #${entry.id}"
             b.tvDexId.text = "#${entry.id}"
             selectedTypes.clear(); selectedTypes.addAll(entry.types); typeAdapter.notifyDataSetChanged()
@@ -637,10 +725,10 @@ class TeamSetupFragment : Fragment() {
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty() && bp > 0) {
                     if (onAdded != null) {
-                        onAdded(nameEN, nameDE, types, bp, entry?.id ?: 0)
+                        onAdded(nameEN, nameDE, types, bp, entry?.spriteId ?: 0)
                     } else {
                         val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
-                            types = types, baseBP = bp, team = team, pokedexId = entry?.id ?: 0)
+                            types = types, baseBP = bp, team = team, pokedexId = entry?.spriteId ?: 0)
                         if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
                         else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
                         updateBattleButton(); hidePanels()
@@ -648,7 +736,7 @@ class TeamSetupFragment : Fragment() {
                 } else {
                     currentName = nameEN; currentNameDE = nameDE
                     val e2 = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
-                    if (e2 != null) { currentPokedexId = e2.id; b.btnPickPokemon.text = "  $nameEN  #${e2.id}"; b.tvDexId.text = "#${e2.id}"; selectedTypes.clear(); selectedTypes.addAll(e2.types) }
+                    if (e2 != null) { currentPokedexId = e2.spriteId; b.btnPickPokemon.text = "  $nameEN  #${e2.id}"; b.tvDexId.text = "#${e2.id}"; selectedTypes.clear(); selectedTypes.addAll(e2.types) }
                     else { currentPokedexId = 0; b.btnPickPokemon.text = "  $nameEN"; b.tvDexId.text = "" }
                     typeAdapter.notifyDataSetChanged(); if (bp > 0) selectBP(bp)
                     switchToPanel(binding.layoutPanelAddPokemon, panelTitle)
@@ -663,16 +751,16 @@ class TeamSetupFragment : Fragment() {
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty()) {
                     if (onAdded != null) {
-                        onAdded(nameEN, nameDE, types, 3, entry?.id ?: 0)
+                        onAdded(nameEN, nameDE, types, 3, entry?.spriteId ?: 0)
                     } else {
                         val pokemon = Pokemon(id = System.currentTimeMillis().toInt(), name = nameEN, nameDE = nameDE,
-                            types = types, baseBP = 3, team = team, pokedexId = entry?.id ?: 0)
+                            types = types, baseBP = 3, team = team, pokedexId = entry?.spriteId ?: 0)
                         if (team == Team.TEAM_A) { teamAList.add(pokemon); adapterA.notifyItemInserted(teamAList.size - 1) }
                         else { teamBList.add(pokemon); adapterB.notifyItemInserted(teamBList.size - 1) }
                         updateBattleButton(); hidePanels()
                     }
                 } else {
-                    currentName = nameEN; currentNameDE = nameDE; currentPokedexId = entry?.id ?: 0
+                    currentName = nameEN; currentNameDE = nameDE; currentPokedexId = entry?.spriteId ?: 0
                     b.btnPickPokemon.text = if (currentPokedexId > 0) "  $nameEN  #$currentPokedexId" else "  $nameEN"
                     if (currentPokedexId > 0) b.tvDexId.text = "#$currentPokedexId"
                     selectedTypes.clear(); selectedTypes.addAll(entry?.types ?: emptyList())
@@ -736,8 +824,6 @@ class TeamSetupFragment : Fragment() {
         val tvTeamToggle         = v.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
         val layoutTeamBody       = v.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
         val llBadgeHeader        = v.findViewById<android.widget.LinearLayout>(R.id.ll_badge_header)
-        val tvBadgeToggle        = v.findViewById<android.widget.TextView>(R.id.tv_badge_toggle)
-        val layoutBadgeBody      = v.findViewById<android.widget.LinearLayout>(R.id.layout_badge_body)
         val previewViews         = listOf(
             v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_1),
             v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_2),
@@ -786,11 +872,15 @@ class TeamSetupFragment : Fragment() {
             layoutTeamBody.visibility = if (teamBodyVisible) android.view.View.VISIBLE else android.view.View.GONE
             tvTeamToggle.text = if (teamBodyVisible) "▲ Pokémon Team" else "▼ Pokémon Team"
         }
-        var badgeBodyVisible = false
         llBadgeHeader.setOnClickListener {
-            badgeBodyVisible = !badgeBodyVisible
-            layoutBadgeBody.visibility = if (badgeBodyVisible) android.view.View.VISIBLE else android.view.View.GONE
-            tvBadgeToggle.text = if (badgeBodyVisible) "▲ Badge" else "▼ Badge"
+            val imgView = android.widget.ImageView(requireContext())
+            imgView.setImageResource(R.drawable.ic_badge_case_empty)
+            imgView.adjustViewBounds = true
+            imgView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            android.app.AlertDialog.Builder(requireContext())
+                .setView(imgView)
+                .setPositiveButton("Close", null)
+                .show()
         }
 
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
@@ -874,13 +964,13 @@ class TeamSetupFragment : Fragment() {
                     btnEvolve.setOnClickListener {
                         if (nextEvos.size == 1) {
                             val evo = PokedexData.allPokemon.find { it.id == nextEvos[0] } ?: return@setOnClickListener
-                            pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.id, types = evo.types)); refreshSlots()
+                            pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.spriteId, types = evo.types)); refreshSlots()
                         } else {
                             val popup = android.widget.PopupMenu(requireContext(), btnEvolve)
                             nextEvos.forEach { evoId ->
                                 val evo = PokedexData.allPokemon.find { it.id == evoId }
                                 popup.menu.add(evo?.let { "${it.nameDE} / ${it.name}" } ?: "#$evoId").setOnMenuItemClickListener {
-                                    if (evo != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.id, types = evo.types)); refreshSlots() }; true
+                                    if (evo != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.spriteId, types = evo.types)); refreshSlots() }; true
                                 }
                             }; popup.show()
                         }
@@ -890,7 +980,7 @@ class TeamSetupFragment : Fragment() {
                     btnDusk.isEnabled = prevId != null; btnDusk.alpha = if (prevId != null) 1f else 0.3f
                     btnDusk.setOnClickListener {
                         val prev = prevId?.let { id -> PokedexData.allPokemon.find { it.id == id } }
-                        if (prev != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = prev.name, nameDE = prev.nameDE, pokedexId = prev.id, types = prev.types)); refreshSlots() }
+                        if (prev != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = prev.name, nameDE = prev.nameDE, pokedexId = prev.spriteId, types = prev.types)); refreshSlots() }
                         else Toast.makeText(requireContext(), "Already at base form!", Toast.LENGTH_SHORT).show()
                     }
                     ivSprite.setOnClickListener { openPicker(i, entry.bp) }
@@ -969,6 +1059,7 @@ class TeamSetupFragment : Fragment() {
                     activeIndexA = 0; adapterA.activeIndex = 0; adapterA.notifyDataSetChanged()
                     updateTeamALabel()
                     updateDeloadPlayerButton()
+                    updateBadgeDisplay()
                     loadLabelIcon(SpriteUrls.avatarUrl(trainer.avatarId), binding.ivLabelA, R.drawable.ic_player)
                     loadTrainerImage(SpriteUrls.playerTrainerImageUrl(trainer.avatarId), binding.ivTrainerA)
                     updateBattleButton()
@@ -1125,7 +1216,7 @@ class TeamSetupFragment : Fragment() {
 
     private fun showPokemonPickerInline(onBack: () -> Unit, onPicked: (PokedexEntry) -> Unit) {
         val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
-        val c = ThemeManager.colorsFor(theme)
+        val c = ThemeManager.colorsFor(theme)                                                                                                               
         pushSubPanel("Pokédex", buildContent = {
             val view = layoutInflater.inflate(R.layout.dialog_pokemon_picker, binding.layoutPanelSub, false)
             view.layoutParams = android.widget.FrameLayout.LayoutParams(
