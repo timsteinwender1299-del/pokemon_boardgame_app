@@ -112,6 +112,12 @@ class TrainerPokemonAdapter(
             }
         }
 
+        // Load icons from GitHub
+        val ctx = holder.itemView.context
+        loadButtonIcon(ctx, SpriteUrls.garbageBinUrl, holder.btnRemove)
+        loadButtonIcon(ctx, SpriteUrls.dawnstoneUrl, holder.btnEvolve)
+        loadButtonIcon(ctx, SpriteUrls.duskstoneUrl, holder.btnDuskstone)
+
         // Evolve button
         val nextEvos = com.pokemonbp.data.EvolutionData.nextEvolutions(preset.pokedexId)
         if (nextEvos.isNotEmpty()) {
@@ -204,4 +210,11 @@ class TrainerPokemonAdapter(
     }
 
     override fun getItemCount() = list.size
+
+    private fun loadButtonIcon(ctx: android.content.Context, url: String, button: MaterialButton) {
+        Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+            override fun onResourceReady(resource: android.graphics.drawable.Drawable, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { button.icon = resource }
+            override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+        })
+    }
 }

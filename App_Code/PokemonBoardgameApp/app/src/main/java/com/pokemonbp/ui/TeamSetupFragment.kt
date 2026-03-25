@@ -50,12 +50,6 @@ class TeamSetupFragment : Fragment() {
         "crasherwake" to 5, "byron" to 6, "candice" to 7, "volkner" to 8
     )
 
-    private val badgeDrawables = listOf(
-        R.drawable.ic_badge_1, R.drawable.ic_badge_2, R.drawable.ic_badge_3,
-        R.drawable.ic_badge_4, R.drawable.ic_badge_5, R.drawable.ic_badge_6,
-        R.drawable.ic_badge_7, R.drawable.ic_badge_8
-    )
-
     private val badgeViews: List<android.widget.ImageView> by lazy {
         listOf(
             binding.ivBadge1, binding.ivBadge2, binding.ivBadge3, binding.ivBadge4,
@@ -72,6 +66,7 @@ class TeamSetupFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
         applyTheme(theme)
+        loadStaticIcons()
 
         adapterA = PokemonListAdapter(teamAList, theme,
             onDelete = { pos ->
@@ -168,7 +163,7 @@ class TeamSetupFragment : Fragment() {
             wildMode = !wildMode
             if (wildMode) {
                 binding.root.setBackgroundColor(Color.parseColor("#2983d3"))
-                binding.ivWildButton.setImageResource(R.drawable.ic_battle_calculator_menu)
+                Glide.with(requireContext()).load(SpriteUrls.battleCalculatorUrl).placeholder(R.drawable.ic_battle_calculator_menu).error(R.drawable.ic_battle_calculator_menu).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(binding.ivWildButton)
                 binding.layoutMainContent.visibility = android.view.View.GONE
                 binding.layoutRouteDetail.visibility = android.view.View.GONE
                 binding.layoutPanelAddPokemon.visibility    = android.view.View.GONE
@@ -177,7 +172,7 @@ class TeamSetupFragment : Fragment() {
                 binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
             } else {
                 binding.root.setBackgroundColor(requireContext().getColor(R.color.pokedex_red))
-                binding.ivWildButton.setImageResource(R.drawable.ic_wild_pokemon_menu)
+                Glide.with(requireContext()).load(SpriteUrls.wildPokemonMenuUrl).placeholder(R.drawable.ic_wild_pokemon_menu).error(R.drawable.ic_wild_pokemon_menu).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(binding.ivWildButton)
                 binding.layoutPanelAddPokemon.visibility    = android.view.View.GONE
                 binding.layoutPanelAddTrainer.visibility    = android.view.View.GONE
                 binding.layoutPanelChooseTrainer.visibility = android.view.View.GONE
@@ -435,6 +430,26 @@ class TeamSetupFragment : Fragment() {
         binding.tvTeamALabel.text = teamATrainer?.name ?: "Player"
     }
 
+    private fun loadStaticIcons() {
+        val ctx = requireContext()
+        fun iv(url: String, view: android.widget.ImageView, fallback: Int) =
+            Glide.with(ctx).load(url).placeholder(fallback).error(fallback).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(view)
+        fun mb(url: String, btn: com.google.android.material.button.MaterialButton) =
+            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+                override fun onResourceReady(r: android.graphics.drawable.Drawable, t: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { btn.icon = r }
+                override fun onLoadCleared(p: android.graphics.drawable.Drawable?) {}
+            })
+        iv(SpriteUrls.reloadUrl,         binding.ivReloadA,       R.drawable.ic_reload)
+        iv(SpriteUrls.reloadUrl,         binding.ivReloadB,       R.drawable.ic_reload)
+        iv(SpriteUrls.removeUrl,         binding.ivDeloadPlayer,  R.drawable.ic_remove)
+        iv(SpriteUrls.removeUrl,         binding.ivDeloadEnemy,   R.drawable.ic_remove)
+        iv(SpriteUrls.wildPokemonMenuUrl, binding.ivWildButton,   R.drawable.ic_wild_pokemon_menu)
+        iv(SpriteUrls.playerUrl,         binding.ivLabelA,        R.drawable.ic_player)
+        iv(SpriteUrls.battleUrl,         binding.ivLabelB,        R.drawable.ic_battle)
+        mb(SpriteUrls.battleUrl,         binding.btnChooseEnemyB)
+        mb(SpriteUrls.battleUrl,         binding.btnCalculate)
+    }
+
     private fun loadLabelIcon(url: String?, imageView: android.widget.ImageView, fallbackRes: Int) {
         if (url == null) { imageView.setImageResource(fallbackRes); return }
         Glide.with(imageView.context)
@@ -468,7 +483,7 @@ class TeamSetupFragment : Fragment() {
         binding.llBadgesDisplay.visibility = android.view.View.VISIBLE
         badgeViews.forEachIndexed { idx, iv ->
             val badgeNum = idx + 1
-            iv.setImageResource(badgeDrawables[idx])
+            Glide.with(iv.context).load(SpriteUrls.badgeUrl(badgeNum)).placeholder(R.drawable.ic_badge_1).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(iv)
             iv.alpha = if (badgeNum in trainer.badges) 1f else 0.25f
         }
     }
@@ -576,7 +591,7 @@ class TeamSetupFragment : Fragment() {
         teamBList.clear()
         adapterB.notifyDataSetChanged()
         binding.tvTeamBLabel.text = teamBLabel
-        binding.ivLabelB.setImageResource(R.drawable.ic_battle)
+        Glide.with(requireContext()).load(SpriteUrls.battleUrl).placeholder(R.drawable.ic_battle).error(R.drawable.ic_battle).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(binding.ivLabelB)
         binding.ivTrainerB.visibility = android.view.View.GONE
         updateDeloadButton()
         updateBattleButton()
@@ -595,7 +610,7 @@ class TeamSetupFragment : Fragment() {
         adapterA.faintedIndices = emptySet()
         adapterA.notifyDataSetChanged()
         updateTeamALabel()
-        binding.ivLabelA.setImageResource(R.drawable.ic_player)
+        Glide.with(requireContext()).load(SpriteUrls.playerUrl).placeholder(R.drawable.ic_player).error(R.drawable.ic_player).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(binding.ivLabelA)
         binding.ivTrainerA.visibility = android.view.View.GONE
         updateDeloadPlayerButton()
         updateBadgeDisplay()
@@ -874,7 +889,7 @@ class TeamSetupFragment : Fragment() {
         }
         llBadgeHeader.setOnClickListener {
             val imgView = android.widget.ImageView(requireContext())
-            imgView.setImageResource(R.drawable.ic_badge_case_empty)
+            Glide.with(requireContext()).load(SpriteUrls.badgeCaseEmptyUrl).placeholder(R.drawable.ic_badge_case_empty).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(imgView)
             imgView.adjustViewBounds = true
             imgView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
             android.app.AlertDialog.Builder(requireContext())
@@ -993,7 +1008,7 @@ class TeamSetupFragment : Fragment() {
                 if (entry != null) {
                     preview.loadPokemonSprite(requireContext(), entry.preset.pokedexId)
                 } else {
-                    preview.setImageResource(R.drawable.ic_pokeball_empty)
+                    Glide.with(requireContext()).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball_empty).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(preview)
                 }
             }
         }
@@ -1154,7 +1169,7 @@ class TeamSetupFragment : Fragment() {
         adapterB.activeIndex = 0
         adapterB.notifyDataSetChanged()
         binding.tvTeamBLabel.text = teamBLabel
-        loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
+        loadLabelIcon(labelIconUrl ?: SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
         loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
         updateBattleButton()
         updateDeloadButton()
@@ -1551,7 +1566,7 @@ class TeamSetupFragment : Fragment() {
                         layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(58), dpPx(58))
                         scaleType = android.widget.ImageView.ScaleType.FIT_CENTER; adjustViewBounds = true
                         if (entry != null && entry.spriteId > 0) loadPokemonSprite(requireContext(), entry.spriteId)
-                        else setImageResource(R.drawable.ic_pokeball)
+                        else Glide.with(requireContext()).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(this)
                         col.addView(this)
                     }
                     if (entry != null) {
@@ -1791,7 +1806,7 @@ class TeamSetupFragment : Fragment() {
                 is EnemyTrainer.RandomTrainer -> SpriteUrls.randomTrainerImageUrl()
                 is EnemyTrainer.SavedTrainer  -> SpriteUrls.playerTrainerImageUrl(enemy.trainer.avatarId)
             }
-            loadLabelIcon(labelIconUrl, binding.ivLabelB, R.drawable.ic_battle)
+            loadLabelIcon(labelIconUrl ?: SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
             loadTrainerImage(trainerImageUrl, binding.ivTrainerB)
         }
         updateDeloadButton()
@@ -1908,7 +1923,7 @@ class RoutePokemonDetailAdapter(
                 if (entry != null && entry.spriteId > 0) {
                     vh.ivSprite.loadPokemonSprite(ctx, entry.spriteId)
                 } else {
-                    vh.ivSprite.setImageResource(R.drawable.ic_pokeball)
+                    Glide.with(ctx).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(vh.ivSprite)
                 }
 
                 val types = entry?.types ?: emptyList()

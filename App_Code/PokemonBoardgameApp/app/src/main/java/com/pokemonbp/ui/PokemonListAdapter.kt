@@ -13,6 +13,7 @@ import com.pokemonbp.data.ThemeManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import com.pokemonbp.data.PokemonType
+import com.pokemonbp.R
 import com.pokemonbp.databinding.ItemPokemonBinding
 import com.pokemonbp.model.Pokemon
 
@@ -84,6 +85,13 @@ class PokemonListAdapter(
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
         loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView, isMega)
+        val ctx = holder.itemView.context
+        Glide.with(ctx).load(SpriteUrls.faintedUrl).placeholder(R.drawable.ic_fainted).error(R.drawable.ic_fainted).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivFainted)
+        Glide.with(ctx).load(SpriteUrls.reviveUrl).placeholder(R.drawable.ic_revive).error(R.drawable.ic_revive).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.btnRevive)
+        Glide.with(ctx).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+            override fun onResourceReady(resource: android.graphics.drawable.Drawable, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { holder.binding.btnDelete.icon = resource }
+            override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+        })
         if (isFainted) {
             holder.binding.tvBaseBp.visibility = android.view.View.GONE
             holder.binding.ivFainted.visibility = android.view.View.VISIBLE

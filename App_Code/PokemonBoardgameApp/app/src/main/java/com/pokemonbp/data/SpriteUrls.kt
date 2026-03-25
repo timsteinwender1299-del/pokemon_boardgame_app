@@ -176,7 +176,24 @@ object SpriteUrls {
     fun typeIconUrl(typeName: String): String =
         "$BASE_URL/TypeIcons/${typeName.lowercase()}.png"
 
-    val megaBraceletUrl: String = "$BASE_URL/Icons/MegaBraceletIcon.png"
+    val megaBraceletUrl: String    = "$BASE_URL/Icons/MegaBraceletIcon.png"
+    val faintedUrl: String         = "$BASE_URL/Icons/FaintedIcon.png"
+    val reviveUrl: String          = "$BASE_URL/Icons/ReviveIcon.png"
+    val reloadUrl: String          = "$BASE_URL/Icons/ReloadIcon.png"
+    val removeUrl: String          = "$BASE_URL/Icons/RemoveIcon.png"
+    val battleUrl: String          = "$BASE_URL/Icons/Battle_Icon.png"
+    val battleCalculatorUrl: String= "$BASE_URL/Icons/BattleCalculator_MenuIcon.png"
+    val playerUrl: String          = "$BASE_URL/Icons/Player.png"
+    val wildPokemonMenuUrl: String = "$BASE_URL/Icons/WildPokemon_MenuIcon.png"
+    val pokeballUrl: String        = "$BASE_URL/Icons/Pokeball.png"
+    val badgeCaseEmptyUrl: String  = "$BASE_URL/Badges/BadgeCaseEmpty.png"
+
+    private val badgeFileNames = mapOf(
+        1 to "01_RoarkBadge", 2 to "02_GardeniaBadge", 3 to "03_FantinaBadge",
+        4 to "04_HildaBadge", 5 to "05_CrasherWakeBadge", 6 to "06_ByronBadge",
+        7 to "07_CandiceBadge", 8 to "08_VolknerBadge"
+    )
+    fun badgeUrl(num: Int): String = "$BASE_URL/Badges/${badgeFileNames[num]}.png"
 
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"

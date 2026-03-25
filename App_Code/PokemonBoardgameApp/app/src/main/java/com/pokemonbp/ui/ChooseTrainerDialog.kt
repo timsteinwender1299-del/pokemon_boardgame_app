@@ -168,7 +168,7 @@ class TrainerRowAdapter(
                 // Large padding keeps pokéball visually small as a placeholder
                 val pad = (18 * slot.context.resources.displayMetrics.density).toInt()
                 slot.setPadding(pad, pad, pad, pad)
-                slot.setImageResource(R.drawable.ic_pokeball)
+                Glide.with(ctx).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball).error(R.drawable.ic_pokeball).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(slot)
                 slot.alpha = 0.35f
             }
         }
@@ -181,17 +181,27 @@ class TrainerRowAdapter(
             btn.strokeColor = ColorStateList.valueOf(red)
             btn.strokeWidth = 3
         }
+        loadButtonIcon(ctx, SpriteUrls.pokeballUrl, holder.btnManage)
         holder.btnManage.iconTint = null
         holder.btnManage.iconPadding = 0
         holder.btnManage.setOnClickListener { onManage(trainer) }
 
+        loadButtonIcon(ctx, SpriteUrls.battleUrl, holder.btnBattle)
         holder.btnBattle.iconTint = null
         holder.btnBattle.iconPadding = 0
         holder.btnBattle.setOnClickListener { onBattle(trainer) }
 
+        loadButtonIcon(ctx, SpriteUrls.garbageBinUrl, holder.btnDelete)
         holder.btnDelete.iconTint = null
         holder.btnDelete.setOnClickListener { onDelete(trainer) }
     }
 
     override fun getItemCount() = trainers.size
+
+    private fun loadButtonIcon(ctx: android.content.Context, url: String, button: MaterialButton) {
+        Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+            override fun onResourceReady(resource: android.graphics.drawable.Drawable, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { button.icon = resource }
+            override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+        })
+    }
 }
