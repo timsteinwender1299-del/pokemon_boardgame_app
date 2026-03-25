@@ -176,6 +176,8 @@ object SpriteUrls {
     fun typeIconUrl(typeName: String): String =
         "$BASE_URL/TypeIcons/${typeName.lowercase()}.png"
 
+    val megaBraceletUrl: String = "$BASE_URL/Icons/MegaBraceletIcon.png"
+
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"
     val garbageBinUrl: String = "$BASE_URL/Icons/Garbage%20Bin.png"

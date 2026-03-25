@@ -42,7 +42,7 @@ class PokemonListAdapter(
         lp.height = if (forcedItemHeight > 0) forcedItemHeight else ViewGroup.LayoutParams.WRAP_CONTENT
         holder.itemView.layoutParams = lp
 
-        // Scale sprite to fill card height minus padding
+        // Scale sprite and icons to fill card height minus padding
         if (forcedItemHeight > 0) {
             val density = holder.itemView.context.resources.displayMetrics.density
             val paddingPx = (8 * density).toInt() * 2
@@ -51,6 +51,8 @@ class PokemonListAdapter(
             slp.width = spriteSize
             slp.height = spriteSize
             holder.binding.ivSprite.layoutParams = slp
+            // Scale type icons and mega bracelet to ~40% of card height
+            val iconSize = (forcedItemHeight * 0.40).toInt().coerceAtLeast(20)
         }
 
         val pokemon = pokemonList[position]
@@ -73,7 +75,11 @@ class PokemonListAdapter(
             holder.binding.cardPokemon.cardElevation = 0f
         }
 
-        holder.binding.tvPokemonName.text = pokemon.displayName()
+        val isMega = pokemon.name.startsWith("Mega ", ignoreCase = true) || pokemon.nameDE.startsWith("Mega-", ignoreCase = true)
+        val displayEN = if (pokemon.name.startsWith("Mega ", ignoreCase = true)) pokemon.name.substring(5) else pokemon.name
+        val displayDE = pokemon.nameDE.removePrefix("Mega-").let { if (it == pokemon.nameDE) pokemon.nameDE.removePrefix("mega-") else it }
+        val cleanName = if (displayDE.isNotBlank()) "$displayDE / $displayEN" else displayEN.ifBlank { pokemon.types.joinToString("/") { it.displayName } }
+        holder.binding.tvPokemonName.text = cleanName
         holder.binding.tvPokemonName.setTextColor(c.textPrimary)
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
@@ -130,10 +136,11 @@ class PokemonListAdapter(
         container ?: return
         container.removeAllViews()
         val ctx = itemView.context
+        val iconSize = if (forcedItemHeight > 0) (forcedItemHeight * 0.40).toInt().coerceAtLeast(20)
+                       else (28 * ctx.resources.displayMetrics.density).toInt()
         for (type in types) {
             val iv = ImageView(ctx)
-            val dp28 = (28 * ctx.resources.displayMetrics.density).toInt()
-            val params = LinearLayout.LayoutParams(dp28, dp28)
+            val params = LinearLayout.LayoutParams(iconSize, iconSize)
             params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
             iv.layoutParams = params
             iv.scaleType = ImageView.ScaleType.FIT_CENTER
