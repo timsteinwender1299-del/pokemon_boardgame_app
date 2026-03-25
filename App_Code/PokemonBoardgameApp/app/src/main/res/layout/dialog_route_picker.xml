@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/pokedex_dialog_shell"
     android:padding="10dp">
@@ -30,15 +30,53 @@
 
     <!-- Screen panel -->
     <LinearLayout android:id="@+id/screen_panel"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:background="@drawable/pokedex_screen_bg">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_routes"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:padding="6dp"
-            android:nestedScrollingEnabled="false"/>
+        <!-- Two-column route list: Legendary (left) | Normal (right) -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <!-- Legendary routes — left column -->
+            <LinearLayout
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="⭐ Legendary" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#9b59b6" android:gravity="center"
+                    android:paddingBottom="4dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_legendary_routes"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:clipToPadding="false" android:nestedScrollingEnabled="false"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp" android:layout_height="match_parent"
+                android:background="#33FFFFFF" android:layout_marginHorizontal="4dp"/>
+
+            <!-- Normal routes — right column -->
+            <LinearLayout
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Normal" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#2983d3" android:gravity="center"
+                    android:paddingBottom="4dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_normal_routes"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:clipToPadding="false" android:nestedScrollingEnabled="false"/>
+            </LinearLayout>
+
+        </LinearLayout>
 
         <!-- RollSheet buttons -->
         <LinearLayout

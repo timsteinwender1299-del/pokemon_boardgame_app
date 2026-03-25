@@ -1244,9 +1244,6 @@ class TeamSetupFragment : Fragment() {
             spRoute?.setBackgroundColor(c.surface)
             spRoute?.addView(buildBackRow(), 0)
 
-            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_routes)
-            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
-
             fun handleRoute(location: com.pokemonbp.data.RouteLocation) {
                 if (!location.isLegendary) {
                     showRoutePokemonGridInline(location.displayName, location.tiers[0].pokemon,
@@ -1259,9 +1256,14 @@ class TeamSetupFragment : Fragment() {
                 }
             }
 
-            recycler.adapter = RouteGridAdapter(routes, c,
-                onRouteClick = { location -> handleRoute(location) },
-                onRandomClick = { handleRoute(routes.random()) })
+            val legendary = routes.filter { it.isLegendary }
+            val normal    = routes.filter { !it.isLegendary }
+            val rvLegendary = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_legendary_routes)
+            val rvNormal    = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_normal_routes)
+            rvLegendary.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            rvNormal.layoutManager    = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            rvLegendary.adapter = WildRouteAdapter(legendary, c) { handleRoute(it) }
+            rvNormal.adapter    = WildRouteAdapter(normal, c) { handleRoute(it) }
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }

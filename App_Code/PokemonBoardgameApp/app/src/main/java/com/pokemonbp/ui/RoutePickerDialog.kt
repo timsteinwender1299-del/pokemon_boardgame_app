@@ -13,7 +13,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -39,12 +38,14 @@ class RoutePickerDialog(
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_route_picker, null)
         view.findViewById<LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
 
-        val recycler = view.findViewById<RecyclerView>(R.id.recycler_routes)
-        recycler.layoutManager = GridLayoutManager(requireContext(), 2)
-        recycler.adapter = RouteGridAdapter(routes, c,
-            onRouteClick = { location -> handleRouteClick(location) },
-            onRandomClick = { handleRouteClick(routes.random()) }
-        )
+        val legendary = routes.filter { it.isLegendary }
+        val normal    = routes.filter { !it.isLegendary }
+        val rvLegendary = view.findViewById<RecyclerView>(R.id.rv_legendary_routes)
+        val rvNormal    = view.findViewById<RecyclerView>(R.id.rv_normal_routes)
+        rvLegendary.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        rvNormal.layoutManager    = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        rvLegendary.adapter = WildRouteAdapter(legendary, c) { handleRouteClick(it) }
+        rvNormal.adapter    = WildRouteAdapter(normal, c) { handleRouteClick(it) }
 
         view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
 
@@ -87,8 +88,10 @@ class RoutePickerDialog(
             .setView(view)
             .create()
         dialog.setOnShowListener {
-            val w = (requireContext().resources.displayMetrics.widthPixels * 0.92).toInt()
-            dialog.window?.setLayout(w, ViewGroup.LayoutParams.WRAP_CONTENT)
+            val dm = requireContext().resources.displayMetrics
+            val w = (dm.widthPixels * 0.92).toInt()
+            val h = (dm.heightPixels * 0.82).toInt()
+            dialog.window?.setLayout(w, h)
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
         return dialog
