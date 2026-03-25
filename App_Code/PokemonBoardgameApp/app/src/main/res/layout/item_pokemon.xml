@@ -42,7 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:gravity="bottom"
                 android:layout_marginTop="2dp">
 
                 <!-- Type icons -->
@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"/>
+                    android:gravity="bottom"/>
 
                 <TextView android:id="@+id/tv_types"
                     android:layout_width="0dp"
