@@ -780,7 +780,6 @@ class TeamSetupFragment : Fragment() {
         var selGender = existingTrainer?.gender ?: com.pokemonbp.model.TrainerGender.MALE
         val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
         var avatarPickerVisible = false
-        var teamBodyVisible = false
 
         val etName               = v.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_trainer_name)
         val btnChooseAvatar      = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_choose_avatar)
@@ -790,19 +789,7 @@ class TeamSetupFragment : Fragment() {
         val btnConfirmAvatar     = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_confirm_avatar)
         val btnSave              = v.findViewById<android.widget.Button>(R.id.btn_save_player)
         val btnCancel            = v.findViewById<android.widget.Button>(R.id.btn_cancel_player)
-        val llTeamHeader         = v.findViewById<android.widget.LinearLayout>(R.id.ll_pokemon_team_header)
-        val tvTeamToggle         = v.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
         val layoutTeamBody       = v.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
-        val llPreviewSprites     = v.findViewById<android.widget.LinearLayout>(R.id.ll_team_preview_sprites)
-        val tilTrainerName       = v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.til_trainer_name)
-        val tvBadgeLabel         = v.findViewById<android.widget.TextView>(R.id.tv_badge_label)
-        val llBadgesRow          = v.findViewById<android.widget.LinearLayout>(R.id.ll_badges_row)
-        val llActionButtons      = v.findViewById<android.widget.LinearLayout>(R.id.ll_action_buttons)
-        val previewViews         = listOf(
-            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_1),
-            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_2),
-            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_3),
-            v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_4))
 
         etName.setTextColor(c.textPrimary); etName.setHintTextColor(c.textSecondary)
         existingTrainer?.let { etName.setText(it.name) }
@@ -869,19 +856,7 @@ class TeamSetupFragment : Fragment() {
         }
         refreshBadges()
 
-        fun setTeamBodyVisible(show: Boolean) {
-            teamBodyVisible = show
-            layoutTeamBody.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
-            llPreviewSprites.visibility = if (show) android.view.View.GONE else android.view.View.VISIBLE
-            tvTeamToggle.text = if (show) "▲ Pokémon Team (tap to close)" else "▼ Pokémon Team"
-            val otherVis = if (show) android.view.View.GONE else android.view.View.VISIBLE
-            tilTrainerName.visibility = otherVis
-            btnChooseAvatar.visibility = otherVis
-            tvBadgeLabel.visibility = otherVis
-            llBadgesRow.visibility = otherVis
-            llActionButtons.visibility = otherVis
-        }
-        llTeamHeader.setOnClickListener { setTeamBodyVisible(!teamBodyVisible) }
+        layoutTeamBody.visibility = android.view.View.VISIBLE
 
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
         while (pokemonEntries.size < 4) pokemonEntries.add(null)
@@ -985,15 +960,6 @@ class TeamSetupFragment : Fragment() {
                     }
                     ivSprite.setOnClickListener { openPicker(i, entry.bp) }
                     tvName.setOnClickListener { openPicker(i, entry.bp) }
-                }
-            }
-            // Update preview sprites in the collapsed header
-            pokemonEntries.forEachIndexed { i, entry ->
-                val preview = previewViews.getOrNull(i) ?: return@forEachIndexed
-                if (entry != null) {
-                    preview.loadPokemonSprite(requireContext(), entry.preset.pokedexId)
-                } else {
-                    Glide.with(requireContext()).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball_empty).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(preview)
                 }
             }
         }

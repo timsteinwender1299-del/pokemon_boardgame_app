@@ -79,53 +79,10 @@
                     app:cornerRadius="8dp" android:layout_marginTop="8dp"/>
             </LinearLayout>
 
-            <!-- Pokémon Team header (toggle, label on top, 4 sprites below) -->
-            <LinearLayout android:id="@+id/ll_pokemon_team_header"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true" android:focusable="true"
-                android:layout_marginBottom="4dp">
-
-                <TextView android:id="@+id/tv_pokemon_team_toggle"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="▼ Pokémon Team" android:textSize="12sp"
-                    android:textColor="#AAAAAA"
-                    android:paddingTop="4dp" android:paddingBottom="4dp"/>
-
-                <!-- 4 preview sprites -->
-                <LinearLayout android:id="@+id/ll_team_preview_sprites"
-                    android:layout_width="match_parent" android:layout_height="56dp"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="4dp">
-                    <ImageView android:id="@+id/iv_team_preview_1"
-                        android:layout_width="0dp" android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_pokeball_empty"
-                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
-                    <ImageView android:id="@+id/iv_team_preview_2"
-                        android:layout_width="0dp" android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_pokeball_empty"
-                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
-                    <ImageView android:id="@+id/iv_team_preview_3"
-                        android:layout_width="0dp" android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_pokeball_empty"
-                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
-                    <ImageView android:id="@+id/iv_team_preview_4"
-                        android:layout_width="0dp" android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_pokeball_empty"
-                        android:scaleType="fitCenter" android:adjustViewBounds="true"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Pokémon Team body (collapsible) -->
+            <!-- Pokémon Team slots (always visible) -->
             <LinearLayout android:id="@+id/layout_pokemon_team_body"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="vertical">
 
                 <!-- Row 1 -->
                 <LinearLayout

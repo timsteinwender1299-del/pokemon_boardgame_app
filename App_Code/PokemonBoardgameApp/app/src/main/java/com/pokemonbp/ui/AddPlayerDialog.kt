@@ -35,7 +35,6 @@ class AddPlayerDialog(
     private val selectedBadges: MutableSet<Int> = existingTrainer?.badges?.toMutableSet() ?: mutableSetOf()
     private lateinit var avatarAdapter: AvatarAdapter
     private var avatarPickerVisible = false
-    private var teamBodyVisible = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val c = ThemeManager.colorsFor(theme)
@@ -122,37 +121,6 @@ class AddPlayerDialog(
             }
         }
         refreshBadges()
-
-        // ── Pokémon team section toggle ────────────────────────────────────────
-        val llTeamHeader         = view.findViewById<android.widget.LinearLayout>(R.id.ll_pokemon_team_header)
-        val tvTeamToggle         = view.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
-        val layoutTeamBody       = view.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
-        val llPreviewSprites     = view.findViewById<android.widget.LinearLayout>(R.id.ll_team_preview_sprites)
-        val tilTrainerName       = view.findViewById<android.view.View>(R.id.til_trainer_name)
-        val btnChooseAvatarView  = view.findViewById<android.view.View>(R.id.btn_choose_avatar)
-        val tvBadgeLabel         = view.findViewById<android.view.View>(R.id.tv_badge_label)
-        val llBadgesRow          = view.findViewById<android.view.View>(R.id.ll_badges_row)
-        val llActionButtons      = view.findViewById<android.view.View>(R.id.ll_action_buttons)
-
-        fun setTeamBodyVisible(show: Boolean) {
-            teamBodyVisible = show
-            layoutTeamBody.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
-            llPreviewSprites.visibility = if (show) android.view.View.GONE else android.view.View.VISIBLE
-            tvTeamToggle.text = if (show) "▲ Pokémon Team (tap to close)" else "▼ Pokémon Team"
-            val otherVis = if (show) android.view.View.GONE else android.view.View.VISIBLE
-            tilTrainerName.visibility       = otherVis
-            btnChooseAvatarView.visibility  = otherVis
-            tvBadgeLabel.visibility         = otherVis
-            llBadgesRow.visibility          = otherVis
-            llActionButtons.visibility      = otherVis
-            // Also hide avatar picker if open
-            if (show && avatarPickerVisible) {
-                avatarPickerVisible = false
-                layoutAvatarPicker.visibility = android.view.View.GONE
-            }
-        }
-
-        llTeamHeader.setOnClickListener { setTeamBodyVisible(!teamBodyVisible) }
 
         // Pre-fill from existing trainer, pad to 4 nulls
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
