@@ -83,7 +83,7 @@ class PokemonListAdapter(
         holder.binding.tvPokemonName.setTextColor(c.textPrimary)
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
-        loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView)
+        loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView, isMega)
         if (isFainted) {
             holder.binding.tvBaseBp.visibility = android.view.View.GONE
             holder.binding.ivFainted.visibility = android.view.View.VISIBLE
@@ -132,20 +132,31 @@ class PokemonListAdapter(
 
     override fun getItemCount() = pokemonList.size
 
-    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View) {
+    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View, isMega: Boolean = false) {
         container ?: return
         container.removeAllViews()
         val ctx = itemView.context
         val iconSize = if (forcedItemHeight > 0) (forcedItemHeight * 0.40).toInt().coerceAtLeast(20)
                        else (28 * ctx.resources.displayMetrics.density).toInt()
+        val marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
         for (type in types) {
             val iv = ImageView(ctx)
             val params = LinearLayout.LayoutParams(iconSize, iconSize)
-            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
+            params.marginEnd = marginEnd
             iv.layoutParams = params
             iv.scaleType = ImageView.ScaleType.FIT_CENTER
             iv.adjustViewBounds = true
             Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            container.addView(iv)
+        }
+        if (isMega) {
+            val iv = ImageView(ctx)
+            val params = LinearLayout.LayoutParams(iconSize, iconSize)
+            params.marginEnd = marginEnd
+            iv.layoutParams = params
+            iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            iv.adjustViewBounds = true
+            Glide.with(ctx).load(SpriteUrls.megaBraceletUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
             container.addView(iv)
         }
     }
