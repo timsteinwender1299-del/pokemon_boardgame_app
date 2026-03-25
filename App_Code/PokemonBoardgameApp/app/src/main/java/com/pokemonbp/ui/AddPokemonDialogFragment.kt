@@ -13,12 +13,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.pokemonbp.data.AppTheme
-import com.pokemonbp.data.PresetManager
 import com.pokemonbp.data.PokemonType
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.databinding.DialogAddPokemonBinding
 import com.pokemonbp.model.Pokemon
-import com.pokemonbp.model.PokemonPreset
 import com.pokemonbp.model.Team
 
 class AddPokemonDialogFragment(
@@ -57,7 +55,6 @@ class AddPokemonDialogFragment(
         if (theme == AppTheme.RETRO) binding.tvDialogTitle.typeface = Typeface.MONOSPACE
 
         binding.tvTypesLabel.setTextColor(c.textSecondary)
-        binding.tvPresetsLabel.setTextColor(c.textSecondary)
 
         binding.btnPickPokemon.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
         binding.btnPickPokemon.setTextColor(Color.WHITE)
@@ -66,16 +63,6 @@ class AddPokemonDialogFragment(
         binding.btnPickFromRoute.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CC0000"))
         binding.btnPickFromRoute.setTextColor(Color.WHITE)
         binding.btnPickFromRoute.setOnClickListener { openRoutePicker() }
-
-        // "Add Player" preset button — only shown for Team A
-        if (team == Team.TEAM_A) {
-            binding.btnAddPlayerPreset.visibility = android.view.View.VISIBLE
-            binding.btnAddPlayerPreset.setTextColor(teamColor)
-            binding.btnAddPlayerPreset.strokeColor = ColorStateList.valueOf(teamColor)
-            binding.btnAddPlayerPreset.setOnClickListener { saveCurrentAsPreset() }
-        } else {
-            binding.btnAddPlayerPreset.visibility = android.view.View.GONE
-        }
 
         // BP buttons
         bpButtons.forEachIndexed { index, btn ->
@@ -96,11 +83,6 @@ class AddPokemonDialogFragment(
         }
         binding.recyclerTypes.layoutManager = GridLayoutManager(requireContext(), 3)
         binding.recyclerTypes.adapter = typeAdapter
-
-        loadPresets()
-
-        binding.btnSavePreset.setOnClickListener { saveCurrentAsPreset() }
-        binding.btnSavePreset.setTextColor(c.accent)
 
         binding.btnCancelPokemon.setOnClickListener { dismiss() }
         binding.btnAddPokemon.setOnClickListener {
@@ -210,57 +192,6 @@ class AddPokemonDialogFragment(
         selectedTypes.clear()
         selectedTypes.addAll(entry.types)
         typeAdapter.notifyDataSetChanged()
-    }
-
-    private fun loadPresets() {
-        val c = ThemeManager.colorsFor(theme)
-        val teamColor = if (team == Team.TEAM_A) c.teamA else c.teamB
-        val presets = PresetManager.load(requireContext(), team)
-        binding.presetContainer.removeAllViews()
-        if (presets.isEmpty()) {
-            binding.tvPresetsLabel.text = if (team == Team.TEAM_A)
-                "Player Presets (none yet)" else "Enemy Presets (none yet)"
-            return
-        }
-        binding.tvPresetsLabel.text = if (team == Team.TEAM_A) "Player Presets" else "Enemy Presets"
-        for (preset in presets) {
-            val chip = com.google.android.material.chip.Chip(requireContext())
-            chip.text = preset.name.ifBlank { preset.types.joinToString("/") { it.displayName } }
-            chip.isCheckable = false
-            chip.chipBackgroundColor = ColorStateList.valueOf(teamColor)
-            chip.setTextColor(Color.WHITE)
-            chip.setOnClickListener { applyPreset(preset) }
-            binding.presetContainer.addView(chip)
-        }
-    }
-
-    private fun applyPreset(preset: PokemonPreset) {
-        currentName = preset.name
-        currentPokedexId = preset.pokedexId
-        binding.btnPickPokemon.text = preset.name.ifBlank { preset.types.joinToString("/") { it.displayName } }
-        selectedTypes.clear()
-        selectedTypes.addAll(preset.types)
-        typeAdapter.notifyDataSetChanged()
-        if (preset.pokedexId > 0) {
-            binding.tvDexId.text = "#${preset.pokedexId}"
-        }
-    }
-
-    private fun saveCurrentAsPreset() {
-        if (selectedTypes.isEmpty()) {
-            Toast.makeText(requireContext(), "Pick types first!", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val presets = PresetManager.load(requireContext(), team)
-        val newPreset = PokemonPreset(name = currentName, pokedexId = currentPokedexId, types = selectedTypes.toList())
-        if (presets.none { it.name == newPreset.name && it.types == newPreset.types }) {
-            presets.add(newPreset)
-            PresetManager.save(requireContext(), team, presets)
-            Toast.makeText(requireContext(), "Preset saved!", Toast.LENGTH_SHORT).show()
-            loadPresets()
-        } else {
-            Toast.makeText(requireContext(), "Already saved!", Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }

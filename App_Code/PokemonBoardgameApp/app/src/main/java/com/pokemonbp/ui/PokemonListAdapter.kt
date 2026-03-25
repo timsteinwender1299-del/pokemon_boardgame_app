@@ -81,10 +81,18 @@ class PokemonListAdapter(
         val displayDE = pokemon.nameDE.removePrefix("Mega-").let { if (it == pokemon.nameDE) pokemon.nameDE.removePrefix("mega-") else it }
         val cleanName = if (displayDE.isNotBlank()) "$displayDE / $displayEN" else displayEN.ifBlank { pokemon.types.joinToString("/") { it.displayName } }
         holder.binding.tvPokemonName.text = cleanName
+
+        // Mega bracelet icon — top-right corner
+        if (isMega) {
+            holder.binding.ivMegaIcon.visibility = android.view.View.VISIBLE
+            Glide.with(ctx).load(SpriteUrls.megaBraceletUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivMegaIcon)
+        } else {
+            holder.binding.ivMegaIcon.visibility = android.view.View.GONE
+        }
         holder.binding.tvPokemonName.setTextColor(c.textPrimary)
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
-        loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView, isMega)
+        loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView)
         val ctx = holder.itemView.context
         Glide.with(ctx).load(SpriteUrls.faintedUrl).placeholder(R.drawable.ic_fainted).error(R.drawable.ic_fainted).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivFainted)
         Glide.with(ctx).load(SpriteUrls.reviveUrl).placeholder(R.drawable.ic_revive).error(R.drawable.ic_revive).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.btnRevive)
@@ -140,31 +148,21 @@ class PokemonListAdapter(
 
     override fun getItemCount() = pokemonList.size
 
-    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View, isMega: Boolean = false) {
+    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View) {
         container ?: return
         container.removeAllViews()
         val ctx = itemView.context
-        val iconSize = if (forcedItemHeight > 0) (forcedItemHeight * 0.40).toInt().coerceAtLeast(20)
-                       else (28 * ctx.resources.displayMetrics.density).toInt()
-        val marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-        for (type in types) {
+        val marginEnd = (2 * ctx.resources.displayMetrics.density).toInt()
+        // Always render exactly 2 type slots; use NoType.png for an empty second slot
+        for (i in 0..1) {
             val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(iconSize, iconSize)
-            params.marginEnd = marginEnd
+            val params = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            if (i == 0) params.marginEnd = marginEnd
             iv.layoutParams = params
             iv.scaleType = ImageView.ScaleType.FIT_CENTER
             iv.adjustViewBounds = true
-            Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            container.addView(iv)
-        }
-        if (isMega) {
-            val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(iconSize, iconSize)
-            params.marginEnd = marginEnd
-            iv.layoutParams = params
-            iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            iv.adjustViewBounds = true
-            Glide.with(ctx).load(SpriteUrls.megaBraceletUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            val url = if (i < types.size) SpriteUrls.typeIconUrl(types[i].name) else SpriteUrls.noTypeUrl
+            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
             container.addView(iv)
         }
     }

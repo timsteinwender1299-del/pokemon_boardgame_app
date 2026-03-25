@@ -32,8 +32,10 @@ class AddPlayerDialog(
     private var selectedAvatarId: Int = existingTrainer?.avatarId ?: 1
     private var selectedGender: TrainerGender = existingTrainer?.gender ?: TrainerGender.MALE
     private val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
+    private val selectedBadges: MutableSet<Int> = existingTrainer?.badges?.toMutableSet() ?: mutableSetOf()
     private lateinit var avatarAdapter: AvatarAdapter
     private var avatarPickerVisible = false
+    private var teamBodyVisible = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val c = ThemeManager.colorsFor(theme)
@@ -91,6 +93,66 @@ class AddPlayerDialog(
             val num = if (selectedGender == TrainerGender.MALE) selectedAvatarId else selectedAvatarId - 100
             btnChooseAvatar.text = "👤 Character ${if (selectedGender == TrainerGender.MALE) "♂" else "♀"} #$num — tap to change"
         }
+
+        // ── Badge row ──────────────────────────────────────────────────────────
+        val badgeViews = listOf(
+            view.findViewById<android.widget.ImageView>(R.id.iv_badge_1),
+            view.findViewById(R.id.iv_badge_2),
+            view.findViewById(R.id.iv_badge_3),
+            view.findViewById(R.id.iv_badge_4),
+            view.findViewById(R.id.iv_badge_5),
+            view.findViewById(R.id.iv_badge_6),
+            view.findViewById(R.id.iv_badge_7),
+            view.findViewById<android.widget.ImageView>(R.id.iv_badge_8)
+        )
+
+        fun refreshBadges() {
+            badgeViews.forEachIndexed { i, iv ->
+                val num = i + 1
+                Glide.with(requireContext()).load(SpriteUrls.badgeUrl(num))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+                iv.alpha = if (num in selectedBadges) 1f else 0.3f
+            }
+        }
+        badgeViews.forEachIndexed { i, iv ->
+            iv.setOnClickListener {
+                val num = i + 1
+                if (num in selectedBadges) selectedBadges.remove(num) else selectedBadges.add(num)
+                refreshBadges()
+            }
+        }
+        refreshBadges()
+
+        // ── Pokémon team section toggle ────────────────────────────────────────
+        val llTeamHeader         = view.findViewById<android.widget.LinearLayout>(R.id.ll_pokemon_team_header)
+        val tvTeamToggle         = view.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
+        val layoutTeamBody       = view.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
+        val llPreviewSprites     = view.findViewById<android.widget.LinearLayout>(R.id.ll_team_preview_sprites)
+        val tilTrainerName       = view.findViewById<android.view.View>(R.id.til_trainer_name)
+        val btnChooseAvatarView  = view.findViewById<android.view.View>(R.id.btn_choose_avatar)
+        val tvBadgeLabel         = view.findViewById<android.view.View>(R.id.tv_badge_label)
+        val llBadgesRow          = view.findViewById<android.view.View>(R.id.ll_badges_row)
+        val llActionButtons      = view.findViewById<android.view.View>(R.id.ll_action_buttons)
+
+        fun setTeamBodyVisible(show: Boolean) {
+            teamBodyVisible = show
+            layoutTeamBody.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
+            llPreviewSprites.visibility = if (show) android.view.View.GONE else android.view.View.VISIBLE
+            tvTeamToggle.text = if (show) "▲ Pokémon Team (tap to close)" else "▼ Pokémon Team"
+            val otherVis = if (show) android.view.View.GONE else android.view.View.VISIBLE
+            tilTrainerName.visibility       = otherVis
+            btnChooseAvatarView.visibility  = otherVis
+            tvBadgeLabel.visibility         = otherVis
+            llBadgesRow.visibility          = otherVis
+            llActionButtons.visibility      = otherVis
+            // Also hide avatar picker if open
+            if (show && avatarPickerVisible) {
+                avatarPickerVisible = false
+                layoutAvatarPicker.visibility = android.view.View.GONE
+            }
+        }
+
+        llTeamHeader.setOnClickListener { setTeamBodyVisible(!teamBodyVisible) }
 
         // Pre-fill from existing trainer, pad to 4 nulls
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
@@ -284,7 +346,8 @@ class AddPlayerDialog(
                 name = name,
                 avatarId = selectedAvatarId,
                 gender = selectedGender,
-                pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) }
+                pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) },
+                badges = selectedBadges.toSet()
             )
             if (existingTrainer == null) {
                 val all = TrainerManager.loadTrainers(requireContext())

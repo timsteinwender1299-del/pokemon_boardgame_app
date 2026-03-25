@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -46,6 +47,41 @@ class RoutePickerDialog(
         )
 
         view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
+
+        view.findViewById<MaterialButton>(R.id.btn_rollsheet_route).setOnClickListener {
+            showRollSheet("RollSheet — Route", listOf(
+                RollSheetEntry("Pokemon-Kampf (Wild)",  "Du kämpfst gegen ein Wildes Pokemon auf deiner Route! (Würfel für Encounter)", "1–5"),
+                RollSheetEntry("Pokemon-Kampf (Trainer)", "Du begegnest einem Trainer auf deiner Route! (Routenpokemon +1/Orden | Reset 4 Orden)", "6–8"),
+                RollSheetEntry("Pokemon fangen",        "Du begegnest einem Wilden Pokemon auf deiner Route! (Würfel für Encounter)", "9–15"),
+                RollSheetEntry("Itemrad (Consumables)", "Du findest ein Item! (Würfle für Item)", "16–20")
+            ))
+        }
+
+        view.findViewById<MaterialButton>(R.id.btn_rollsheet_town).setOnClickListener {
+            showRollSheet("RollSheet — Town EventTime", listOf(
+                RollSheetEntry("Spacial Rend!",              "Du wirst zu einem zufälligen Ort teleportiert!", "1"),
+                RollSheetEntry("Kleiner Meteor",             "Ein Meteor schlägt in eine Zufällige Route ein!", "2"),
+                RollSheetEntry("Uno-Reverse!",               "Alle Type-Matchups sind verdreht diese Runde!", "3–4"),
+                RollSheetEntry("Doppelteam!",                "Du darfst noch einmal würfeln!", "5–6"),
+                RollSheetEntry("Finanzielle Hilfsmittel!",   "Du bekommst Geld anhand deiner Ordenanzahl (Badgesx10)", "7–8"),
+                RollSheetEntry("TownSpecific-Event!",        "TownSpecific-Event!", "9–14"),
+                RollSheetEntry("Itemrad (Type+)!",           "Du findest ein Item! (Würfle für Item)", "15–16"),
+                RollSheetEntry("Itemrad (Permanent)!",       "Du findest ein Item! (Würfle für Item)", "17"),
+                RollSheetEntry("NoSkippingLegDay!",          "Du kämpst trotzdem gegen die/den Arenaleiter/In", "18"),
+                RollSheetEntry("Großer Meteor!",             "Ein Meteor schlägt in eine Zufällige Stadt ein!", "19"),
+                RollSheetEntry("Roar of Time!",              "Dein Stärkstes Pokemon verliert 1BP (Es kann sich auch zurückentwickeln!)", "20")
+            ))
+        }
+
+        view.findViewById<MaterialButton>(R.id.btn_rollsheet_galactic).setOnClickListener {
+            showRollSheet("RollSheet — GalacticTime!", listOf(
+                RollSheetEntry("Raubüberfall!",   "Jeder Spieler verliert Geld! (200G)", "1–4"),
+                RollSheetEntry("Meteor!",         "Ein Meteor schlägt ein! Ein PKMN bei allen Spielern geht K.O.!", "5–8"),
+                RollSheetEntry("Pokemon Kampf!",  "Würfle für einen Trainerkampf! (Von der Route wo du die Stadt betreten hast)", "9–12"),
+                RollSheetEntry("Entführung!",     "Du wirst in das Geheimversteck von Team-Galaktik gebracht! (Schleife)", "13–16"),
+                RollSheetEntry("Diebstahl!",      "Du verlierst ein Item!", "17–20")
+            ))
+        }
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
@@ -165,8 +201,34 @@ class RoutePickerDialog(
         gridDialog.show()
     }
 
+    private fun showRollSheet(title: String, entries: List<RollSheetEntry>) {
+        val c = ThemeManager.colorsFor(theme)
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_rollsheet, null)
+        view.findViewById<LinearLayout>(R.id.screen_panel_rollsheet).setBackgroundColor(c.surface)
+        view.findViewById<TextView>(R.id.tv_rollsheet_title).text = title
+
+        val recycler = view.findViewById<RecyclerView>(R.id.recycler_rollsheet)
+        recycler.layoutManager = LinearLayoutManager(requireContext())
+        recycler.adapter = RollSheetAdapter(entries, c)
+
+        var rsDialog: AlertDialog? = null
+        view.findViewById<MaterialButton>(R.id.btn_close_rollsheet).setOnClickListener { rsDialog?.dismiss() }
+
+        rsDialog = AlertDialog.Builder(requireContext())
+            .setView(view)
+            .create()
+        rsDialog.setOnShowListener {
+            val w = (requireContext().resources.displayMetrics.widthPixels * 0.92).toInt()
+            rsDialog.window?.setLayout(w, ViewGroup.LayoutParams.WRAP_CONTENT)
+            rsDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+        rsDialog.show()
+    }
+
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 }
+
+data class RollSheetEntry(val event: String, val text: String, val value: String)
 
 // ── Route grid adapter (route name buttons, 2-col) ────────────────────────────
 
@@ -246,26 +308,47 @@ class RoutePokemonGridAdapter(
             holder.ivSprite.setImageResource(R.drawable.ic_pokeball)
         }
 
-        // Type icons
+        // Type icons — always show 2 slots; NoType.png for empty second slot
         val types = entry?.types ?: emptyList()
-        if (types.isNotEmpty()) {
-            Glide.with(ctx)
-                .load(SpriteUrls.typeIconUrl(types[0].name))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.ivType1)
-        }
-        if (types.size >= 2) {
-            holder.ivType2.visibility = View.VISIBLE
-            Glide.with(ctx)
-                .load(SpriteUrls.typeIconUrl(types[1].name))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.ivType2)
-        } else {
-            holder.ivType2.visibility = View.GONE
-        }
+        val url1 = if (types.isNotEmpty()) SpriteUrls.typeIconUrl(types[0].name) else SpriteUrls.noTypeUrl
+        val url2 = if (types.size >= 2) SpriteUrls.typeIconUrl(types[1].name) else SpriteUrls.noTypeUrl
+        holder.ivType2.visibility = View.VISIBLE
+        Glide.with(ctx).load(url1).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivType1)
+        Glide.with(ctx).load(url2).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivType2)
 
         holder.itemView.setOnClickListener { onClick(p) }
     }
 
     override fun getItemCount() = pokemon.size
+}
+
+// ── RollSheet adapter ─────────────────────────────────────────────────────────
+
+class RollSheetAdapter(
+    private val entries: List<RollSheetEntry>,
+    private val c: ThemeColors
+) : RecyclerView.Adapter<RollSheetAdapter.VH>() {
+
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val tvEvent: TextView = v.findViewById(R.id.tv_rs_event)
+        val tvText:  TextView = v.findViewById(R.id.tv_rs_text)
+        val tvValue: TextView = v.findViewById(R.id.tv_rs_value)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_rollsheet_row, parent, false)
+    )
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val e = entries[position]
+        holder.tvEvent.text = e.event
+        holder.tvEvent.setTextColor(c.textPrimary)
+        holder.tvText.text = e.text
+        holder.tvText.setTextColor(c.textSecondary)
+        holder.tvValue.text = e.value
+        holder.tvValue.setTextColor(c.accent)
+        holder.itemView.setBackgroundColor(if (position % 2 == 0) 0x0AFFFFFF else 0x00000000)
+    }
+
+    override fun getItemCount() = entries.size
 }

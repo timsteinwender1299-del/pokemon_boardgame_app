@@ -120,21 +120,19 @@ class BattleResultAdapter(
         container ?: return
         container.removeAllViews()
         val ctx = itemView.context
-        for (type in types) {
-            val card = com.google.android.material.card.MaterialCardView(ctx)
+        val dp = (30 * ctx.resources.displayMetrics.density).toInt()
+        val margin = (3 * ctx.resources.displayMetrics.density).toInt()
+        // Always 2 type slots; NoType.png for empty second slot
+        for (i in 0..1) {
             val iv = ImageView(ctx)
-            val dp30 = (30 * ctx.resources.displayMetrics.density).toInt()
-            val params = LinearLayout.LayoutParams(dp30, dp30)
-            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-            card.layoutParams = params
-            card.radius = (5 * ctx.resources.displayMetrics.density)
-            card.cardElevation = 0f
-            card.setCardBackgroundColor(android.graphics.Color.parseColor(type.colorHex))
-            iv.layoutParams = android.view.ViewGroup.LayoutParams(dp30, dp30)
-            Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            iv.scaleType = ImageView.ScaleType.CENTER_CROP
-            card.addView(iv)
-            container.addView(card)
+            val params = LinearLayout.LayoutParams(dp, dp)
+            params.marginEnd = margin
+            iv.layoutParams = params
+            iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            iv.adjustViewBounds = true
+            val url = if (i < types.size) SpriteUrls.typeIconUrl(types[i].name) else SpriteUrls.noTypeUrl
+            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+            container.addView(iv)
         }
     }
 }
