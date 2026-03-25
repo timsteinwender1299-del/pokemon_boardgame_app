@@ -645,19 +645,10 @@ class TeamSetupFragment : Fragment() {
         var selectedBP = -1
 
         b.tvTypesLabel.setTextColor(c.textSecondary)
-        b.tvPresetsLabel.setTextColor(c.textSecondary)
         b.btnPickPokemon.backgroundTintList  = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
         b.btnPickPokemon.setTextColor(Color.WHITE)
         b.btnPickFromRoute.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
         b.btnPickFromRoute.setTextColor(Color.WHITE)
-        b.btnSavePreset.setTextColor(c.accent)
-        if (team == Team.TEAM_A) {
-            b.btnAddPlayerPreset.visibility = android.view.View.VISIBLE
-            b.btnAddPlayerPreset.setTextColor(teamColor)
-            b.btnAddPlayerPreset.strokeColor = android.content.res.ColorStateList.valueOf(teamColor)
-        } else {
-            b.btnAddPlayerPreset.visibility = android.view.View.GONE
-        }
 
         val bpBtns = listOf(b.bp1, b.bp2, b.bp3, b.bp4, b.bp5, b.bp6,
                             b.bp7, b.bp8, b.bp9, b.bp10, b.bp11, b.bp12)
@@ -695,40 +686,6 @@ class TeamSetupFragment : Fragment() {
             b.tvDexId.text = "#${entry.id}"
             selectedTypes.clear(); selectedTypes.addAll(entry.types); typeAdapter.notifyDataSetChanged()
         }
-
-        fun loadPresets() {
-            val presets = com.pokemonbp.data.PresetManager.load(requireContext(), team)
-            b.presetContainer.removeAllViews()
-            b.tvPresetsLabel.text = if (presets.isEmpty())
-                (if (team == Team.TEAM_A) "Player Presets (none yet)" else "Enemy Presets (none yet)")
-            else (if (team == Team.TEAM_A) "Player Presets" else "Enemy Presets")
-            for (preset in presets) {
-                val chip = com.google.android.material.chip.Chip(requireContext())
-                chip.text = preset.name.ifBlank { preset.types.joinToString("/") { it.displayName } }
-                chip.isCheckable = false
-                chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(teamColor)
-                chip.setTextColor(Color.WHITE)
-                chip.setOnClickListener {
-                    currentName = preset.name; currentPokedexId = preset.pokedexId
-                    b.btnPickPokemon.text = preset.name.ifBlank { preset.types.joinToString("/") { it.displayName } }
-                    selectedTypes.clear(); selectedTypes.addAll(preset.types); typeAdapter.notifyDataSetChanged()
-                    if (preset.pokedexId > 0) b.tvDexId.text = "#${preset.pokedexId}"
-                }
-                b.presetContainer.addView(chip)
-            }
-        }
-
-        fun savePreset() {
-            if (selectedTypes.isEmpty()) { Toast.makeText(requireContext(), "Pick types first!", Toast.LENGTH_SHORT).show(); return }
-            val presets = com.pokemonbp.data.PresetManager.load(requireContext(), team)
-            val np = com.pokemonbp.model.PokemonPreset(name = currentName, pokedexId = currentPokedexId, types = selectedTypes.toList())
-            if (presets.none { it.name == np.name && it.types == np.types }) {
-                presets.add(np); com.pokemonbp.data.PresetManager.save(requireContext(), team, presets)
-                Toast.makeText(requireContext(), "Preset saved!", Toast.LENGTH_SHORT).show(); loadPresets()
-            } else Toast.makeText(requireContext(), "Already saved!", Toast.LENGTH_SHORT).show()
-        }
-
-        loadPresets()
 
         val backToAddPokemon = { switchToPanel(binding.layoutPanelAddPokemon, panelTitle) }
         b.btnPickPokemon.setOnClickListener {
@@ -784,8 +741,6 @@ class TeamSetupFragment : Fragment() {
                 }
             }
         }
-        b.btnSavePreset.setOnClickListener { savePreset() }
-        b.btnAddPlayerPreset.setOnClickListener { savePreset() }
         b.btnCancelPokemon.setOnClickListener { popBack() }
         b.btnAddPokemon.setOnClickListener {
             if (selectedTypes.isEmpty()) { Toast.makeText(requireContext(), "Pick a Pokémon or select types!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
@@ -838,7 +793,11 @@ class TeamSetupFragment : Fragment() {
         val llTeamHeader         = v.findViewById<android.widget.LinearLayout>(R.id.ll_pokemon_team_header)
         val tvTeamToggle         = v.findViewById<android.widget.TextView>(R.id.tv_pokemon_team_toggle)
         val layoutTeamBody       = v.findViewById<android.widget.LinearLayout>(R.id.layout_pokemon_team_body)
-        val llBadgeHeader        = v.findViewById<android.widget.LinearLayout>(R.id.ll_badge_header)
+        val llPreviewSprites     = v.findViewById<android.widget.LinearLayout>(R.id.ll_team_preview_sprites)
+        val tilTrainerName       = v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.til_trainer_name)
+        val tvBadgeLabel         = v.findViewById<android.widget.TextView>(R.id.tv_badge_label)
+        val llBadgesRow          = v.findViewById<android.widget.LinearLayout>(R.id.ll_badges_row)
+        val llActionButtons      = v.findViewById<android.widget.LinearLayout>(R.id.ll_action_buttons)
         val previewViews         = listOf(
             v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_1),
             v.findViewById<android.widget.ImageView>(R.id.iv_team_preview_2),
@@ -882,21 +841,47 @@ class TeamSetupFragment : Fragment() {
             val num = if (selGender == com.pokemonbp.model.TrainerGender.MALE) selAvatarId else selAvatarId - 100
             btnChooseAvatar.text = "👤 Character ${if (selGender == com.pokemonbp.model.TrainerGender.MALE) "♂" else "♀"} #$num — tap to change"
         }
-        llTeamHeader.setOnClickListener {
-            teamBodyVisible = !teamBodyVisible
-            layoutTeamBody.visibility = if (teamBodyVisible) android.view.View.VISIBLE else android.view.View.GONE
-            tvTeamToggle.text = if (teamBodyVisible) "▲ Pokémon Team" else "▼ Pokémon Team"
+        // Badge row — inline toggleable badges
+        val selectedBadges = (existingTrainer?.badges ?: emptySet<Int>()).toMutableSet()
+        val badgeViews = listOf(
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_1),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_2),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_3),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_4),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_5),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_6),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_7),
+            v.findViewById<android.widget.ImageView>(R.id.iv_badge_8)
+        )
+        fun refreshBadges() {
+            badgeViews.forEachIndexed { i, iv ->
+                val num = i + 1
+                Glide.with(requireContext()).load(SpriteUrls.badgeUrl(num)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
+                iv.alpha = if (num in selectedBadges) 1f else 0.3f
+            }
         }
-        llBadgeHeader.setOnClickListener {
-            val imgView = android.widget.ImageView(requireContext())
-            Glide.with(requireContext()).load(SpriteUrls.badgeCaseEmptyUrl).placeholder(R.drawable.ic_badge_case_empty).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(imgView)
-            imgView.adjustViewBounds = true
-            imgView.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-            android.app.AlertDialog.Builder(requireContext())
-                .setView(imgView)
-                .setPositiveButton("Close", null)
-                .show()
+        badgeViews.forEachIndexed { i, iv ->
+            iv.setOnClickListener {
+                val num = i + 1
+                if (num in selectedBadges) selectedBadges.remove(num) else selectedBadges.add(num)
+                refreshBadges()
+            }
         }
+        refreshBadges()
+
+        fun setTeamBodyVisible(show: Boolean) {
+            teamBodyVisible = show
+            layoutTeamBody.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
+            llPreviewSprites.visibility = if (show) android.view.View.GONE else android.view.View.VISIBLE
+            tvTeamToggle.text = if (show) "▲ Pokémon Team (tap to close)" else "▼ Pokémon Team"
+            val otherVis = if (show) android.view.View.GONE else android.view.View.VISIBLE
+            tilTrainerName.visibility = otherVis
+            btnChooseAvatar.visibility = otherVis
+            tvBadgeLabel.visibility = otherVis
+            llBadgesRow.visibility = otherVis
+            llActionButtons.visibility = otherVis
+        }
+        llTeamHeader.setOnClickListener { setTeamBodyVisible(!teamBodyVisible) }
 
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
         while (pokemonEntries.size < 4) pokemonEntries.add(null)
@@ -1021,7 +1006,8 @@ class TeamSetupFragment : Fragment() {
             val trainer = com.pokemonbp.model.PlayerTrainer(
                 id = existingTrainer?.id ?: java.util.UUID.randomUUID().toString(),
                 name = name, avatarId = selAvatarId, gender = selGender,
-                pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) })
+                pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) },
+                badges = selectedBadges.toSet())
             val all = TrainerManager.loadTrainers(requireContext())
             if (existingTrainer == null) { all.add(trainer) }
             else { val idx = all.indexOfFirst { it.id == trainer.id }; if (idx >= 0) all[idx] = trainer else all.add(trainer) }

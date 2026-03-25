@@ -82,6 +82,7 @@ class PokemonListAdapter(
         val cleanName = if (displayDE.isNotBlank()) "$displayDE / $displayEN" else displayEN.ifBlank { pokemon.types.joinToString("/") { it.displayName } }
         holder.binding.tvPokemonName.text = cleanName
 
+        val ctx = holder.itemView.context
         // Mega bracelet icon — top-right corner
         if (isMega) {
             holder.binding.ivMegaIcon.visibility = android.view.View.VISIBLE
@@ -93,7 +94,6 @@ class PokemonListAdapter(
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
         loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView)
-        val ctx = holder.itemView.context
         Glide.with(ctx).load(SpriteUrls.faintedUrl).placeholder(R.drawable.ic_fainted).error(R.drawable.ic_fainted).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivFainted)
         Glide.with(ctx).load(SpriteUrls.reviveUrl).placeholder(R.drawable.ic_revive).error(R.drawable.ic_revive).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.btnRevive)
         Glide.with(ctx).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
