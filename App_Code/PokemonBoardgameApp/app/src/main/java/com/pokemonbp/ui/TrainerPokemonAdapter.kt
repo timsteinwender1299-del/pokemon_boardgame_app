@@ -74,16 +74,19 @@ class TrainerPokemonAdapter(
             holder.ivSprite.loadPokemonSprite(holder.itemView.context, preset.pokedexId)
         }
 
-        // Type icons
+        // Type icons — always 2 slots, NoType.png for empty second slot
         holder.llTypes.removeAllViews()
-        for (type in preset.types) {
-            val iv = ImageView(holder.itemView.context)
-            val dp = (24 * holder.itemView.context.resources.displayMetrics.density).toInt()
-            val params = LinearLayout.LayoutParams(dp, dp)
-            params.marginEnd = (2 * holder.itemView.context.resources.displayMetrics.density).toInt()
+        val ctx = holder.itemView.context
+        val margin = (1 * ctx.resources.displayMetrics.density).toInt()
+        for (i in 0..1) {
+            val iv = ImageView(ctx)
+            val params = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            if (i == 0) params.marginEnd = margin
             iv.layoutParams = params
-            Glide.with(holder.itemView.context).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
             iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            iv.adjustViewBounds = true
+            val url = if (i < preset.types.size) SpriteUrls.typeIconUrl(preset.types[i].name) else SpriteUrls.noTypeUrl
+            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
             holder.llTypes.addView(iv)
         }
 
@@ -113,7 +116,6 @@ class TrainerPokemonAdapter(
         }
 
         // Load icons from GitHub
-        val ctx = holder.itemView.context
         loadButtonIcon(ctx, SpriteUrls.garbageBinUrl, holder.btnRemove)
         loadButtonIcon(ctx, SpriteUrls.dawnstoneUrl, holder.btnEvolve)
         loadButtonIcon(ctx, SpriteUrls.duskstoneUrl, holder.btnDuskstone)
