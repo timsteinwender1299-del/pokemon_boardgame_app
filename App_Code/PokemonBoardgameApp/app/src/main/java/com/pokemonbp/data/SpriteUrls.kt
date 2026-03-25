@@ -176,7 +176,7 @@ object SpriteUrls {
     fun typeIconUrl(typeName: String): String =
         "$BASE_URL/TypeIcons/${typeName.lowercase()}.png"
 
-    val megaBraceletUrl: String    = "$BASE_URL/Icons/MegaBraceletIcon.png"
+    val megaBraceletUrl: String    = "$BASE_URL/Icons/MegaBraceletIcon.png?v=2"
     val faintedUrl: String         = "$BASE_URL/Icons/FaintedIcon.png"
     val reviveUrl: String          = "$BASE_URL/Icons/ReviveIcon.png"
     val reloadUrl: String          = "$BASE_URL/Icons/ReloadIcon.png"
