@@ -342,6 +342,13 @@ class TeamSetupFragment : Fragment() {
                 .setPositiveButton("OK", null)
                 .show()
         }
+        binding.btnRollsheetRoute.setOnClickListener {
+            showRollSheetDialog("RollSheet — Route", rollSheetRouteEntries())
+        }
+        binding.btnRollsheetTown.setOnClickListener {
+            showRollSheetDialog("RollSheet — Town EventTime", rollSheetTownEntries())
+        }
+        // btnRollsheetGalactic does nothing for now
     }
 
     private fun handleRouteClick(route: com.pokemonbp.data.RouteLocation) {
@@ -1267,11 +1274,6 @@ class TeamSetupFragment : Fragment() {
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_rollsheet_route)
-                .setOnClickListener { showRollSheetDialog("RollSheet — Route", rollSheetRouteEntries()) }
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_rollsheet_town)
-                .setOnClickListener { showRollSheetDialog("RollSheet — Town EventTime", rollSheetTownEntries()) }
-            // btn_rollsheet_galactic does nothing for now
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_route)
                 .setOnClickListener { if (routes.isNotEmpty()) handleRoute(routes.random()) }
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_town)
