@@ -325,7 +325,16 @@ class TeamSetupFragment : Fragment() {
             handleRouteClick(route)
         }
 
-        binding.btnTeamGalactic.setOnClickListener { showTeamGalacticMenu() }
+        binding.btnRandomRoute.setOnClickListener {
+            val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
+            if (routes.isNotEmpty()) handleRouteClick(routes.random())
+        }
+        binding.btnRandomTown.setOnClickListener {
+            val towns = loadTowns()
+            val town = towns.randomOrNull()
+            if (town != null) android.app.AlertDialog.Builder(requireContext())
+                .setTitle("🏙️ Random Town").setMessage(town).setPositiveButton("OK", null).show()
+        }
         binding.btnRollsheetRoute.setOnClickListener {
             showRollSheetInline("RollSheet — Route", rollSheetRouteEntries())
         }
@@ -1273,14 +1282,8 @@ class TeamSetupFragment : Fragment() {
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_route)
-                .setOnClickListener { if (routes.isNotEmpty()) handleRoute(routes.random()) }
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_town)
-                .setOnClickListener {
-                    val town = loadTowns().randomOrNull()
-                    if (town != null) android.app.AlertDialog.Builder(requireContext())
-                        .setTitle("🏙️ Random Town").setMessage(town).setPositiveButton("OK", null).show()
-                }
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_team_galactic)
+                .setOnClickListener { showTeamGalacticMenu() }
             binding.layoutPanelSub.addView(view)
         }
 
@@ -1773,6 +1776,9 @@ class TeamSetupFragment : Fragment() {
         handleEnemySelected(EnemyTrainer.RandomTrainer, null)
         teamBLabel = "Team Galaktik Grunt"
         binding.tvTeamBLabel.text = teamBLabel
+        val gruntImageUrl = if ((0..1).random() == 0) SpriteUrls.galacticGruntMaleUrl else SpriteUrls.galacticGruntFemaleUrl
+        loadTrainerImage(gruntImageUrl, binding.ivTrainerB)
+        loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
         generated.forEach {
             teamBList.add(it)
             adapterB.notifyItemInserted(teamBList.size - 1)

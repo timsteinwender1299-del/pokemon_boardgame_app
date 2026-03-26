@@ -195,6 +195,10 @@ object SpriteUrls {
     )
     fun badgeUrl(num: Int): String = "$BASE_URL/Badges/${badgeFileNames[num]}.png"
 
+    val galacticGruntMaleUrl: String   = "$BASE_URL/Trainer/TrainerImage/GalacticGruntMale.png"
+    val galacticGruntFemaleUrl: String = "$BASE_URL/Trainer/TrainerImage/GalacticGruntFemale.png"
+    val galacticLogoUrl: String        = "$BASE_URL/Trainer/Trainer_Icon/GalacticLogo.png"
+
     val noTypeUrl: String     = "$BASE_URL/TypeIcons/NoType.png"
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"

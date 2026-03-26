@@ -49,25 +49,7 @@ class RoutePickerDialog(
         rvNormal.adapter    = WildRouteAdapter(normal, c) { handleRouteClick(it) }
 
         view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
-
-        view.findViewById<MaterialButton>(R.id.btn_random_route).setOnClickListener {
-            if (routes.isNotEmpty()) handleRouteClick(routes.random())
-        }
-
-        view.findViewById<MaterialButton>(R.id.btn_random_town).setOnClickListener {
-            val towns = try {
-                requireContext().assets.open("towns.txt").bufferedReader().readLines()
-                    .map { it.trim() }.filter { it.isNotEmpty() }
-            } catch (e: Exception) { emptyList() }
-            val town = towns.randomOrNull()
-            if (town != null) {
-                android.app.AlertDialog.Builder(requireContext())
-                    .setTitle("🏙️ Random Town")
-                    .setMessage(town)
-                    .setPositiveButton("OK", null)
-                    .show()
-            }
-        }
+        // btn_team_galactic is wired in showRoutePickerInline (RandomTrainer flow); no action here.
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
