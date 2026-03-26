@@ -45,10 +45,10 @@
                 android:textSize="11sp"
                 android:visibility="gone"/>
 
-            <!-- Type icons: small fixed-height row -->
+            <!-- Type icons: compact, wrap to content width -->
             <LinearLayout android:id="@+id/ll_types"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
                 android:orientation="horizontal"
                 android:layout_marginTop="4dp"/>
 

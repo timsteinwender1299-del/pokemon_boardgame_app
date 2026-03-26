@@ -152,11 +152,13 @@ class PokemonListAdapter(
         container ?: return
         container.removeAllViews()
         val ctx = itemView.context
-        val marginEnd = (2 * ctx.resources.displayMetrics.density).toInt()
+        val density = ctx.resources.displayMetrics.density
+        val iconPx = (36 * density).toInt()
+        val marginEnd = (3 * density).toInt()
         // Always render exactly 2 type slots; use NoType.png for an empty second slot
         for (i in 0..1) {
             val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            val params = LinearLayout.LayoutParams(iconPx, iconPx)
             if (i == 0) params.marginEnd = marginEnd
             iv.layoutParams = params
             iv.scaleType = ImageView.ScaleType.FIT_CENTER
