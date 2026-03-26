@@ -179,6 +179,7 @@ class TeamSetupFragment : Fragment() {
                 binding.layoutMainContent.visibility = android.view.View.VISIBLE
                 binding.layoutWildRoutes.visibility = android.view.View.GONE
                 binding.layoutRouteDetail.visibility = android.view.View.GONE
+                binding.layoutRollsheet.visibility = android.view.View.GONE
             }
         }
 
@@ -343,12 +344,27 @@ class TeamSetupFragment : Fragment() {
                 .show()
         }
         binding.btnRollsheetRoute.setOnClickListener {
-            showRollSheetDialog("RollSheet — Route", rollSheetRouteEntries())
+            showRollSheetInline("RollSheet — Route", rollSheetRouteEntries())
         }
         binding.btnRollsheetTown.setOnClickListener {
-            showRollSheetDialog("RollSheet — Town EventTime", rollSheetTownEntries())
+            showRollSheetInline("RollSheet — Town EventTime", rollSheetTownEntries())
         }
         // btnRollsheetGalactic does nothing for now
+
+        binding.tvRollsheetBack.setOnClickListener {
+            binding.layoutRollsheet.visibility = android.view.View.GONE
+            binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
+        }
+    }
+
+    private fun showRollSheetInline(title: String, entries: List<RollSheetEntry>) {
+        val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
+        binding.tvRollsheetTitleInline.text = title
+        binding.rvRollsheet.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        binding.rvRollsheet.adapter = RollSheetAdapter(entries, c)
+        binding.layoutWildRoutes.visibility = android.view.View.GONE
+        binding.layoutRouteDetail.visibility = android.view.View.GONE
+        binding.layoutRollsheet.visibility = android.view.View.VISIBLE
     }
 
     private fun handleRouteClick(route: com.pokemonbp.data.RouteLocation) {
@@ -1741,27 +1757,6 @@ class TeamSetupFragment : Fragment() {
         } else {
             binding.btnCalculate.text = "  CALCULATE BATTLE"
         }
-    }
-
-    private fun showRollSheetDialog(title: String, entries: List<RollSheetEntry>) {
-        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
-        val c = ThemeManager.colorsFor(theme)
-        val view = layoutInflater.inflate(R.layout.dialog_rollsheet, null)
-        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel_rollsheet).setBackgroundColor(c.surface)
-        view.findViewById<android.widget.TextView>(R.id.tv_rollsheet_title).text = title
-        val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_rollsheet)
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-        recycler.adapter = RollSheetAdapter(entries, c)
-        var d: android.app.AlertDialog? = null
-        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_rollsheet)
-            .setOnClickListener { d?.dismiss() }
-        d = android.app.AlertDialog.Builder(requireContext()).setView(view).create()
-        d.setOnShowListener {
-            val w = (requireContext().resources.displayMetrics.widthPixels * 0.92).toInt()
-            d.window?.setLayout(w, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
-            d.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-        }
-        d.show()
     }
 
     private fun rollSheetRouteEntries() = listOf(
