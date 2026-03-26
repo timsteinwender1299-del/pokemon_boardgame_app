@@ -50,6 +50,14 @@ class RoutePickerDialog(
 
         view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
 
+        view.findViewById<MaterialButton>(R.id.btn_rollsheet_route).setOnClickListener {
+            showRollSheet("RollSheet — Route", rollSheetRouteEntries())
+        }
+        view.findViewById<MaterialButton>(R.id.btn_rollsheet_town).setOnClickListener {
+            showRollSheet("RollSheet — Town EventTime", rollSheetTownEntries())
+        }
+        // btn_rollsheet_galactic does nothing for now
+
         view.findViewById<MaterialButton>(R.id.btn_random_route).setOnClickListener {
             if (routes.isNotEmpty()) handleRouteClick(routes.random())
         }
@@ -214,6 +222,27 @@ class RoutePickerDialog(
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private fun rollSheetRouteEntries() = listOf(
+        RollSheetEntry("Pokemon-Kampf (Wild)",    "Du kämpfst gegen ein Wildes Pokemon auf deiner Route!", "1–5"),
+        RollSheetEntry("Pokemon-Kampf (Trainer)", "Du begegnest einem Trainer auf deiner Route! (Routen Pokémon +0,5BP/Orden | Reset 4 Orden)", "6–8"),
+        RollSheetEntry("Pokemon fangen",          "Du begegnest einem Wilden Pokemon auf deiner Route!", "9–15"),
+        RollSheetEntry("Itemrad (Consumables)",   "Du findest ein Item!", "16–20")
+    )
+
+    private fun rollSheetTownEntries() = listOf(
+        RollSheetEntry("Spacial Rend!",           "Du wirst zu einem zufälligen Ort teleportiert!", "1"),
+        RollSheetEntry("Kleiner Meteor",          "Ein Meteor schlägt in eine Zufällige Route ein!", "2"),
+        RollSheetEntry("Uno-Reverse",             "Alle Type-Matchups sind verdreht diese Runde!", "3–4"),
+        RollSheetEntry("Doppelteam",              "Du laufst weiter!", "5–6"),
+        RollSheetEntry("Finanzielle Hilfsmittel", "Du bekommst Geld anhand deiner Orden Anzahl (Badgesx100)", "7–8"),
+        RollSheetEntry("TownSpecific-Event!",     "TownSpecific-Event!", "9–14"),
+        RollSheetEntry("Itemrad (Type+)",         "Du findest ein Item!", "15–16"),
+        RollSheetEntry("Itemrad (Permanent)",     "Du findest ein Item!", "17"),
+        RollSheetEntry("GymTime",                 "Du kämpst trotzdem gegen die/den Arenaleiter/In", "18"),
+        RollSheetEntry("Großer Meteor",           "Ein Meteor schlägt in eine Zufällige Stadt ein!", "19"),
+        RollSheetEntry("Roar of Time!",           "Dein Stärkstes Pokemon verliert 1BP (Es kann sich auch zurückentwickeln!)", "20")
+    )
 }
 
 data class RollSheetEntry(val event: String, val text: String, val value: String)

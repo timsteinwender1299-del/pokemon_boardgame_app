@@ -78,6 +78,34 @@
 
         </LinearLayout>
 
+        <!-- RollSheet buttons -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="4dp" android:paddingHorizontal="4dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_rollsheet_route"
+                android:layout_width="0dp" android:layout_height="32dp"
+                android:layout_weight="1" android:layout_marginEnd="2dp"
+                android:text="📋 Route" android:textSize="9sp"
+                android:textAllCaps="false"
+                app:backgroundTint="#CC0000" app:cornerRadius="16dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_rollsheet_town"
+                android:layout_width="0dp" android:layout_height="32dp"
+                android:layout_weight="1" android:layout_marginHorizontal="2dp"
+                android:text="📋 Town Event" android:textSize="9sp"
+                android:textAllCaps="false"
+                app:backgroundTint="#CC0000" app:cornerRadius="16dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_rollsheet_galactic"
+                android:layout_width="0dp" android:layout_height="32dp"
+                android:layout_weight="1" android:layout_marginStart="2dp"
+                android:text="📋 GalacticTime!" android:textSize="9sp"
+                android:textAllCaps="false"
+                app:backgroundTint="#880000" app:cornerRadius="16dp"/>
+        </LinearLayout>
+
         <!-- Random buttons row (matches WildPokemonPicker) -->
         <LinearLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"

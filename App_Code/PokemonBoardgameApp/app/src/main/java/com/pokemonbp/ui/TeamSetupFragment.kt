@@ -1267,6 +1267,11 @@ class TeamSetupFragment : Fragment() {
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_rollsheet_route)
+                .setOnClickListener { showRollSheetDialog("RollSheet — Route", rollSheetRouteEntries()) }
+            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_rollsheet_town)
+                .setOnClickListener { showRollSheetDialog("RollSheet — Town EventTime", rollSheetTownEntries()) }
+            // btn_rollsheet_galactic does nothing for now
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_route)
                 .setOnClickListener { if (routes.isNotEmpty()) handleRoute(routes.random()) }
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_random_town)
@@ -1735,6 +1740,48 @@ class TeamSetupFragment : Fragment() {
             binding.btnCalculate.text = "  CALCULATE BATTLE"
         }
     }
+
+    private fun showRollSheetDialog(title: String, entries: List<RollSheetEntry>) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+        val view = layoutInflater.inflate(R.layout.dialog_rollsheet, null)
+        view.findViewById<android.widget.LinearLayout>(R.id.screen_panel_rollsheet).setBackgroundColor(c.surface)
+        view.findViewById<android.widget.TextView>(R.id.tv_rollsheet_title).text = title
+        val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_rollsheet)
+        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        recycler.adapter = RollSheetAdapter(entries, c)
+        var d: android.app.AlertDialog? = null
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_rollsheet)
+            .setOnClickListener { d?.dismiss() }
+        d = android.app.AlertDialog.Builder(requireContext()).setView(view).create()
+        d.setOnShowListener {
+            val w = (requireContext().resources.displayMetrics.widthPixels * 0.92).toInt()
+            d.window?.setLayout(w, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+            d.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+        d.show()
+    }
+
+    private fun rollSheetRouteEntries() = listOf(
+        RollSheetEntry("Pokemon-Kampf (Wild)",    "Du kämpfst gegen ein Wildes Pokemon auf deiner Route!", "1–5"),
+        RollSheetEntry("Pokemon-Kampf (Trainer)", "Du begegnest einem Trainer auf deiner Route! (Routen Pokémon +0,5BP/Orden | Reset 4 Orden)", "6–8"),
+        RollSheetEntry("Pokemon fangen",          "Du begegnest einem Wilden Pokemon auf deiner Route!", "9–15"),
+        RollSheetEntry("Itemrad (Consumables)",   "Du findest ein Item!", "16–20")
+    )
+
+    private fun rollSheetTownEntries() = listOf(
+        RollSheetEntry("Spacial Rend!",           "Du wirst zu einem zufälligen Ort teleportiert!", "1"),
+        RollSheetEntry("Kleiner Meteor",          "Ein Meteor schlägt in eine Zufällige Route ein!", "2"),
+        RollSheetEntry("Uno-Reverse",             "Alle Type-Matchups sind verdreht diese Runde!", "3–4"),
+        RollSheetEntry("Doppelteam",              "Du laufst weiter!", "5–6"),
+        RollSheetEntry("Finanzielle Hilfsmittel", "Du bekommst Geld anhand deiner Orden Anzahl (Badgesx100)", "7–8"),
+        RollSheetEntry("TownSpecific-Event!",     "TownSpecific-Event!", "9–14"),
+        RollSheetEntry("Itemrad (Type+)",         "Du findest ein Item!", "15–16"),
+        RollSheetEntry("Itemrad (Permanent)",     "Du findest ein Item!", "17"),
+        RollSheetEntry("GymTime",                 "Du kämpst trotzdem gegen die/den Arenaleiter/In", "18"),
+        RollSheetEntry("Großer Meteor",           "Ein Meteor schlägt in eine Zufällige Stadt ein!", "19"),
+        RollSheetEntry("Roar of Time!",           "Dein Stärkstes Pokemon verliert 1BP (Es kann sich auch zurückentwickeln!)", "20")
+    )
 
     private fun loadTowns(): List<String> {
         return try {
