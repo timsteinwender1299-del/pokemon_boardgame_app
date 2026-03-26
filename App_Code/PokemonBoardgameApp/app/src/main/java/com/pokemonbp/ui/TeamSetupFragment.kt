@@ -1167,8 +1167,11 @@ class TeamSetupFragment : Fragment() {
 
             recycler.adapter = EnemyGridAdapter(options, c) { option ->
                 when (option) {
-                    is EnemyOption.GymLeaderOption -> showBadgePickerInline(option.gym,
-                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.GymLeaderOption -> {
+                        val badgeLevel = minOf((teamATrainer?.badges?.size ?: 0) + 1, 8)
+                        handleEnemySelected(option.gym, badgeLevel)
+                        hidePanels()
+                    }
                     is EnemyOption.ChampionMenu -> showChampionPickerInline(
                         onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
                     is EnemyOption.WildOption -> {
@@ -1582,39 +1585,6 @@ class TeamSetupFragment : Fragment() {
         }
 
         pushSubPanel("$typeName Starters", buildContent = { buildLines() }, onBack = onBack)
-    }
-
-    private fun showBadgePickerInline(gym: EnemyTrainer.GymLeader, onBack: () -> Unit) {
-        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
-        pushSubPanel("${gym.nameDE} / ${gym.nameEN}", buildContent = {
-            val view = layoutInflater.inflate(R.layout.dialog_badge_select, binding.layoutPanelSub, false)
-            view.layoutParams = android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
-            stripDialogChrome(view)
-            val spBadge = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
-            spBadge?.setBackgroundColor(c.surface)
-            spBadge?.addView(buildBackRow(), 0)
-            view.findViewById<android.widget.TextView>(R.id.tv_badge_title)?.text =
-                "${gym.nameDE} / ${gym.nameEN} — Badge"
-
-            val container = view.findViewById<android.widget.LinearLayout>(R.id.badge_container)
-            for (i in 1..8) {
-                com.google.android.material.button.MaterialButton(requireContext()).apply {
-                    text = "Badge $i"; textSize = 14f; isAllCaps = false
-                    setTextColor(android.graphics.Color.WHITE)
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#CC0000"))
-                    cornerRadius = dpPx(22)
-                    layoutParams = android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dpPx(44)
-                    ).also { it.bottomMargin = dpPx(6) }
-                    setOnClickListener { handleEnemySelected(gym, i); hidePanels() }
-                    container.addView(this)
-                }
-            }
-            view.findViewById<android.widget.Button>(R.id.btn_back_badge)?.setOnClickListener { popBack() }
-            binding.layoutPanelSub.addView(view)
-        }, onBack = onBack)
     }
 
     private fun showChampionPickerInline(onBack: () -> Unit) {
