@@ -325,24 +325,7 @@ class TeamSetupFragment : Fragment() {
             handleRouteClick(route)
         }
 
-        binding.btnRandomRoute.setOnClickListener {
-            val allRoutes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
-            val route = allRoutes.randomOrNull() ?: return@setOnClickListener
-            android.app.AlertDialog.Builder(requireContext())
-                .setTitle("🎲 Random Route")
-                .setMessage(route.displayName)
-                .setPositiveButton("OK", null)
-                .show()
-        }
-        binding.btnRandomTown.setOnClickListener {
-            val towns = loadTowns()
-            val town = towns.randomOrNull() ?: return@setOnClickListener
-            android.app.AlertDialog.Builder(requireContext())
-                .setTitle("🏙️ Random Town")
-                .setMessage(town)
-                .setPositiveButton("OK", null)
-                .show()
-        }
+        binding.btnTeamGalactic.setOnClickListener { showTeamGalacticMenu() }
         binding.btnRollsheetRoute.setOnClickListener {
             showRollSheetInline("RollSheet — Route", rollSheetRouteEntries())
         }
@@ -1757,6 +1740,66 @@ class TeamSetupFragment : Fragment() {
         } else {
             binding.btnCalculate.text = "  CALCULATE BATTLE"
         }
+    }
+
+    private fun showTeamGalacticMenu() {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("⭐ Team Galaktik")
+            .setItems(arrayOf("Team Galaktik Grunt", "Team Galaktik Commander", "Team Galaktik Boss")) { _, which ->
+                if (which == 0) loadGalacticGrunt()
+                // Commander and Boss: nothing for now
+            }
+            .show()
+    }
+
+    private fun loadGalacticGrunt() {
+        val badges = teamATrainer?.badges?.size ?: 0
+        // intArrayOf(mainMinBP, mainMaxBP, otherMaxBP, minTeamSize, maxTeamSize)
+        val cfg = when (badges) {
+            0, 1 -> intArrayOf(1, 3, 0, 1, 1)
+            2    -> intArrayOf(3, 5, 3, 1, 2)
+            3    -> intArrayOf(3, 5, 4, 1, 2)
+            4    -> intArrayOf(5, 6, 4, 1, 3)
+            5    -> intArrayOf(5, 6, 5, 1, 3)
+            6    -> intArrayOf(5, 7, 5, 1, 3)
+            7    -> intArrayOf(6, 7, 5, 1, 3)
+            else -> intArrayOf(8, 8, 5, 1, 3)
+        }
+        val teamSize = (cfg[3]..cfg[4]).random()
+        val generated = mutableListOf<Pokemon>()
+        generated.add(makeGalacticPokemon((cfg[0]..cfg[1]).random()))
+        for (i in 1 until teamSize) generated.add(makeGalacticPokemon((1..cfg[2]).random()))
+
+        handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+        teamBLabel = "Team Galaktik Grunt"
+        binding.tvTeamBLabel.text = teamBLabel
+        generated.forEach {
+            teamBList.add(it)
+            adapterB.notifyItemInserted(teamBList.size - 1)
+        }
+        updateItemHeights()
+        hidePanels()
+    }
+
+    private fun makeGalacticPokemon(bp: Int): Pokemon {
+        val r = (0..99).random()
+        val (first, second) = when {
+            r < 35 -> "Zubat"   to "Golbat"
+            r < 65 -> "Glameow" to "Purugly"
+            r < 85 -> "Stunky"  to "Skuntank"
+            else   -> "Croagunk" to "Toxicroak"
+        }
+        val name = if (bp >= 5) second else first
+        val entry = PokedexData.allPokemon.find { it.name.equals(name, ignoreCase = true) }
+        return Pokemon(
+            id = System.currentTimeMillis().toInt() + (0..999).random(),
+            name = name,
+            nameDE = entry?.nameDE ?: name,
+            types = entry?.types ?: emptyList(),
+            baseBP = bp,
+            team = Team.TEAM_B,
+            pokedexId = entry?.spriteId ?: 0
+        )
     }
 
     private fun rollSheetRouteEntries() = listOf(
