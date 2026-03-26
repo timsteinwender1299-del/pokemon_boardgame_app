@@ -257,8 +257,13 @@
                 <TextView
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="W20" android:textSize="10sp" android:textStyle="bold"
-                    android:textColor="#9b59b6" android:gravity="center"/>
+                    android:text="Min." android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#00B0F0" android:gravity="center"/>
+                <TextView
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Max." android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="#FF0000" android:gravity="center"/>
             </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp"

@@ -192,7 +192,7 @@ class RoutePickerDialog(
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 }
 
-data class RollSheetEntry(val event: String, val text: String, val value: String)
+data class RollSheetEntry(val event: String, val text: String, val min: String, val max: String)
 
 // ── Route grid adapter (route name buttons, 2-col) ────────────────────────────
 
@@ -296,7 +296,8 @@ class RollSheetAdapter(
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
         val tvEvent: TextView = v.findViewById(R.id.tv_rs_event)
         val tvText:  TextView = v.findViewById(R.id.tv_rs_text)
-        val tvValue: TextView = v.findViewById(R.id.tv_rs_value)
+        val tvMin:   TextView = v.findViewById(R.id.tv_rs_min)
+        val tvMax:   TextView = v.findViewById(R.id.tv_rs_max)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(
@@ -309,8 +310,8 @@ class RollSheetAdapter(
         holder.tvEvent.setTextColor(c.textPrimary)
         holder.tvText.text = e.text
         holder.tvText.setTextColor(c.textSecondary)
-        holder.tvValue.text = e.value
-        holder.tvValue.setTextColor(c.accent)
+        holder.tvMin.text = e.min
+        holder.tvMax.text = e.max
         holder.itemView.setBackgroundColor(if (position % 2 == 0) 0x0AFFFFFF else 0x00000000)
     }
 

@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingHorizontal="8dp" android:paddingVertical="6dp">
+    android:paddingHorizontal="8dp" android:paddingVertical="10dp">
 
     <TextView android:id="@+id/tv_rs_event"
         android:layout_width="0dp" android:layout_height="wrap_content"
@@ -16,10 +16,18 @@
         android:textSize="10sp"
         android:paddingEnd="4dp"/>
 
-    <TextView android:id="@+id/tv_rs_value"
+    <TextView android:id="@+id/tv_rs_min"
         android:layout_width="0dp" android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textSize="11sp" android:textStyle="bold"
+        android:textColor="#00B0F0"
+        android:gravity="center"/>
+
+    <TextView android:id="@+id/tv_rs_max"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="11sp" android:textStyle="bold"
+        android:textColor="#FF0000"
         android:gravity="center"/>
 
 </LinearLayout>
