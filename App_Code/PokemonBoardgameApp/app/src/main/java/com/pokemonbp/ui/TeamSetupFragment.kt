@@ -1718,9 +1718,9 @@ class TeamSetupFragment : Fragment() {
     private fun showTeamGalacticMenu() {
         android.app.AlertDialog.Builder(requireContext())
             .setTitle("⭐ Team Galaktik")
-            .setItems(arrayOf("Team Galaktik Grunt", "Team Galaktik Commander", "Team Galaktik Boss")) { _, which ->
+            .setItems(arrayOf("Team Galaktik Grunt", "Team Galaktik Commander")) { _, which ->
                 if (which == 0) loadGalacticGrunt()
-                // Commander and Boss: nothing for now
+                // Commander: nothing for now
             }
             .show()
     }
