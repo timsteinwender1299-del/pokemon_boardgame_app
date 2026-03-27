@@ -145,8 +145,8 @@ class TeamSetupFragment : Fragment() {
                     teamBList.clear(); adapterB.notifyDataSetChanged()
                     faintedIndicesA.clear(); faintedIndicesB.clear()
                     adapterA.faintedIndices = emptySet(); adapterB.faintedIndices = emptySet()
-                    currentEnemyTrainer = null; teamALabel = "Player"; teamBLabel = "Enemy"
-                    binding.tvTeamALabel.text = teamALabel; binding.tvTeamBLabel.text = teamBLabel
+                    currentEnemyTrainer = null; teamBLabel = "Enemy Trainer"
+                    binding.tvTeamBLabel.text = teamBLabel
                     loadLabelIcon(SpriteUrls.playerUrl, binding.ivLabelA, R.drawable.ic_player)
                     loadLabelIcon(SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
                     loadTrainerImage(null, binding.ivTrainerA)
