@@ -199,7 +199,7 @@ class EnemyGridAdapter(
         val (iconId, label, fallback) = when (opt) {
             is EnemyOption.GymLeaderOption  -> Triple(opt.gym.id, "${opt.gym.nameDE}\n${opt.gym.nameEN}", R.drawable.ic_pokeball)
             is EnemyOption.ChampionOption   -> Triple(opt.champion.nameEN.lowercase(), opt.champion.nameEN, R.drawable.ic_pokeball)
-            is EnemyOption.ChampionMenu     -> Triple("championmenu", "Choose\nChampion", R.drawable.ic_pokeball)
+            is EnemyOption.ChampionMenu     -> Triple("championmenu", "Champion", R.drawable.ic_pokeball)
             is EnemyOption.WildOption       -> Triple("wild", "Wild\nPokemon", R.drawable.ic_wild_pokemon)
             is EnemyOption.RandomOption     -> Triple("random", "Route\nEncounter", R.drawable.ic_random_trainer)
             is EnemyOption.SavedTrainerMenu -> Triple("saved", "Choose\nTrainer", R.drawable.ic_pokeball)

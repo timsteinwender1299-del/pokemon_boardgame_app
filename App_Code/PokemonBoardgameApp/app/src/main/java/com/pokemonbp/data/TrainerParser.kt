@@ -178,6 +178,76 @@ object TrainerParser {
         return fights.mapValues { it.value.toList() }
     }
 
+    // ── Champion system ───────────────────────────────────────────────────────
+
+    data class ChampionRoster(
+        val pool: List<Pair<String, String>>,   // (nameDE, nameEN)
+        val ace: Pair<String, String>?
+    )
+
+    /** Loads Pool + Ace from Champion<nameEN>.txt (e.g. ChampionCynthia.txt) */
+    fun loadChampionRoster(context: Context, nameEN: String): ChampionRoster? {
+        val file = File(DataSyncManager.trainerDir(context), "Champion${nameEN}.txt")
+        if (!file.exists()) return null
+        val lines = file.readLines().map { it.trim() }
+        val pool = mutableListOf<Pair<String, String>>()
+        var ace: Pair<String, String>? = null
+        var section = ""
+        for (line in lines) {
+            when {
+                line.equals("Pool:", ignoreCase = true)      -> section = "pool"
+                line.equals("Ace:", ignoreCase = true)       -> section = "ace"
+                line.isEmpty() || line.startsWith("_")       -> { /* skip */ }
+                line.contains("/")                           -> {
+                    val pair = splitName(line)
+                    if (section == "pool") pool.add(pair) else if (section == "ace") ace = pair
+                }
+            }
+        }
+        return if (pool.isEmpty()) null else ChampionRoster(pool, ace)
+    }
+
+    /**
+     * Loads BP-per-slot from ChampionBP.txt.
+     * Each line is one integer: line 1 = slot 1, last line = Ace slot.
+     * Falls back to [10, 11, 11, 12] if the file is missing.
+     */
+    fun loadChampionBP(context: Context): List<Int> {
+        val file = File(DataSyncManager.trainerDir(context), "ChampionBP.txt")
+        if (!file.exists()) return listOf(10, 11, 11, 12)
+        val values = file.readLines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("#") }
+            .mapNotNull { it.toIntOrNull() }
+        return values.ifEmpty { listOf(10, 11, 11, 12) }
+    }
+
+    /**
+     * Picks a random champion (Cynthia or Tim) from those with valid roster files,
+     * randomly selects pool Pokémon, appends the Ace, and assigns BP from ChampionBP.txt.
+     * Returns null if no champion data is available.
+     */
+    fun buildRandomChampion(context: Context): EnemyTrainer.Champion? {
+        val bpList = loadChampionBP(context)
+        val poolSlots = maxOf(1, bpList.size - 1)   // all slots except the last (Ace)
+
+        val available = listOf("Cynthia", "Tim").filter { loadChampionRoster(context, it) != null }
+        if (available.isEmpty()) return null
+
+        val nameEN = available.random()
+        val roster = loadChampionRoster(context, nameEN) ?: return null
+
+        val picked = roster.pool.shuffled().take(poolSlots)
+        val pokemon = mutableListOf<GymPokemon>()
+        picked.forEachIndexed { i, (de, en) ->
+            pokemon.add(buildGymPokemon(de, en, bpList.getOrElse(i) { bpList.lastOrNull() ?: 10 }))
+        }
+        roster.ace?.let { (de, en) ->
+            pokemon.add(buildGymPokemon(de, en, bpList.lastOrNull() ?: 12))
+        }
+        return EnemyTrainer.Champion(nameEN, pokemon)
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun buildGymPokemon(nameDE: String, nameEN: String, bp: Int): GymPokemon {

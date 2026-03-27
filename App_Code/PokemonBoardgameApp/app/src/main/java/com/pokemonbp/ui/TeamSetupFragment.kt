@@ -1204,8 +1204,7 @@ class TeamSetupFragment : Fragment() {
                         handleEnemySelected(option.gym, badgeLevel)
                         hidePanels()
                     }
-                    is EnemyOption.ChampionMenu -> showChampionPickerInline(
-                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.ChampionMenu -> loadRandomChampion()
                     is EnemyOption.RandomOption -> {
                         handleEnemySelected(EnemyTrainer.RandomTrainer, null)
                         showAddPokemonPanel(Team.TEAM_B)
@@ -1824,6 +1823,31 @@ class TeamSetupFragment : Fragment() {
 
         com.pokemonbp.data.GalacticStateManager.markCommanderDefeated(ctx, chosenId)
         Toast.makeText(ctx, "Fight $fightNumber — ${commander.nameEN}!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun loadRandomChampion() {
+        val ctx = requireContext()
+        val champion = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx)
+        if (champion == null) {
+            Toast.makeText(ctx, "Lade Champion-Daten...", Toast.LENGTH_SHORT).show()
+            com.pokemonbp.data.DataSyncManager.syncAll(ctx) { _, _ ->
+                val retried = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx)
+                if (retried == null) Toast.makeText(ctx, "Champion-Daten nicht verfügbar.", Toast.LENGTH_SHORT).show()
+                else applyChampion(retried)
+            }
+            return
+        }
+        applyChampion(champion)
+    }
+
+    private fun applyChampion(champion: EnemyTrainer.Champion) {
+        handleEnemySelected(champion, null)
+        teamBLabel = champion.nameEN
+        binding.tvTeamBLabel.text = teamBLabel
+        val imageUrl = SpriteUrls.championImageUrl(champion.nameEN)
+        if (imageUrl != null) loadTrainerImage(imageUrl, binding.ivTrainerB)
+        loadLabelIcon(SpriteUrls.trainerIconUrl(champion.nameEN.lowercase()), binding.ivLabelB, R.drawable.ic_battle)
+        hidePanels()
     }
 
     private fun loadGalacticGrunt() {

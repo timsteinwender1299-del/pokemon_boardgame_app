@@ -26,7 +26,10 @@ object DataSyncManager {
         "Data/Trainers/GalacticMars.txt",
         "Data/Trainers/GalacticJupiter.txt",
         "Data/Trainers/GalacticSaturn.txt",
-        "Data/Trainers/GalacticCyrus.txt"
+        "Data/Trainers/GalacticCyrus.txt",
+        "Data/Trainers/ChampionCynthia.txt",
+        "Data/Trainers/ChampionTim.txt",
+        "Data/Trainers/ChampionBP.txt"
     )
 
     fun syncAll(context: Context, onComplete: (updated: Int, failed: Int) -> Unit) {
