@@ -1755,49 +1755,52 @@ class TeamSetupFragment : Fragment() {
 
     private fun loadGalacticCommander() {
         val ctx = requireContext()
+        val dataReady = com.pokemonbp.data.GalacticStateManager.isAllCommandersDefeated(ctx).let { allDefeated ->
+            if (allDefeated) com.pokemonbp.data.TrainerParser.loadGalacticCyrus(ctx).isNotEmpty()
+            else {
+                val defeated = com.pokemonbp.data.GalacticStateManager.getDefeatedCommanders(ctx)
+                val available = listOf("mars", "jupiter", "saturn").filter { it !in defeated }
+                available.any { com.pokemonbp.data.TrainerParser.loadGalacticCommander(ctx, it) != null }
+            }
+        }
+
+        if (!dataReady) {
+            Toast.makeText(ctx, "Downloading Galactic data…", Toast.LENGTH_SHORT).show()
+            com.pokemonbp.data.DataSyncManager.syncAll(ctx) { _, _ ->
+                if (isAdded) applyGalacticCommander()
+            }
+            return
+        }
+
+        applyGalacticCommander()
+    }
+
+    private fun applyGalacticCommander() {
+        val ctx = requireContext()
         val allDefeated = com.pokemonbp.data.GalacticStateManager.isAllCommandersDefeated(ctx)
 
         if (allDefeated) {
-            // All commanders defeated → fight Cyrus
             val team = com.pokemonbp.data.TrainerParser.loadGalacticCyrus(ctx)
-            if (team.isEmpty()) {
-                Toast.makeText(ctx, "Cyrus data not found. Please update data.", Toast.LENGTH_SHORT).show()
-                return
-            }
+            if (team.isEmpty()) { Toast.makeText(ctx, "Cyrus data unavailable.", Toast.LENGTH_SHORT).show(); return }
             handleEnemySelected(EnemyTrainer.RandomTrainer, null)
             teamBLabel = "Galaktik Cyrus"
             binding.tvTeamBLabel.text = teamBLabel
             loadTrainerImage(SpriteUrls.galacticCyrusUrl, binding.ivTrainerB)
             loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
-            val fightPokemon = team.map { gp ->
-                Pokemon(
-                    id = System.currentTimeMillis().toInt() + (0..999).random(),
-                    name = gp.nameEN, nameDE = gp.nameDE,
-                    types = gp.types, baseBP = gp.baseBP,
-                    team = Team.TEAM_B, pokedexId = gp.pokedexId
-                )
-            }
-            fightPokemon.forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
+            team.map { gp -> Pokemon(System.currentTimeMillis().toInt() + (0..999).random(), gp.nameEN, gp.nameDE, gp.types, gp.baseBP, Team.TEAM_B, gp.pokedexId) }
+                .forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
             updateItemHeights(); hidePanels()
             return
         }
 
-        val defeated = com.pokemonbp.data.GalacticStateManager.getDefeatedCommanders(ctx)
+        val defeated  = com.pokemonbp.data.GalacticStateManager.getDefeatedCommanders(ctx)
         val available = listOf("mars", "jupiter", "saturn").filter { it !in defeated }
-        val chosenId = available.random()
+        val chosenId  = available.random()
         val fightNumber = com.pokemonbp.data.GalacticStateManager.getFightNumber(ctx)
 
         val commander = com.pokemonbp.data.TrainerParser.loadGalacticCommander(ctx, chosenId)
-        if (commander == null) {
-            Toast.makeText(ctx, "Commander data not found. Please update data.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
+            ?: run { Toast.makeText(ctx, "Data unavailable.", Toast.LENGTH_SHORT).show(); return }
         val team = commander.fights[fightNumber] ?: commander.fights.values.firstOrNull() ?: emptyList()
-        if (team.isEmpty()) {
-            Toast.makeText(ctx, "No team found for fight $fightNumber.", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         val imageUrl = when (chosenId) {
             "mars"    -> SpriteUrls.galacticMarsUrl
@@ -1810,16 +1813,8 @@ class TeamSetupFragment : Fragment() {
         binding.tvTeamBLabel.text = teamBLabel
         loadTrainerImage(imageUrl, binding.ivTrainerB)
         loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
-
-        val fightPokemon = team.map { gp ->
-            Pokemon(
-                id = System.currentTimeMillis().toInt() + (0..999).random(),
-                name = gp.nameEN, nameDE = gp.nameDE,
-                types = gp.types, baseBP = gp.baseBP,
-                team = Team.TEAM_B, pokedexId = gp.pokedexId
-            )
-        }
-        fightPokemon.forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
+        team.map { gp -> Pokemon(System.currentTimeMillis().toInt() + (0..999).random(), gp.nameEN, gp.nameDE, gp.types, gp.baseBP, Team.TEAM_B, gp.pokedexId) }
+            .forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
         updateItemHeights(); hidePanels()
 
         com.pokemonbp.data.GalacticStateManager.markCommanderDefeated(ctx, chosenId)
