@@ -1849,14 +1849,23 @@ class TeamSetupFragment : Fragment() {
 
     private fun loadRandomChampion() {
         val ctx = requireContext()
-        val champion = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx)
-        if (champion == null) {
+        val dir = com.pokemonbp.data.DataSyncManager.trainerDir(ctx)
+        val allFilesPresent = listOf("ChampionCynthia.txt", "ChampionTim.txt", "ChampionBP.txt")
+            .all { java.io.File(dir, it).exists() }
+
+        if (!allFilesPresent) {
             Toast.makeText(ctx, "Lade Champion-Daten...", Toast.LENGTH_SHORT).show()
             com.pokemonbp.data.DataSyncManager.syncAll(ctx) { _, _ ->
-                val retried = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx)
-                if (retried == null) Toast.makeText(ctx, "Champion-Daten nicht verfügbar.", Toast.LENGTH_SHORT).show()
-                else applyChampion(retried)
+                if (isAdded) {
+                    val champion = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx)
+                    if (champion == null) Toast.makeText(ctx, "Champion-Daten nicht verfügbar.", Toast.LENGTH_SHORT).show()
+                    else applyChampion(champion)
+                }
             }
+            return
+        }
+        val champion = com.pokemonbp.data.TrainerParser.buildRandomChampion(ctx) ?: run {
+            Toast.makeText(ctx, "Champion-Daten nicht verfügbar.", Toast.LENGTH_SHORT).show()
             return
         }
         applyChampion(champion)
