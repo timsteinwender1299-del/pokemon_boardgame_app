@@ -1185,12 +1185,15 @@ class TeamSetupFragment : Fragment() {
             view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)?.setBackgroundColor(c.surface)
 
             val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_enemy_options)
+            val gymOrder = listOf("roark", "gardenia", "fantina", "hilda", "crasherwake", "byron", "candice", "volkner")
             val options: List<EnemyOption> = buildList {
-                com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext()).forEach { add(EnemyOption.GymLeaderOption(it)) }
+                com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext())
+                    .sortedBy { gymOrder.indexOf(it.id).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE }
+                    .forEach { add(EnemyOption.GymLeaderOption(it)) }
                 add(EnemyOption.ChampionMenu)
+                add(EnemyOption.GalacticOption)
                 add(EnemyOption.RandomOption)
                 add(EnemyOption.SavedTrainerMenu)
-                add(EnemyOption.GalacticOption)
             }
             recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
 
