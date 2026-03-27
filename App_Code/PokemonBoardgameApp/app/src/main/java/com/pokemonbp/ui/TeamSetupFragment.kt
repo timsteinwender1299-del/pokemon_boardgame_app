@@ -1849,11 +1849,11 @@ class TeamSetupFragment : Fragment() {
 
     private fun loadRandomChampion() {
         val ctx = requireContext()
-        val dir = com.pokemonbp.data.DataSyncManager.trainerDir(ctx)
-        val allFilesPresent = listOf("ChampionCynthia.txt", "ChampionTim.txt", "ChampionBP.txt")
-            .all { java.io.File(dir, it).exists() }
+        val allRostersValid = listOf("Cynthia", "Tim").all {
+            com.pokemonbp.data.TrainerParser.loadChampionRoster(ctx, it) != null
+        }
 
-        if (!allFilesPresent) {
+        if (!allRostersValid) {
             Toast.makeText(ctx, "Lade Champion-Daten...", Toast.LENGTH_SHORT).show()
             com.pokemonbp.data.DataSyncManager.syncAll(ctx) { _, _ ->
                 if (isAdded) {
