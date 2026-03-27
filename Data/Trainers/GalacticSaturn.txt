@@ -1,0 +1,22 @@
+Galactic Saturn / Galaktik Saturn
+
+Fight 1
+Glibunkel / Croagunk
+BP    4
+_______________________________
+Fight2
+Golbat / Golbat
+BP    5
+
+Toxiquak / Toxicroak
+BP    6
+_______________________________
+Fight3
+Golbat / Golbat
+BP    6
+
+Kadabra / Kadabra
+BP 7
+
+Toxiquak / Toxicroak
+BP    8

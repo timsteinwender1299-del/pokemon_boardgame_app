@@ -1,0 +1,61 @@
+GalacticGrunt:
+Pokemon Pool:
+
+Zubat/Golbat → 35%
+Glameow/Purugly → 30%
+Stunky/Skuntank → ~20%
+Croagunk/Toxicroak → ~15%
+
+-> Pokemon below 5 BP are ALWAYS the First Evolution
+-> Pokemon Above 5 BP are ALWAYS the Second Evolution
+-> No Pokemon is EVER Above 8 BP
+
+Pokemon Teams are choosen randomly from the Pool.
+Conditions:
+
+If the currently loaded Player Trainer has:
+A Menu
+0 Badges:
+1 Pokemon
+Max. 3 BP
+
+1 Badge:
+1 Pokemon
+Max. 3 BP
+
+2 Badges:
+1-2 Pokemon.
+One Pokemon has at LEAST 3 BP & Max. 5 BP
+Second Pokemon has Max. 3 BP
+
+3. Badges:
+1-2 Pokemon
+One Pokemon has at LEAST 3 BP & Max. 5 BP
+Other Pokemon have Max. 4 BP
+
+4. Badges:
+1-3 Pokemon
+One Pokemon has at 5 BP - Max. 6 BP
+Other Pokemon have Max. 4 BP
+
+5. Badges:
+1-3 Pokemon
+One Pokemon has at 5 BP - Max. 6 BP
+Other Pokemon have Max. 5 BP
+
+6. Badges:
+1-3 Pokemon
+One Pokemon has at 5 BP - Max. 7 BP
+Other Pokemon have Max. 5 BP
+
+7 Badges:
+1-3 Pokemon
+One Pokemon has at 6 BP - Max. 7 BP
+Other Pokemon have Max. 5 BP
+
+8 Badges:
+1-3 Pokemon
+One Pokemon has at least 8 BP
+Other Pokemon have Max. 5 BP
+
+

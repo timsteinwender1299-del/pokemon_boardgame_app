@@ -1,0 +1,22 @@
+Galactic Jupiter / Galaktik Jupiter
+
+Fight 1
+Charmian / Glameow
+BP    4
+_______________________________
+Fight2
+Golbat / Golbat
+BP    5
+
+Shnurgarst / Purugly
+BP    6
+_______________________________
+Fight3
+Golbat / Golbat
+BP    6
+
+Bronzong / Bronzong
+BP 7
+
+Shnurgarst / Purugly
+BP    8

@@ -202,7 +202,7 @@ object SpriteUrls {
     val galacticJupiterUrl: String     = "$BASE_URL/Trainer/TrainerImage/GalacticJupiter.png"
     val galacticSaturnUrl: String      = "$BASE_URL/Trainer/TrainerImage/GalacticSaturn.png"
     val galacticCyrusUrl: String       = "$BASE_URL/Trainer/TrainerImage/GalacticCyrus.png"
-    val resetUrl: String               = "$BASE_URL/Icons/ResetIcon.png"
+    val resetUrl: String               = "$BASE_URL/Icons/RestetIcon.png"
 
     val noTypeUrl: String     = "$BASE_URL/TypeIcons/NoType.png"
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
