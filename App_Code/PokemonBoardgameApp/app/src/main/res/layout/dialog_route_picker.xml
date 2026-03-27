@@ -78,16 +78,6 @@
 
         </LinearLayout>
 
-        <!-- Team Galaktik button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_team_galactic"
-            android:layout_width="match_parent" android:layout_height="36dp"
-            android:layout_marginHorizontal="4dp"
-            android:layout_marginTop="4dp" android:layout_marginBottom="2dp"
-            android:text="⭐ Team Galaktik" android:textSize="11sp"
-            android:textAllCaps="false"
-            app:backgroundTint="#333399" app:cornerRadius="18dp"/>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_close_route"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"

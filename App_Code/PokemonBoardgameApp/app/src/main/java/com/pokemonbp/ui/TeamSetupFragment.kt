@@ -33,6 +33,8 @@ class TeamSetupFragment : Fragment() {
     private var teamATrainer: PlayerTrainer? = null
     private var teamBSavedTrainer: PlayerTrainer? = null
     private var teamBLabel: String = "Enemy Trainer"
+    private var teamBOverrideImageUrl: String? = null
+    private var teamBOverrideIconUrl: String? = null
     private var currentEnemyTrainer: EnemyTrainer? = null
     private var wildMode = false
 
@@ -238,14 +240,14 @@ class TeamSetupFragment : Fragment() {
             val enemy = currentEnemyTrainer
             if (enemy != null) {
                 resultFrag.teamBLabel = teamBLabel
-                resultFrag.teamBLabelIconUrl = when (enemy) {
+                resultFrag.teamBLabelIconUrl = teamBOverrideIconUrl ?: when (enemy) {
                     is EnemyTrainer.GymLeader     -> SpriteUrls.trainerIconUrl(enemy.id)
                     is EnemyTrainer.Champion      -> SpriteUrls.trainerIconUrl(enemy.nameEN.lowercase())
                     is EnemyTrainer.RandomTrainer -> SpriteUrls.trainerIconUrl("random")
                     is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
                     is EnemyTrainer.SavedTrainer  -> SpriteUrls.avatarUrl(enemy.trainer.avatarId)
                 }
-                resultFrag.teamBTrainerImageUrl = when (enemy) {
+                resultFrag.teamBTrainerImageUrl = teamBOverrideImageUrl ?: when (enemy) {
                     is EnemyTrainer.GymLeader     -> SpriteUrls.gymLeaderImageUrl(enemy.id)
                     is EnemyTrainer.Champion      -> SpriteUrls.championImageUrl(enemy.nameEN)
                     is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
@@ -1099,6 +1101,8 @@ class TeamSetupFragment : Fragment() {
 
     private fun handleEnemySelected(enemyTrainer: EnemyTrainer, badge: Int?) {
         currentEnemyTrainer = enemyTrainer
+        teamBOverrideImageUrl = null
+        teamBOverrideIconUrl  = null
         teamBList.clear()
         faintedIndicesB.clear(); adapterB.faintedIndices = emptySet()
         val trainerImageUrl: String?
@@ -1181,15 +1185,21 @@ class TeamSetupFragment : Fragment() {
             view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)?.setBackgroundColor(c.surface)
 
             val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_enemy_options)
-            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
-
             val options: List<EnemyOption> = buildList {
                 com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext()).forEach { add(EnemyOption.GymLeaderOption(it)) }
                 add(EnemyOption.ChampionMenu)
                 add(EnemyOption.WildOption)
                 add(EnemyOption.RandomOption)
                 add(EnemyOption.SavedTrainerMenu)
+                add(EnemyOption.GalacticOption)
             }
+            val gymCount = options.count { it is EnemyOption.GymLeaderOption } + 1 // +1 for ChampionMenu
+            val glm = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 12)
+            glm.spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int =
+                    if (position < gymCount) 4 else 3
+            }
+            recycler.layoutManager = glm
 
             recycler.adapter = EnemyGridAdapter(options, c) { option ->
                 when (option) {
@@ -1210,6 +1220,7 @@ class TeamSetupFragment : Fragment() {
                     }
                     is EnemyOption.SavedTrainerMenu -> showSavedTrainerInline(
                         onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.GalacticOption -> showTeamGalacticMenu()
                     is EnemyOption.ChampionOption -> { /* not shown in root grid */ }
                 }
             }
@@ -1311,8 +1322,6 @@ class TeamSetupFragment : Fragment() {
 
             view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
                 .setOnClickListener { popBack() }
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_team_galactic)
-                .setOnClickListener { showTeamGalacticMenu() }
             binding.layoutPanelSub.addView(view)
         }
 
@@ -1783,6 +1792,8 @@ class TeamSetupFragment : Fragment() {
             val team = com.pokemonbp.data.TrainerParser.loadGalacticCyrus(ctx)
             if (team.isEmpty()) { Toast.makeText(ctx, "Cyrus data unavailable.", Toast.LENGTH_SHORT).show(); return }
             handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+            teamBOverrideImageUrl = SpriteUrls.galacticCyrusUrl
+            teamBOverrideIconUrl  = SpriteUrls.galacticLogoUrl
             teamBLabel = "Galaktik Cyrus"
             binding.tvTeamBLabel.text = teamBLabel
             loadTrainerImage(SpriteUrls.galacticCyrusUrl, binding.ivTrainerB)
@@ -1809,6 +1820,8 @@ class TeamSetupFragment : Fragment() {
         }
 
         handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+        teamBOverrideImageUrl = imageUrl
+        teamBOverrideIconUrl  = SpriteUrls.galacticLogoUrl
         teamBLabel = commander.nameDE
         binding.tvTeamBLabel.text = teamBLabel
         loadTrainerImage(imageUrl, binding.ivTrainerB)
@@ -1839,10 +1852,12 @@ class TeamSetupFragment : Fragment() {
         generated.add(makeGalacticPokemon((cfg[0]..cfg[1]).random()))
         for (i in 1 until teamSize) generated.add(makeGalacticPokemon((1..cfg[2]).random()))
 
+        val gruntImageUrl = if ((0..1).random() == 0) SpriteUrls.galacticGruntMaleUrl else SpriteUrls.galacticGruntFemaleUrl
         handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+        teamBOverrideImageUrl = gruntImageUrl
+        teamBOverrideIconUrl  = SpriteUrls.galacticLogoUrl
         teamBLabel = "Team Galaktik Grunt"
         binding.tvTeamBLabel.text = teamBLabel
-        val gruntImageUrl = if ((0..1).random() == 0) SpriteUrls.galacticGruntMaleUrl else SpriteUrls.galacticGruntFemaleUrl
         loadTrainerImage(gruntImageUrl, binding.ivTrainerB)
         loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
         generated.forEach {
