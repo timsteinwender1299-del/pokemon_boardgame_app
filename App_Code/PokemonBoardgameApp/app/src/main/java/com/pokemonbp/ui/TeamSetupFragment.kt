@@ -625,7 +625,7 @@ class TeamSetupFragment : Fragment() {
         val vis = if (loaded) android.view.View.VISIBLE else android.view.View.GONE
         binding.ivDeloadEnemy.visibility = vis
         binding.ivReloadB.visibility = vis
-        binding.btnChooseEnemyB.visibility = if (loaded) android.view.View.GONE else android.view.View.VISIBLE
+        binding.btnChooseEnemyB.visibility = android.view.View.VISIBLE
     }
 
     private fun deloadEnemyTrainer() {
