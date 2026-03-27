@@ -123,7 +123,7 @@ object SpriteUrls {
         "hilda"        -> "$BASE_URL/Trainer/Trainer_Icon/Hilda_Icon.png"
         "tim"          -> "$BASE_URL/Trainer/Trainer_Icon/Tim_Icon.png"
         "championmenu" -> "$BASE_URL/Trainer/Trainer_Icon/ChampionIcon.png"
-        "random"       -> "$BASE_URL/Trainer/Trainer_Icon/RandomTrainer.png"
+        "random"       -> "$BASE_URL/Trainer/Trainer_Icon/RandomTrainer.png?v=2"
         "wild"         -> "$BASE_URL/Icons/WildPokemon.png"
         "saved"        -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
         "galactic"     -> galacticLogoUrl
