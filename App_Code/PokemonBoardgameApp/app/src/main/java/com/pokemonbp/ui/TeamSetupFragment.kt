@@ -368,7 +368,9 @@ class TeamSetupFragment : Fragment() {
         binding.btnRollsheetTown.setOnClickListener {
             showRollSheetInline("RollSheet — Town EventTime", rollSheetTownEntries())
         }
-        // btnRollsheetGalactic does nothing for now
+        binding.btnRollsheetGalactic.setOnClickListener {
+            showRollSheetInline("RollSheet — Galactic Time!", rollSheetGalacticEntries())
+        }
 
         binding.tvRollsheetBack.setOnClickListener {
             binding.layoutRollsheet.visibility = android.view.View.GONE
@@ -1955,6 +1957,25 @@ class TeamSetupFragment : Fragment() {
         RollSheetEntry("GymTime",                 "Du kämpst trotzdem gegen die/den Arenaleiter/In", "18", "18"),
         RollSheetEntry("Großer Meteor",           "Ein Meteor schlägt in eine Zufällige Stadt ein!", "19", "19"),
         RollSheetEntry("Roar of Time!",           "Dein Stärkstes Pokemon verliert 1BP (Es kann sich auch zurückentwickeln!)", "20", "20")
+    )
+
+    private fun rollSheetGalacticEntries() = listOf(
+        RollSheetEntry("Raubüberfall (Du)",                     "Du verlierst Geld! (Badgesx50)",                                                               "1",  "1"),
+        RollSheetEntry("Meteor (Du)",                           "Ein Meteor schlägt ein! Ein Pokémon geht K.O.!",                                               "2",  "2"),
+        RollSheetEntry("Pokémon Kampf Grunt (Du)",              "Du kämpfst gegen einen Team-Galactic Rüpel!",                                                  "3",  "3"),
+        RollSheetEntry("Pokémon Kampf Commander (Du)",          "Du kämpfst gegen einen Team-Galactic Commander!",                                               "4",  "6"),
+        RollSheetEntry("Entführung (Du)",                       "Du wirst in das Geheimversteck von Team-Galaktik Entführt! (Schleide)",                         "7",  "7"),
+        RollSheetEntry("Diebstahl (Du)",                        "Du verlierst ein Item!",                                                                        "8",  "8"),
+        RollSheetEntry("Raubüberfall (SpielerDeinerWahl)",      "Der Spieler deiner Wahl verliert Geld! (Badgesx50)",                                            "9",  "9"),
+        RollSheetEntry("Meteor (SpielerDeinerWahl)",            "Ein Meteor schlägt ein! Ein Pokémon geht K.O.!",                                               "10", "10"),
+        RollSheetEntry("Pokémon Kampf Grunt (SpielerDeinerWahl)", "Der Spieler deiner Wahl kämpft gegen einen Team-Galactic Rüpel!",                            "11", "11"),
+        RollSheetEntry("Pokémon Kampf Commander (SpielerDeinerWahl)", "Der Spieler deiner Wahl kämpft gegen einen Team-Galactic Commander!",                    "12", "14"),
+        RollSheetEntry("Entführung (SpielerDeinerWahl)",        "Der Spieler deiner Wahl wird in das Geheimversteck von Team-Galaktik Entführt! (Schleide)",    "15", "15"),
+        RollSheetEntry("Diebstahl (SpielerDeinerWahl)",         "Der Spieler deiner Wahl verliert ein Item!",                                                   "16", "16"),
+        RollSheetEntry("Raubüberfall (ALLE)",                   "Alle verlieren Geld! (Badgesx50)",                                                              "17", "17"),
+        RollSheetEntry("Meteor (ALLE)",                         "Ein Meteor schlägt ein! Ein Pokémon geht K.O.!",                                               "18", "18"),
+        RollSheetEntry("Entführung (ALLE)",                     "Alle werden in das Geheimversteck von Team-Galaktik Entführt! (Schleide)",                      "19", "19"),
+        RollSheetEntry("Diebstahl (ALLE)",                      "Alle verlieren ein Item!",                                                                      "20", "20")
     )
 
     private fun loadTowns(): List<String> {
