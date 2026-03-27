@@ -133,6 +133,31 @@ class TeamSetupFragment : Fragment() {
             override fun onItemRangeRemoved(p: Int, c: Int) { binding.recyclerTeamB.post { updateItemHeights() } }
         })
 
+        binding.ivResetButton.setOnClickListener {
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("⚠️ Reset Game")
+                .setMessage("This will delete all trainers and reset Team Galactic progress for all players. Continue?")
+                .setPositiveButton("Reset") { _, _ ->
+                    com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), emptyList())
+                    com.pokemonbp.data.GalacticStateManager.reset(requireContext())
+                    teamATrainer = null
+                    teamAList.clear(); adapterA.notifyDataSetChanged()
+                    teamBList.clear(); adapterB.notifyDataSetChanged()
+                    faintedIndicesA.clear(); faintedIndicesB.clear()
+                    adapterA.faintedIndices = emptySet(); adapterB.faintedIndices = emptySet()
+                    currentEnemyTrainer = null; teamALabel = "Player"; teamBLabel = "Enemy"
+                    binding.tvTeamALabel.text = teamALabel; binding.tvTeamBLabel.text = teamBLabel
+                    loadLabelIcon(SpriteUrls.playerUrl, binding.ivLabelA, R.drawable.ic_player)
+                    loadLabelIcon(SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
+                    loadTrainerImage(null, binding.ivTrainerA)
+                    loadTrainerImage(null, binding.ivTrainerB)
+                    hidePanels()
+                    Toast.makeText(requireContext(), "Game reset.", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
         binding.ivUpdateButton.setOnClickListener {
             binding.ivUpdateButton.isEnabled = false
             Toast.makeText(requireContext(), "Updating data…", Toast.LENGTH_SHORT).show()
@@ -459,6 +484,7 @@ class TeamSetupFragment : Fragment() {
         iv(SpriteUrls.removeUrl,         binding.ivDeloadPlayer,  R.drawable.ic_remove)
         iv(SpriteUrls.removeUrl,         binding.ivDeloadEnemy,   R.drawable.ic_remove)
         iv(SpriteUrls.wildPokemonMenuUrl, binding.ivWildButton,   R.drawable.ic_wild_pokemon_menu)
+        iv(SpriteUrls.resetUrl,          binding.ivResetButton,  R.drawable.ic_reload)
         iv(SpriteUrls.playerUrl,         binding.ivLabelA,        R.drawable.ic_player)
         iv(SpriteUrls.battleUrl,         binding.ivLabelB,        R.drawable.ic_battle)
         mb(SpriteUrls.battleUrl,         binding.btnChooseEnemyB)
@@ -1719,10 +1745,85 @@ class TeamSetupFragment : Fragment() {
         android.app.AlertDialog.Builder(requireContext())
             .setTitle("⭐ Team Galaktik")
             .setItems(arrayOf("Team Galaktik Grunt", "Team Galaktik Commander")) { _, which ->
-                if (which == 0) loadGalacticGrunt()
-                // Commander: nothing for now
+                when (which) {
+                    0 -> loadGalacticGrunt()
+                    1 -> loadGalacticCommander()
+                }
             }
             .show()
+    }
+
+    private fun loadGalacticCommander() {
+        val ctx = requireContext()
+        val allDefeated = com.pokemonbp.data.GalacticStateManager.isAllCommandersDefeated(ctx)
+
+        if (allDefeated) {
+            // All commanders defeated → fight Cyrus
+            val team = com.pokemonbp.data.TrainerParser.loadGalacticCyrus(ctx)
+            if (team.isEmpty()) {
+                Toast.makeText(ctx, "Cyrus data not found. Please update data.", Toast.LENGTH_SHORT).show()
+                return
+            }
+            handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+            teamBLabel = "Galaktik Cyrus"
+            binding.tvTeamBLabel.text = teamBLabel
+            loadTrainerImage(SpriteUrls.galacticCyrusUrl, binding.ivTrainerB)
+            loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
+            val fightPokemon = team.map { gp ->
+                Pokemon(
+                    id = System.currentTimeMillis().toInt() + (0..999).random(),
+                    name = gp.nameEN, nameDE = gp.nameDE,
+                    types = gp.types, baseBP = gp.baseBP,
+                    team = Team.TEAM_B, pokedexId = gp.pokedexId
+                )
+            }
+            fightPokemon.forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
+            updateItemHeights(); hidePanels()
+            return
+        }
+
+        val defeated = com.pokemonbp.data.GalacticStateManager.getDefeatedCommanders(ctx)
+        val available = listOf("mars", "jupiter", "saturn").filter { it !in defeated }
+        val chosenId = available.random()
+        val fightNumber = com.pokemonbp.data.GalacticStateManager.getFightNumber(ctx)
+
+        val commander = com.pokemonbp.data.TrainerParser.loadGalacticCommander(ctx, chosenId)
+        if (commander == null) {
+            Toast.makeText(ctx, "Commander data not found. Please update data.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val team = commander.fights[fightNumber] ?: commander.fights.values.firstOrNull() ?: emptyList()
+        if (team.isEmpty()) {
+            Toast.makeText(ctx, "No team found for fight $fightNumber.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val imageUrl = when (chosenId) {
+            "mars"    -> SpriteUrls.galacticMarsUrl
+            "jupiter" -> SpriteUrls.galacticJupiterUrl
+            else      -> SpriteUrls.galacticSaturnUrl
+        }
+
+        handleEnemySelected(EnemyTrainer.RandomTrainer, null)
+        teamBLabel = commander.nameDE
+        binding.tvTeamBLabel.text = teamBLabel
+        loadTrainerImage(imageUrl, binding.ivTrainerB)
+        loadLabelIcon(SpriteUrls.galacticLogoUrl, binding.ivLabelB, R.drawable.ic_battle)
+
+        val fightPokemon = team.map { gp ->
+            Pokemon(
+                id = System.currentTimeMillis().toInt() + (0..999).random(),
+                name = gp.nameEN, nameDE = gp.nameDE,
+                types = gp.types, baseBP = gp.baseBP,
+                team = Team.TEAM_B, pokedexId = gp.pokedexId
+            )
+        }
+        fightPokemon.forEach { teamBList.add(it); adapterB.notifyItemInserted(teamBList.size - 1) }
+        updateItemHeights(); hidePanels()
+
+        com.pokemonbp.data.GalacticStateManager.markCommanderDefeated(ctx, chosenId)
+        Toast.makeText(ctx, "Fight $fightNumber — ${commander.nameEN}!", Toast.LENGTH_SHORT).show()
     }
 
     private fun loadGalacticGrunt() {

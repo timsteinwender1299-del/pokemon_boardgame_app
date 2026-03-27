@@ -98,6 +98,88 @@ object TrainerParser {
         return result
     }
 
+    // ── Galactic Commanders ──────────────────────────────────────────────────
+
+    data class GalacticCommander(
+        val id: String,
+        val nameDE: String,
+        val nameEN: String,
+        val fights: Map<Int, List<GymPokemon>>   // 1=Fight1, 2=Fight2, 3=Fight3
+    )
+
+    private val commanderMeta = mapOf(
+        "mars"    to ("Galaktik Mars"    to "Galactic Mars"),
+        "jupiter" to ("Galaktik Jupiter" to "Galactic Jupiter"),
+        "saturn"  to ("Galaktik Saturn"  to "Galactic Saturn")
+    )
+
+    private val commanderFiles = mapOf(
+        "mars"    to "GalacticMars.txt",
+        "jupiter" to "GalacticJupiter.txt",
+        "saturn"  to "GalacticSaturn.txt"
+    )
+
+    fun loadGalacticCommander(context: Context, id: String): GalacticCommander? {
+        val fileName = commanderFiles[id] ?: return null
+        val file = File(DataSyncManager.trainerDir(context), fileName)
+        if (!file.exists()) return null
+        val (nameDE, nameEN) = commanderMeta[id] ?: return null
+        return GalacticCommander(id, nameDE, nameEN, parseFightTeams(file))
+    }
+
+    fun loadGalacticCyrus(context: Context): List<GymPokemon> {
+        val file = File(DataSyncManager.trainerDir(context), "GalacticCyrus.txt")
+        if (!file.exists()) return emptyList()
+        val lines = file.readLines().map { it.trim() }
+        val pokemon = mutableListOf<GymPokemon>()
+        var pendingName: Pair<String, String>? = null
+        for (line in lines) {
+            when {
+                line.startsWith("_") || line.isEmpty() -> { /* skip */ }
+                line.startsWith("BP") -> {
+                    val bp = line.removePrefix("BP").trim().toIntOrNull() ?: 0
+                    val (de, en) = pendingName ?: continue
+                    pokemon.add(buildGymPokemon(de, en, bp))
+                    pendingName = null
+                }
+                line.contains("/") -> pendingName = splitName(line)
+            }
+        }
+        return pokemon
+    }
+
+    private fun parseFightTeams(file: File): Map<Int, List<GymPokemon>> {
+        val lines = file.readLines().map { it.trim() }
+        val fights = mutableMapOf<Int, MutableList<GymPokemon>>()
+        var currentFight: Int? = null
+        var pendingName: Pair<String, String>? = null
+
+        for (line in lines) {
+            val normalised = line.replace(" ", "").lowercase()
+            when {
+                normalised.startsWith("fight") -> {
+                    val num = normalised.removePrefix("fight").toIntOrNull()
+                    if (num != null) {
+                        currentFight = num
+                        fights.getOrPut(num) { mutableListOf() }
+                        pendingName = null
+                    }
+                }
+                line.startsWith("_") || line.isEmpty() -> { /* separator / blank */ }
+                line.startsWith("BP") && currentFight != null -> {
+                    val bp = line.removePrefix("BP").trim().toIntOrNull() ?: 0
+                    val (de, en) = pendingName ?: continue
+                    fights[currentFight!!]!!.add(buildGymPokemon(de, en, bp))
+                    pendingName = null
+                }
+                line.contains("/") -> pendingName = splitName(line)
+            }
+        }
+        return fights.mapValues { it.value.toList() }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     private fun buildGymPokemon(nameDE: String, nameEN: String, bp: Int): GymPokemon {
         val entry = PokedexData.allPokemon.firstOrNull { it.name.equals(nameEN, ignoreCase = true) }
         return GymPokemon(
