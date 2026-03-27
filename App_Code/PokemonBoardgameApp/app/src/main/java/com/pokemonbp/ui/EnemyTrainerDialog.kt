@@ -61,7 +61,9 @@ class EnemyTrainerDialog(
             is EnemyOption.WildOption       -> { onTrainerSelected(EnemyTrainer.WildPokemon, null); dismiss(); onAddSinglePokemon() }
             is EnemyOption.RandomOption     -> { onTrainerSelected(EnemyTrainer.RandomTrainer, null); dismiss(); onAddSinglePokemon() }
             is EnemyOption.SavedTrainerMenu -> showSavedTrainerDialog()
-            is EnemyOption.GalacticOption   -> { /* handled inline in TeamSetupFragment */ }
+            is EnemyOption.GalacticOption,
+            is EnemyOption.GruntOption,
+            is EnemyOption.CommanderOption  -> { /* handled inline in TeamSetupFragment */ }
         }
     }
 
@@ -172,7 +174,9 @@ sealed class EnemyOption {
     object WildOption : EnemyOption()
     object RandomOption : EnemyOption()
     object SavedTrainerMenu : EnemyOption()
-    object GalacticOption : EnemyOption()
+    object GalacticOption  : EnemyOption()
+    object GruntOption     : EnemyOption()
+    object CommanderOption : EnemyOption()
 }
 
 class EnemyGridAdapter(
@@ -203,7 +207,9 @@ class EnemyGridAdapter(
             is EnemyOption.WildOption       -> Triple("wild", "Wild\nPokemon", R.drawable.ic_wild_pokemon)
             is EnemyOption.RandomOption     -> Triple("random", "Route\nEncounter", R.drawable.ic_random_trainer)
             is EnemyOption.SavedTrainerMenu -> Triple("saved", "Choose\nTrainer", R.drawable.ic_pokeball)
-            is EnemyOption.GalacticOption   -> Triple("galactic", "Team\nGalaktik", R.drawable.ic_pokeball)
+            is EnemyOption.GalacticOption    -> Triple("galactic",          "Team\nGalaktik",     R.drawable.ic_pokeball)
+            is EnemyOption.GruntOption       -> Triple("galacticgrunt",    "Galaktik\nGrunt",    R.drawable.ic_pokeball)
+            is EnemyOption.CommanderOption   -> Triple("galacticcommander","Galaktik\nCommander", R.drawable.ic_pokeball)
         }
 
         holder.tvName.text = label

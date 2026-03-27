@@ -2,6 +2,9 @@ Pool:
 Bisasam / Bulbasaur
 Aggrostella / Toxapex
 Colossand / Palossand
+Skelabra / Chandelure
+Granforgita / Tinkaton
+Olithena / Arboliva
 
 Ace:
 Aranestro / Araquanid

@@ -195,8 +195,9 @@ object TrainerParser {
         var section = ""
         for (line in lines) {
             when {
-                line.equals("Pool:", ignoreCase = true)      -> section = "pool"
-                line.equals("Ace:", ignoreCase = true)       -> section = "ace"
+                line.equals("Pool:", ignoreCase = true)                    -> section = "pool"
+                line.equals("Ace:", ignoreCase = true) ||
+                line.equals("Ace-Pokemon:", ignoreCase = true)             -> section = "ace"
                 line.isEmpty() || line.startsWith("_")       -> { /* skip */ }
                 line.contains("/")                           -> {
                     val pair = splitName(line)

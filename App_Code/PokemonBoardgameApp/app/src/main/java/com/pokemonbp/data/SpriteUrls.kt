@@ -126,8 +126,10 @@ object SpriteUrls {
         "random"       -> "$BASE_URL/Trainer/Trainer_Icon/RandomTrainer.png?v=2"
         "wild"         -> "$BASE_URL/Icons/WildPokemon.png"
         "saved"        -> "$BASE_URL/Trainer/Trainer_Icon/Choose%20Trainer.png"
-        "galactic"     -> galacticLogoUrl
-        else          -> null
+        "galactic"          -> galacticLogoUrl
+        "galacticgrunt"     -> galacticGruntIconUrl
+        "galacticcommander" -> galacticCommanderIconUrl
+        else               -> null
     }
 
     fun championImageUrl(nameEN: String): String? = when (nameEN) {
@@ -198,7 +200,9 @@ object SpriteUrls {
 
     val galacticGruntMaleUrl: String   = "$BASE_URL/Trainer/TrainerImage/GalacticGruntMale.png"
     val galacticGruntFemaleUrl: String = "$BASE_URL/Trainer/TrainerImage/GalacticGruntFemale.png"
-    val galacticLogoUrl: String        = "$BASE_URL/Trainer/Trainer_Icon/GalacticLogo.png"
+    val galacticLogoUrl: String           = "$BASE_URL/Trainer/Trainer_Icon/GalacticLogo.png"
+    val galacticGruntIconUrl: String      = "$BASE_URL/Trainer/Trainer_Icon/GalacticGrunt_Icon.png"
+    val galacticCommanderIconUrl: String  = "$BASE_URL/Trainer/Trainer_Icon/GalacticCommander_Icon.png"
     val galacticMarsUrl: String        = "$BASE_URL/Trainer/TrainerImage/GalacticMars.png"
     val galacticJupiterUrl: String     = "$BASE_URL/Trainer/TrainerImage/GalacticJupiter.png"
     val galacticSaturnUrl: String      = "$BASE_URL/Trainer/TrainerImage/GalacticSaturn.png"

@@ -1211,7 +1211,10 @@ class TeamSetupFragment : Fragment() {
                     }
                     is EnemyOption.SavedTrainerMenu -> showSavedTrainerInline(
                         onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
-                    is EnemyOption.GalacticOption -> showTeamGalacticMenu()
+                    is EnemyOption.GalacticOption -> showGalacticSubPanelInline(
+                        onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
+                    is EnemyOption.GruntOption -> loadGalacticGrunt()
+                    is EnemyOption.CommanderOption -> loadGalacticCommander()
                     is EnemyOption.ChampionOption, is EnemyOption.WildOption -> { /* not shown in root grid */ }
                 }
             }
@@ -1741,16 +1744,35 @@ class TeamSetupFragment : Fragment() {
         }
     }
 
-    private fun showTeamGalacticMenu() {
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle("⭐ Team Galaktik")
-            .setItems(arrayOf("Team Galaktik Grunt", "Team Galaktik Commander")) { _, which ->
-                when (which) {
-                    0 -> loadGalacticGrunt()
-                    1 -> loadGalacticCommander()
+    private fun showGalacticSubPanelInline(onBack: () -> Unit) {
+        val theme = mainActivity?.currentTheme ?: AppTheme.COLORFUL
+        val c = ThemeManager.colorsFor(theme)
+
+        fun buildPanel() {
+            val view = layoutInflater.inflate(R.layout.dialog_enemy_trainer, binding.layoutPanelSub, false)
+            view.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            stripDialogChrome(view)
+            view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)?.setBackgroundColor(c.surface)
+
+            val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_enemy_options)
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+
+            val options = listOf(EnemyOption.GruntOption, EnemyOption.CommanderOption)
+            recycler.adapter = EnemyGridAdapter(options, c) { option ->
+                when (option) {
+                    is EnemyOption.GruntOption     -> loadGalacticGrunt()
+                    is EnemyOption.CommanderOption -> loadGalacticCommander()
+                    else -> { }
                 }
             }
-            .show()
+
+            view.findViewById<android.widget.Button>(R.id.btn_close_dialog)?.setOnClickListener { hidePanels() }
+            binding.layoutPanelSub.addView(view)
+        }
+
+        pushSubPanel("Team Galaktik", buildContent = { buildPanel() }, onBack = onBack)
     }
 
     private fun loadGalacticCommander() {
