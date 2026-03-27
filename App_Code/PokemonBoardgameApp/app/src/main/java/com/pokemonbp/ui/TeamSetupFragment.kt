@@ -1188,18 +1188,11 @@ class TeamSetupFragment : Fragment() {
             val options: List<EnemyOption> = buildList {
                 com.pokemonbp.data.TrainerParser.loadGymLeaders(requireContext()).forEach { add(EnemyOption.GymLeaderOption(it)) }
                 add(EnemyOption.ChampionMenu)
-                add(EnemyOption.WildOption)
                 add(EnemyOption.RandomOption)
                 add(EnemyOption.SavedTrainerMenu)
                 add(EnemyOption.GalacticOption)
             }
-            val gymCount = options.count { it is EnemyOption.GymLeaderOption } + 1 // +1 for ChampionMenu
-            val glm = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 12)
-            glm.spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int =
-                    if (position < gymCount) 4 else 3
-            }
-            recycler.layoutManager = glm
+            recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
 
             recycler.adapter = EnemyGridAdapter(options, c) { option ->
                 when (option) {
@@ -1210,10 +1203,6 @@ class TeamSetupFragment : Fragment() {
                     }
                     is EnemyOption.ChampionMenu -> showChampionPickerInline(
                         onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
-                    is EnemyOption.WildOption -> {
-                        handleEnemySelected(EnemyTrainer.WildPokemon, null)
-                        showAddPokemonPanel(Team.TEAM_B)
-                    }
                     is EnemyOption.RandomOption -> {
                         handleEnemySelected(EnemyTrainer.RandomTrainer, null)
                         showAddPokemonPanel(Team.TEAM_B)
@@ -1221,7 +1210,7 @@ class TeamSetupFragment : Fragment() {
                     is EnemyOption.SavedTrainerMenu -> showSavedTrainerInline(
                         onBack = { rebuildSubPanelContent("Enemy Trainer") { buildEnemyGrid() } })
                     is EnemyOption.GalacticOption -> showTeamGalacticMenu()
-                    is EnemyOption.ChampionOption -> { /* not shown in root grid */ }
+                    is EnemyOption.ChampionOption, is EnemyOption.WildOption -> { /* not shown in root grid */ }
                 }
             }
 
