@@ -1382,7 +1382,7 @@ class TeamSetupFragment : Fragment() {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
             stripDialogChrome(view)
             val spRoute = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
-            spRoute?.setBackgroundColor(c.surface)
+            spRoute?.setBackgroundColor(c.background)
             spRoute?.addView(buildBackRow(), 0)
 
             fun handleRoute(location: com.pokemonbp.data.RouteLocation) {
@@ -1475,7 +1475,7 @@ class TeamSetupFragment : Fragment() {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
             stripDialogChrome(view)
             val spGrid = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel_grid)
-            spGrid?.setBackgroundColor(c.surface)
+            spGrid?.setBackgroundColor(c.background)
             spGrid?.addView(buildBackRow(), 0)
             view.findViewById<android.widget.TextView>(R.id.tv_pokemon_grid_title)?.visibility = android.view.View.GONE
 
