@@ -443,6 +443,7 @@ class TeamSetupFragment : Fragment() {
             val tier = route.tiers.firstOrNull()
             showRouteDetail(route.displayName, tier?.pokemon ?: emptyList())
         }
+        applyRouteImage(route.displayName)
     }
 
     private fun showBadgeTierPicker(route: com.pokemonbp.data.RouteLocation) {
@@ -493,7 +494,7 @@ class TeamSetupFragment : Fragment() {
         binding.layoutWildRoutes.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
         binding.tvRouteDetailName.text = route.displayName
-        applyRouteImage(route.displayName)
+        binding.ivRouteImage.visibility = android.view.View.GONE
 
         binding.tvRouteBack.setOnClickListener {
             binding.layoutRouteDetail.visibility = android.view.View.GONE
@@ -1796,7 +1797,7 @@ class TeamSetupFragment : Fragment() {
         binding.layoutWildRoutes.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
         binding.tvRouteDetailName.text = title
-        applyRouteImage(title)
+        binding.ivRouteImage.visibility = android.view.View.GONE
 
         binding.tvRouteBack.setOnClickListener {
             binding.layoutRouteDetail.visibility = android.view.View.GONE
