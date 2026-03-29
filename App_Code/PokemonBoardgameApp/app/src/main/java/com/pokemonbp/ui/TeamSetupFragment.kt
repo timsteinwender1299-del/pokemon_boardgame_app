@@ -207,6 +207,7 @@ class TeamSetupFragment : Fragment() {
                 binding.layoutWildRoutes.visibility = android.view.View.GONE
                 binding.layoutRouteDetail.visibility = android.view.View.GONE
                 binding.layoutRollsheet.visibility = android.view.View.GONE
+                binding.layoutTownDetail.visibility = android.view.View.GONE
             }
         }
 
@@ -359,8 +360,11 @@ class TeamSetupFragment : Fragment() {
         binding.btnRandomTown.setOnClickListener {
             val towns = loadTowns()
             val town = towns.randomOrNull()
-            if (town != null) android.app.AlertDialog.Builder(requireContext())
-                .setTitle("🏙️ Random Town").setMessage(town).setPositiveButton("OK", null).show()
+            if (town != null) showTownDetail(town)
+        }
+        binding.tvTownBack.setOnClickListener {
+            binding.layoutTownDetail.visibility = android.view.View.GONE
+            binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
         }
         binding.btnRollsheetRoute.setOnClickListener {
             showRollSheetInline("RollSheet — Route", rollSheetRouteEntries())
@@ -375,6 +379,28 @@ class TeamSetupFragment : Fragment() {
         binding.tvRollsheetBack.setOnClickListener {
             binding.layoutRollsheet.visibility = android.view.View.GONE
             binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
+        }
+    }
+
+    private fun showTownDetail(town: String) {
+        // town format: "German / English"
+        val parts = town.split("/").map { it.trim() }
+        val germanName = parts.getOrNull(0) ?: town
+        val englishName = parts.getOrNull(1) ?: ""
+        binding.tvTownName.text = if (englishName.isNotEmpty()) "$germanName / $englishName" else germanName
+        binding.layoutWildRoutes.visibility = android.view.View.GONE
+        binding.layoutRollsheet.visibility = android.view.View.GONE
+        binding.layoutRouteDetail.visibility = android.view.View.GONE
+        binding.layoutTownDetail.visibility = android.view.View.VISIBLE
+        val url = SpriteUrls.townImageUrl(germanName)
+        if (url != null) {
+            com.bumptech.glide.Glide.with(requireContext())
+                .load(url)
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(binding.ivTownImage)
+        } else {
+            binding.ivTownImage.setImageDrawable(null)
         }
     }
 
@@ -546,6 +572,7 @@ class TeamSetupFragment : Fragment() {
         binding.layoutMainContent.visibility = android.view.View.GONE
         binding.layoutWildRoutes.visibility  = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.GONE
+        binding.layoutTownDetail.visibility  = android.view.View.GONE
         allSubPanels().forEach { it.visibility = android.view.View.GONE }
         panel.visibility = android.view.View.VISIBLE
         binding.ivLens.isClickable = true
