@@ -29,6 +29,8 @@ class ResultFragment : Fragment() {
     var teamBLabelIconUrl: String? = null
     var teamBTrainerImageUrl: String? = null
 
+    var reverseMode: Boolean = false
+
     // Faint tracking — set by TeamSetupFragment
     var teamAPokemonCount: Int = 1
     var teamBPokemonCount: Int = 1
@@ -55,13 +57,14 @@ class ResultFragment : Fragment() {
         val result = battleResult ?: return
 
         binding.screenPanel.setBackgroundColor(c.background)
-        binding.dividerResult.setBackgroundColor(c.divider)
+
+        binding.ivReverseIndicator.setImageResource(
+            if (reverseMode) R.drawable.reverse_activated else R.drawable.reverse_deactivated
+        )
 
         val isRetro = theme == AppTheme.RETRO
         if (isRetro) {
             binding.tvWinner.typeface = Typeface.MONOSPACE
-            binding.tvTotalA.typeface = Typeface.MONOSPACE
-            binding.tvTotalB.typeface = Typeface.MONOSPACE
         }
 
         when (result.winner) {
@@ -69,11 +72,6 @@ class ResultFragment : Fragment() {
             Team.TEAM_B -> { binding.tvWinner.text = "🏆 Team B Wins!"; binding.tvWinner.setTextColor(c.teamB) }
             null -> { binding.tvWinner.text = "⚔️ It's a Tie!"; binding.tvWinner.setTextColor(c.accent) }
         }
-
-        binding.tvTotalA.text = "$teamALabel: ${result.teamATotalBP} BP"
-        binding.tvTotalA.setTextColor(c.teamA)
-        binding.tvTotalB.text = "$teamBLabel: ${result.teamBTotalBP} BP"
-        binding.tvTotalB.setTextColor(c.teamB)
 
         binding.tvTeamAResultLabel.text = teamALabel
         binding.tvTeamAResultLabel.setTextColor(c.teamA)

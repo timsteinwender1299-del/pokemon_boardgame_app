@@ -6,31 +6,49 @@
     android:background="@color/pokedex_red"
     android:padding="10dp">
 
-    <!-- Pokédex Header: Lens + LEDs + Title -->
+    <!-- Pokédex Header: Left group + Reverse indicator + Right spacer -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_marginBottom="6dp">
 
-        <View
-            android:layout_width="42dp" android:layout_height="42dp"
-            android:background="@drawable/pokedex_lens"
-            android:layout_marginEnd="10dp"/>
+        <!-- Left group (weight=1): lens + LEDs + title -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_red"
-            android:layout_marginEnd="4dp"/>
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_yellow"
-            android:layout_marginEnd="4dp"/>
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_green"
-            android:layout_marginEnd="10dp"/>
+            <View
+                android:layout_width="42dp" android:layout_height="42dp"
+                android:background="@drawable/pokedex_lens"
+                android:layout_marginEnd="10dp"/>
 
-        <TextView
-            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:text="Battle Result" android:textSize="13sp" android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:includeFontPadding="false"/>
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_red"
+                android:layout_marginEnd="4dp"/>
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_yellow"
+                android:layout_marginEnd="4dp"/>
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_green"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Battle Result" android:textSize="13sp" android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+
+        <!-- Centre: reverse mode indicator (non-interactive) -->
+        <ImageView
+            android:id="@+id/iv_reverse_indicator"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/reverse_deactivated"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"/>
+
+        <!-- Right spacer (weight=1) to keep centre exactly centred -->
+        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
+
     </LinearLayout>
 
     <!-- Hinge / divider line -->
@@ -51,23 +69,6 @@
             android:textSize="24sp" android:textStyle="bold"
             android:gravity="center" android:paddingBottom="6dp"
             android:visibility="gone"/>
-
-        <!-- Team totals -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:paddingBottom="8dp">
-            <TextView android:id="@+id/tv_total_a"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:textSize="15sp" android:textStyle="bold"
-                android:gravity="center"/>
-            <TextView android:id="@+id/tv_total_b"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:textSize="15sp" android:textStyle="bold"
-                android:gravity="center"/>
-        </LinearLayout>
-
-        <View android:id="@+id/divider_result"
-            android:layout_width="match_parent" android:layout_height="1dp"
-            android:layout_marginBottom="8dp"/>
 
         <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1">

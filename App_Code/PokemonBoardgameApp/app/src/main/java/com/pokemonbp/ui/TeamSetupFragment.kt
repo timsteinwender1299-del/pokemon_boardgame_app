@@ -236,6 +236,7 @@ class TeamSetupFragment : Fragment() {
             val pokemonB = teamBList[activeIndexB]
             val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB), reverseMode)
             val resultFrag = ResultFragment.newInstance(result)
+            resultFrag.reverseMode = reverseMode
 
             // Team A trainer info
             val aTrainer = teamATrainer
