@@ -436,10 +436,43 @@ class TeamSetupFragment : Fragment() {
         }
     }
 
+    private fun routeDrawableRes(displayName: String): Int? = when (displayName.trim()) {
+        "Route 201"                          -> R.drawable.route_201
+        "Route 206"                          -> R.drawable.route_206
+        "Route 208"                          -> R.drawable.route_208
+        "Route 210"                          -> R.drawable.route_210
+        "Route 212"                          -> R.drawable.route_212
+        "Route 213"                          -> R.drawable.route_213
+        "Route 216"                          -> R.drawable.route_216
+        "Ewigwald / Eterna Forest"           -> R.drawable.route_eterna_forest
+        "Großmoor / GreatMarsh"              -> R.drawable.route_great_marsh
+        "Eiseninsel / Iron Island"           -> R.drawable.route_iron_island
+        "See der Stärke / Lake Acuity"       -> R.drawable.route_lake_acuity
+        "See der Kühnheit / Lake Valor"      -> R.drawable.route_lake_valor
+        "See der Wahrheit / Lake Verity"     -> R.drawable.route_lake_verity
+        "Kraterberg / Mt. Coronet"           -> R.drawable.route_mt_coronet
+        "Kahlberg / Stark Mountain"          -> R.drawable.route_stark_mountain
+        "Überlebensareal / Survivalarea"     -> R.drawable.route_survival_area
+        "Ursprungshöhle / Turnback Cave"     -> R.drawable.route_turnback_cave
+        "Kühnheitsufer / Valor Lakefront"    -> R.drawable.route_valor_lakefront
+        else                                 -> null
+    }
+
+    private fun applyRouteImage(displayName: String) {
+        val resId = routeDrawableRes(displayName)
+        if (resId != null) {
+            binding.ivRouteImage.setImageResource(resId)
+            binding.ivRouteImage.visibility = android.view.View.VISIBLE
+        } else {
+            binding.ivRouteImage.visibility = android.view.View.GONE
+        }
+    }
+
     private fun showRouteDetailAllTiers(route: com.pokemonbp.data.RouteLocation) {
         binding.layoutWildRoutes.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
         binding.tvRouteDetailName.text = route.displayName
+        applyRouteImage(route.displayName)
 
         binding.tvRouteBack.setOnClickListener {
             binding.layoutRouteDetail.visibility = android.view.View.GONE
@@ -1754,6 +1787,7 @@ class TeamSetupFragment : Fragment() {
         binding.layoutWildRoutes.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.VISIBLE
         binding.tvRouteDetailName.text = title
+        applyRouteImage(title)
 
         binding.tvRouteBack.setOnClickListener {
             binding.layoutRouteDetail.visibility = android.view.View.GONE

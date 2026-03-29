@@ -215,6 +215,14 @@
                     android:maxLines="2"/>
             </LinearLayout>
 
+            <ImageView
+                android:id="@+id/iv_route_image"
+                android:layout_width="match_parent" android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_route_pokemon"
                 android:layout_width="match_parent" android:layout_height="match_parent"
