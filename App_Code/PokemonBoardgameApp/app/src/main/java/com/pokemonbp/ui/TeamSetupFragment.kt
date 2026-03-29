@@ -355,7 +355,7 @@ class TeamSetupFragment : Fragment() {
 
         binding.btnRandomRoute.setOnClickListener {
             val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
-            if (routes.isNotEmpty()) handleRouteClick(routes.random())
+            if (routes.isNotEmpty()) handleRandomRouteClick(routes.random())
         }
         binding.btnRandomTown.setOnClickListener {
             val towns = loadTowns()
@@ -426,12 +426,35 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun handleRouteClick(route: com.pokemonbp.data.RouteLocation) {
+        if (route.isLegendary && route.tiers.size > 1) {
+            showBadgeTierPicker(route)
+        } else if (route.tiers.size > 1) {
+            showRouteDetailAllTiers(route)
+        } else {
+            val tier = route.tiers.firstOrNull()
+            showRouteDetail(route.displayName, tier?.pokemon ?: emptyList())
+        }
+    }
+
+    private fun handleRandomRouteClick(route: com.pokemonbp.data.RouteLocation) {
         if (route.tiers.size > 1) {
             showRouteDetailAllTiers(route)
         } else {
             val tier = route.tiers.firstOrNull()
             showRouteDetail(route.displayName, tier?.pokemon ?: emptyList())
         }
+    }
+
+    private fun showBadgeTierPicker(route: com.pokemonbp.data.RouteLocation) {
+        val labels = route.tiers.map { it.label }.toTypedArray()
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle(route.displayName)
+            .setItems(labels) { _, index ->
+                val tier = route.tiers[index]
+                showRouteDetail("${route.displayName} — ${tier.label}", tier.pokemon)
+            }
+            .setNegativeButton("Back", null)
+            .show()
     }
 
     private fun routeDrawableRes(displayName: String): Int? = when (displayName.trim()) {
