@@ -37,6 +37,7 @@ class TeamSetupFragment : Fragment() {
     private var teamBOverrideIconUrl: String? = null
     private var currentEnemyTrainer: EnemyTrainer? = null
     private var wildMode = false
+    private var reverseMode = false
 
     // Fainted Pokémon tracking (in-memory per battle session)
     private val faintedIndicesA = mutableSetOf<Int>()
@@ -218,6 +219,13 @@ class TeamSetupFragment : Fragment() {
         binding.ivDeloadEnemy.setOnClickListener { deloadEnemyTrainer() }
         binding.ivDeloadPlayer.setOnClickListener { deloadPlayerTrainer() }
 
+        binding.ivReverseButton.setOnClickListener {
+            reverseMode = !reverseMode
+            binding.ivReverseButton.setImageResource(
+                if (reverseMode) R.drawable.reverse_activated else R.drawable.reverse_deactivated
+            )
+        }
+
         binding.btnCalculate.setOnClickListener {
             if (teamAList.isEmpty() || teamBList.isEmpty()) {
                 Toast.makeText(requireContext(), "Each team needs at least one Pokémon!", Toast.LENGTH_SHORT).show()
@@ -226,7 +234,7 @@ class TeamSetupFragment : Fragment() {
             // Battle only the two selected Pokémon
             val pokemonA = teamAList[activeIndexA]
             val pokemonB = teamBList[activeIndexB]
-            val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB))
+            val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB), reverseMode)
             val resultFrag = ResultFragment.newInstance(result)
 
             // Team A trainer info

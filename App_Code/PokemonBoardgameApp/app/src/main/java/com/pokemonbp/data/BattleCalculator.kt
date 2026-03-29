@@ -7,9 +7,9 @@ import com.pokemonbp.model.TeamBattleResult
 
 object BattleCalculator {
 
-    fun calculate(teamA: List<Pokemon>, teamB: List<Pokemon>): TeamBattleResult {
-        val teamAResults = teamA.map { calculateForPokemon(it, teamB) }
-        val teamBResults = teamB.map { calculateForPokemon(it, teamA) }
+    fun calculate(teamA: List<Pokemon>, teamB: List<Pokemon>, reversed: Boolean = false): TeamBattleResult {
+        val teamAResults = teamA.map { calculateForPokemon(it, teamB, reversed) }
+        val teamBResults = teamB.map { calculateForPokemon(it, teamA, reversed) }
 
         val teamATotalBP = teamAResults.sumOf { it.finalBP }
         val teamBTotalBP = teamBResults.sumOf { it.finalBP }
@@ -23,14 +23,14 @@ object BattleCalculator {
         return TeamBattleResult(teamAResults, teamBResults, teamATotalBP, teamBTotalBP, winner)
     }
 
-    private fun calculateForPokemon(attacker: Pokemon, opponents: List<Pokemon>): BattleResult {
+    private fun calculateForPokemon(attacker: Pokemon, opponents: List<Pokemon>, reversed: Boolean = false): BattleResult {
         val opponentNames = opponents.joinToString(", ") { it.name }
         val allDetails = mutableListOf<TypeChart.MatchupDetail>()
         var totalModifier = 0
         var forcedZero = false
 
         for (opponent in opponents) {
-            val bpResult = TypeChart.getBpResult(attacker.baseBP, attacker.types, opponent.types)
+            val bpResult = TypeChart.getBpResult(attacker.baseBP, attacker.types, opponent.types, reversed)
             allDetails.addAll(bpResult.details)
 
             if (bpResult.zeroedOut) {

@@ -51,7 +51,8 @@ object TypeChart {
     fun getBpResult(
         baseBP: Int,
         attackerTypes: List<PokemonType>,
-        defenderTypes: List<PokemonType>
+        defenderTypes: List<PokemonType>,
+        reversed: Boolean = false
     ): BpResult {
         val isSingleType = attackerTypes.size == 1
 
@@ -98,8 +99,8 @@ object TypeChart {
                 for (defType in defenderTypes) {
                     val eff = getEffectiveness(atkType, defType)
                     val change = when {
-                        eff >= 2.0 -> 1
-                        eff <= 0.5 -> -1
+                        eff >= 2.0 -> if (reversed) -1 else 1
+                        eff <= 0.5 -> if (reversed) 1 else -1
                         else -> 0
                     }
                     if (change != 0) {

@@ -6,74 +6,97 @@
     android:background="@color/pokedex_red"
     android:padding="10dp">
 
-    <!-- Pokédex Header: Lens + LEDs + Title + Theme -->
+    <!-- Pokédex Header: Lens + LEDs + Title | Reverse | Reset + Update + Wild -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_marginBottom="6dp">
 
-        <!-- Blue camera lens — back button when a panel is open -->
-        <View
-            android:id="@+id/iv_lens"
-            android:layout_width="42dp" android:layout_height="42dp"
-            android:background="@drawable/pokedex_lens"
-            android:layout_marginEnd="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless"/>
+        <!-- Left group (weight=1): lens + LEDs + title -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <!-- LED indicators -->
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_red"
-            android:layout_marginEnd="4dp"/>
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_yellow"
-            android:layout_marginEnd="4dp"/>
-        <View android:layout_width="10dp" android:layout_height="10dp"
-            android:background="@drawable/pokedex_led_green"
-            android:layout_marginEnd="10dp"/>
+            <!-- Blue camera lens — back button when a panel is open -->
+            <View
+                android:id="@+id/iv_lens"
+                android:layout_width="42dp" android:layout_height="42dp"
+                android:background="@drawable/pokedex_lens"
+                android:layout_marginEnd="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"/>
 
-        <!-- App title -->
-        <TextView android:id="@+id/tv_app_title"
-            android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:text="BP Calculator" android:textSize="13sp" android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:includeFontPadding="false"/>
+            <!-- LED indicators -->
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_red"
+                android:layout_marginEnd="4dp"/>
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_yellow"
+                android:layout_marginEnd="4dp"/>
+            <View android:layout_width="10dp" android:layout_height="10dp"
+                android:background="@drawable/pokedex_led_green"
+                android:layout_marginEnd="10dp"/>
 
-        <!-- Reset game button -->
+            <!-- App title -->
+            <TextView android:id="@+id/tv_app_title"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="BP Calculator" android:textSize="13sp" android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+
+        <!-- Centre: Reverse toggle button -->
         <ImageView
-            android:id="@+id/iv_reset_button"
-            android:layout_width="36dp" android:layout_height="36dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_reload"
+            android:id="@+id/iv_reverse_button"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/reverse_deactivated"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
-        <!-- Update data button -->
-        <ImageView
-            android:id="@+id/iv_update_button"
-            android:layout_width="36dp" android:layout_height="36dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_update"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+        <!-- Right group (weight=1): reset + update + wild — gravity end keeps them right-aligned -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical|end">
 
-        <!-- Wild Pokémon button -->
-        <ImageView
-            android:id="@+id/iv_wild_button"
-            android:layout_width="48dp" android:layout_height="48dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_wild_pokemon_menu"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            <!-- Reset game button -->
+            <ImageView
+                android:id="@+id/iv_reset_button"
+                android:layout_width="36dp" android:layout_height="36dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_reload"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+            <!-- Update data button -->
+            <ImageView
+                android:id="@+id/iv_update_button"
+                android:layout_width="36dp" android:layout_height="36dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_update"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+            <!-- Wild Pokémon button -->
+            <ImageView
+                android:id="@+id/iv_wild_button"
+                android:layout_width="48dp" android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_wild_pokemon_menu"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Hinge / divider line -->
