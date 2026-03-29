@@ -145,6 +145,7 @@ object SpriteUrls {
             "Ewigenau"       -> "Eterna.png"
             "Herzhofen"      -> "Hearthome.png"
             "Weideburg"      -> "Pastoria.png"
+            "Schleiede"      -> "Veilstone.png"
             "Blizzach"       -> "Snowpoint.png"
             "Sonnewik"       -> "Sunnyshore.png"
             "Jubelstadt"     -> "Jubilife.png"
