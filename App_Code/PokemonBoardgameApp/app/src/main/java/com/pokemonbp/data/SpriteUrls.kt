@@ -138,27 +138,6 @@ object SpriteUrls {
         else      -> null
     }
 
-    fun townImageUrl(germanName: String): String? {
-        val file = when (germanName.trim()) {
-            "Fleetbug"       -> "Canalave.png"
-            "Erzelingen"     -> "Oreburgh.png"
-            "Ewigenau"       -> "Eterna.png"
-            "Herzhofen"      -> "Hearthome.png"
-            "Weideburg"      -> "Pastoria.png"
-            "Schleiede"      -> "Veilstone.png"
-            "Blizzach"       -> "Snowpoint.png"
-            "Sonnewik"       -> "Sunnyshore.png"
-            "Jubelstadt"     -> "Jubilife.png"
-            "Zweiblattdorf"  -> "Twinleaf.png"
-            "Flori"          -> "Flori_Floaroma.png"
-            "Elyses"         -> "Celestic.png"
-            "Trostu"         -> "Trostu_Solaceon.png"
-            "Erholungsareal" -> "ResortArea.png"
-            else             -> null
-        } ?: return null
-        return "$BASE_URL/RouteTown/Town/$file"
-    }
-
     fun gymLeaderImageUrl(id: String): String? = when (id) {
         "roark"        -> "$BASE_URL/Trainer/TrainerImage/GymLeaderRoark.png"
         "gardenia"     -> "$BASE_URL/Trainer/TrainerImage/GymLeaderSilvana.png"

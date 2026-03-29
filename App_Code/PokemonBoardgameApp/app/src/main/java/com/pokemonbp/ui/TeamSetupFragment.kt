@@ -392,16 +392,27 @@ class TeamSetupFragment : Fragment() {
         binding.layoutRollsheet.visibility = android.view.View.GONE
         binding.layoutRouteDetail.visibility = android.view.View.GONE
         binding.layoutTownDetail.visibility = android.view.View.VISIBLE
-        val url = SpriteUrls.townImageUrl(germanName)
-        if (url != null) {
-            com.bumptech.glide.Glide.with(requireContext())
-                .load(url)
-                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
-                .fitCenter()
-                .into(binding.ivTownImage)
-        } else {
-            binding.ivTownImage.setImageDrawable(null)
-        }
+        val resId = townDrawableRes(germanName)
+        if (resId != null) binding.ivTownImage.setImageResource(resId)
+        else binding.ivTownImage.setImageDrawable(null)
+    }
+
+    private fun townDrawableRes(germanName: String): Int? = when (germanName.trim()) {
+        "Fleetbug"       -> R.drawable.town_canalave
+        "Erzelingen"     -> R.drawable.town_oreburgh
+        "Ewigenau"       -> R.drawable.town_eterna
+        "Herzhofen"      -> R.drawable.town_hearthome
+        "Weideburg"      -> R.drawable.town_pastoria
+        "Schleiede"      -> R.drawable.town_veilstone
+        "Blizzach"       -> R.drawable.town_snowpoint
+        "Sonnewik"       -> R.drawable.town_sunnyshore
+        "Jubelstadt"     -> R.drawable.town_jubilife
+        "Zweiblattdorf"  -> R.drawable.town_twinleaf
+        "Flori"          -> R.drawable.town_flori_floaroma
+        "Elyses"         -> R.drawable.town_celestic
+        "Trostu"         -> R.drawable.town_trostu_solaceon
+        "Erholungsareal" -> R.drawable.town_resort_area
+        else             -> null
     }
 
     private fun showRollSheetInline(title: String, entries: List<RollSheetEntry>) {
