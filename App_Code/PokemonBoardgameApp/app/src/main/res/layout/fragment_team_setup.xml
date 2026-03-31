@@ -64,7 +64,7 @@
             <!-- Reset game button -->
             <ImageView
                 android:id="@+id/iv_reset_button"
-                android:layout_width="36dp" android:layout_height="36dp"
+                android:layout_width="48dp" android:layout_height="48dp"
                 android:layout_marginStart="6dp"
                 android:src="@drawable/ic_reload"
                 android:scaleType="fitCenter"
@@ -76,7 +76,7 @@
             <!-- Update data button -->
             <ImageView
                 android:id="@+id/iv_update_button"
-                android:layout_width="36dp" android:layout_height="36dp"
+                android:layout_width="48dp" android:layout_height="48dp"
                 android:layout_marginStart="6dp"
                 android:src="@drawable/ic_update"
                 android:scaleType="fitCenter"
