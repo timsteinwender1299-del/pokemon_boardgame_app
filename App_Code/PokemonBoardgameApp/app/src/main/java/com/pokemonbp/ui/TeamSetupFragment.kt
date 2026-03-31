@@ -526,9 +526,16 @@ class TeamSetupFragment : Fragment() {
         binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c)
     }
 
+    private fun roundedScreenBg(color: Int) =
+        android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            setColor(color)
+            cornerRadius = 16f * resources.displayMetrics.density
+        }
+
     private fun applyTheme(theme: AppTheme) {
         val c = ThemeManager.colorsFor(theme)
-        binding.screenPanel.setBackgroundColor(c.background)
+        binding.screenPanel.background = roundedScreenBg(c.background)
         binding.tvAppTitle.setTextColor(android.graphics.Color.WHITE)
         binding.tvTeamALabel.setTextColor(c.teamA)
         binding.tvTeamBLabel.setTextColor(c.teamB)

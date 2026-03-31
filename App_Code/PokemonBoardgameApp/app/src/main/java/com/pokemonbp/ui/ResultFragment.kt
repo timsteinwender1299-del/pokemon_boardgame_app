@@ -56,7 +56,11 @@ class ResultFragment : Fragment() {
         val c = ThemeManager.colorsFor(theme)
         val result = battleResult ?: return
 
-        binding.screenPanel.setBackgroundColor(c.background)
+        binding.screenPanel.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            setColor(c.background)
+            cornerRadius = 16f * resources.displayMetrics.density
+        }
 
         binding.ivReverseIndicator.setImageResource(
             if (reverseMode) R.drawable.reverse_activated else R.drawable.reverse_deactivated

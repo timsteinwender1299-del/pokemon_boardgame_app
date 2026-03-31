@@ -61,7 +61,8 @@
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
         android:orientation="vertical"
         android:padding="10dp"
-        android:background="@drawable/pokedex_screen_bg">
+        android:background="@drawable/pokedex_screen_bg"
+        android:clipToOutline="true">
 
         <!-- Winner banner (hidden) -->
         <TextView android:id="@+id/tv_winner"
