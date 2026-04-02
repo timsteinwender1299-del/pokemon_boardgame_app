@@ -31,7 +31,8 @@ class TrainerPokemonAdapter(
         val card: MaterialCardView       = v.findViewById(R.id.card_tp)
         val ivSprite: ImageView          = v.findViewById(R.id.iv_tp_sprite)
         val tvName: TextView             = v.findViewById(R.id.tv_tp_name)
-        val llTypes: LinearLayout        = v.findViewById(R.id.ll_tp_types)
+        val ivTpType1: ImageView         = v.findViewById(R.id.iv_tp_type_1)
+        val ivTpType2: ImageView         = v.findViewById(R.id.iv_tp_type_2)
         val btnBpToggle: MaterialButton  = v.findViewById(R.id.btn_bp_toggle)
         val layoutBpPicker: LinearLayout = v.findViewById(R.id.layout_bp_picker)
         val btnEvolve: MaterialButton    = v.findViewById(R.id.btn_evolve)
@@ -74,21 +75,10 @@ class TrainerPokemonAdapter(
             holder.ivSprite.loadPokemonSprite(holder.itemView.context, preset.pokedexId)
         }
 
-        // Type icons — always 2 slots, NoType.png for empty second slot
-        holder.llTypes.removeAllViews()
+        // Type icons — load into pre-allocated views
         val ctx = holder.itemView.context
-        val margin = (1 * ctx.resources.displayMetrics.density).toInt()
-        for (i in 0..1) {
-            val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-            if (i == 0) params.marginEnd = margin
-            iv.layoutParams = params
-            iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            iv.adjustViewBounds = true
-            val url = if (i < preset.types.size) SpriteUrls.typeIconUrl(preset.types[i].name) else SpriteUrls.noTypeUrl
-            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            holder.llTypes.addView(iv)
-        }
+        Glide.with(ctx).load(SpriteUrls.typeIconUrl(preset.types[0].name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivTpType1)
+        Glide.with(ctx).load(if (preset.types.size > 1) SpriteUrls.typeIconUrl(preset.types[1].name) else SpriteUrls.noTypeUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivTpType2)
 
         // BP toggle pill — shows current BP, opens/closes picker
         updateBpToggle(holder.btnBpToggle, entry, typeColor)
@@ -138,7 +128,7 @@ class TrainerPokemonAdapter(
                     // Multiple options — show popup menu
                     val popup = android.widget.PopupMenu(holder.itemView.context, holder.btnEvolve)
                     nextEvos.forEach { evoId ->
-                        val evoEntry = com.pokemonbp.ui.PokedexData.allPokemon.find { it.id == evoId }
+                        val evoEntry = com.pokemonbp.ui.PokedexData.byId[evoId]
                         val label = if (evoEntry != null) "${evoEntry.nameDE} / ${evoEntry.name}" else "#$evoId"
                         popup.menu.add(label).setOnMenuItemClickListener {
                             applyEvolution(pos, evoId, entry)
@@ -195,7 +185,7 @@ class TrainerPokemonAdapter(
     }
 
     private fun applyEvolution(pos: Int, evoId: Int, entry: TrainerPokemonEntry) {
-        val nextEntry = com.pokemonbp.ui.PokedexData.allPokemon.find { it.id == evoId }
+        val nextEntry = com.pokemonbp.ui.PokedexData.byId[evoId]
         if (nextEntry != null) {
             list[pos] = TrainerPokemonEntry(
                 preset = com.pokemonbp.model.PokemonPreset(

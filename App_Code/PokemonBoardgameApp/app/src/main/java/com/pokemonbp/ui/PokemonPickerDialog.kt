@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -61,17 +60,23 @@ class PokemonPickerDialog(
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val q = s.toString().trim().lowercase()
-                filteredList.clear()
-                filteredList.addAll(
-                    if (q.isEmpty()) PokedexData.allPokemon
+                val newList = if (q.isEmpty()) PokedexData.allPokemon
                     else PokedexData.allPokemon.filter {
                         it.name.lowercase().contains(q) ||
                         it.nameDE.lowercase().contains(q) ||
                         it.id.toString().contains(q) ||
                         it.types.any { t -> t.displayName.lowercase().contains(q) }
                     }
-                )
-                adapter.notifyDataSetChanged()
+                val diff = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+                    override fun getOldListSize() = filteredList.size
+                    override fun getNewListSize() = newList.size
+                    override fun areItemsTheSame(o: Int, n: Int) =
+                        filteredList[o].id == newList[n].id && filteredList[o].isMega == newList[n].isMega
+                    override fun areContentsTheSame(o: Int, n: Int) = filteredList[o] == newList[n]
+                })
+                filteredList.clear()
+                filteredList.addAll(newList)
+                diff.dispatchUpdatesTo(adapter)
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -98,10 +103,11 @@ class PickerAdapter(
 ) : RecyclerView.Adapter<PickerAdapter.ViewHolder>() {
 
     inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        val ivSprite:  ImageView    = v.findViewById(R.id.iv_picker_sprite)
-        val tvDexNum:  TextView     = v.findViewById(R.id.tv_picker_dex_num)
-        val tvName:    TextView     = v.findViewById(R.id.tv_picker_name)
-        val llTypes:   LinearLayout = v.findViewById(R.id.ll_picker_types)
+        val ivSprite:  ImageView = v.findViewById(R.id.iv_picker_sprite)
+        val tvDexNum:  TextView  = v.findViewById(R.id.tv_picker_dex_num)
+        val tvName:    TextView  = v.findViewById(R.id.tv_picker_name)
+        val ivType1:   ImageView = v.findViewById(R.id.iv_type_1)
+        val ivType2:   ImageView = v.findViewById(R.id.iv_type_2)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -126,18 +132,9 @@ class PickerAdapter(
         holder.tvName.setTextColor(c.textPrimary)
         if (theme == AppTheme.RETRO) holder.tvName.typeface = Typeface.MONOSPACE
 
-        // Build type icons
-        holder.llTypes.removeAllViews()
-        for (type in entry.types) {
-            val dp32 = (32 * ctx.resources.displayMetrics.density).toInt()
-            val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(dp32, dp32)
-            params.marginEnd = (3 * ctx.resources.displayMetrics.density).toInt()
-            iv.layoutParams = params
-            Glide.with(ctx).load(SpriteUrls.typeIconUrl(type.name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            holder.llTypes.addView(iv)
-        }
+        // Load type icons into pre-allocated views
+        Glide.with(ctx).load(SpriteUrls.typeIconUrl(entry.types[0].name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivType1)
+        Glide.with(ctx).load(if (entry.types.size > 1) SpriteUrls.typeIconUrl(entry.types[1].name) else SpriteUrls.noTypeUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.ivType2)
 
         // Pokémon sprite — prefer local drawable, fall back to PokeAPI
         holder.ivSprite.loadPokemonSprite(ctx, entry.spriteId)

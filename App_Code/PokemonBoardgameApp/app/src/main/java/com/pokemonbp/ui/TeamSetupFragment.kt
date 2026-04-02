@@ -113,6 +113,52 @@ class TeamSetupFragment : Fragment() {
         adapterA.activeIndex = activeIndexA
         adapterB.activeIndex = activeIndexB
 
+        // Placeholder slot click → open Add Pokémon panel and replace that slot in-place
+        adapterA.onPlaceholderClick = { pos ->
+            showAddPokemonPanel(Team.TEAM_A) { name, nameDE, types, bp, pokedexId ->
+                teamAList[pos] = Pokemon(id = System.currentTimeMillis().toInt(),
+                    name = name, nameDE = nameDE, types = types, baseBP = bp,
+                    team = Team.TEAM_A, pokedexId = pokedexId)
+                adapterA.notifyItemChanged(pos)
+                // Persist the updated team back to the player trainer
+                val trainer = teamATrainer
+                if (trainer != null) {
+                    val updatedPresets = teamAList
+                        .filter { it.types.isNotEmpty() }
+                        .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP) }
+                    val updated = trainer.copy(pokemon = updatedPresets)
+                    teamATrainer = updated
+                    val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
+                    val idx = all.indexOfFirst { it.id == updated.id }
+                    if (idx >= 0) { all[idx] = updated; com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), all) }
+                }
+                updateBattleButton()
+                hidePanels()
+            }
+        }
+        adapterB.onPlaceholderClick = { pos ->
+            showAddPokemonPanel(Team.TEAM_B) { name, nameDE, types, bp, pokedexId ->
+                teamBList[pos] = Pokemon(id = System.currentTimeMillis().toInt(),
+                    name = name, nameDE = nameDE, types = types, baseBP = bp,
+                    team = Team.TEAM_B, pokedexId = pokedexId)
+                adapterB.notifyItemChanged(pos)
+                // Persist the updated team back to the saved trainer (if enemy is a saved trainer)
+                val savedEnemy = currentEnemyTrainer as? EnemyTrainer.SavedTrainer
+                if (savedEnemy != null) {
+                    val updatedPresets = teamBList
+                        .filter { it.types.isNotEmpty() }
+                        .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP) }
+                    val updated = savedEnemy.trainer.copy(pokemon = updatedPresets)
+                    currentEnemyTrainer = EnemyTrainer.SavedTrainer(updated)
+                    val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
+                    val idx = all.indexOfFirst { it.id == updated.id }
+                    if (idx >= 0) { all[idx] = updated; com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), all) }
+                }
+                updateBattleButton()
+                hidePanels()
+            }
+        }
+
         binding.recyclerTeamA.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerTeamA.adapter = adapterA
         binding.recyclerTeamB.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -144,6 +190,7 @@ class TeamSetupFragment : Fragment() {
                     com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), emptyList())
                     com.pokemonbp.data.GalacticStateManager.reset(requireContext())
                     teamATrainer = null
+                    adapterA.isTrainerLocked = false; adapterB.isTrainerLocked = false
                     teamAList.clear(); adapterA.notifyDataSetChanged()
                     teamBList.clear(); adapterB.notifyDataSetChanged()
                     faintedIndicesA.clear(); faintedIndicesB.clear()
@@ -154,6 +201,7 @@ class TeamSetupFragment : Fragment() {
                     loadLabelIcon(SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
                     loadTrainerImage(null, binding.ivTrainerA)
                     loadTrainerImage(null, binding.ivTrainerB)
+                    com.pokemonbp.data.SessionManager.clear(requireContext())
                     hidePanels()
                     Toast.makeText(requireContext(), "Game reset.", Toast.LENGTH_SHORT).show()
                 }
@@ -227,13 +275,13 @@ class TeamSetupFragment : Fragment() {
         }
 
         binding.btnCalculate.setOnClickListener {
-            if (teamAList.isEmpty() || teamBList.isEmpty()) {
+            val pokemonA = teamAList.getOrNull(activeIndexA)
+            val pokemonB = teamBList.getOrNull(activeIndexB)
+            if (pokemonA == null || pokemonA.types.isEmpty() || pokemonB == null || pokemonB.types.isEmpty()) {
                 Toast.makeText(requireContext(), "Each team needs at least one Pokémon!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             // Battle only the two selected Pokémon
-            val pokemonA = teamAList[activeIndexA]
-            val pokemonB = teamBList[activeIndexB]
             val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB), reverseMode)
             val resultFrag = ResultFragment.newInstance(result)
             resultFrag.reverseMode = reverseMode
@@ -287,6 +335,7 @@ class TeamSetupFragment : Fragment() {
                         val idx = all.indexOfFirst { it.id == updated.id }
                         if (idx >= 0) { all[idx] = updated; TrainerManager.saveTrainers(requireContext(), all) }
                         updateBadgeDisplay()
+                        saveSession()
                     }
                 }
                 allFainted
@@ -297,6 +346,7 @@ class TeamSetupFragment : Fragment() {
             (activity as MainActivity).navigateToResults(resultFrag)
         }
 
+        loadSession()
         updateBattleButton()
         restoreTrainerDisplay()
     }
@@ -729,6 +779,7 @@ class TeamSetupFragment : Fragment() {
 
     private fun deloadEnemyTrainer() {
         currentEnemyTrainer = null
+        adapterB.isTrainerLocked = false
         teamBLabel = "Enemy Trainer"
         teamBList.clear()
         adapterB.notifyDataSetChanged()
@@ -747,6 +798,7 @@ class TeamSetupFragment : Fragment() {
 
     private fun deloadPlayerTrainer() {
         teamATrainer = null
+        adapterA.isTrainerLocked = false
         teamAList.clear()
         faintedIndicesA.clear()
         adapterA.faintedIndices = emptySet()
@@ -835,7 +887,7 @@ class TeamSetupFragment : Fragment() {
         }
         b.btnPickFromRoute.setOnClickListener {
             showRoutePickerInline(onBack = backToAddPokemon) { nameDE, nameEN, bp ->
-                val entry = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
+                val entry = PokedexData.byNameEN[nameEN.trim().lowercase()]
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty() && bp > 0) {
                     if (onAdded != null) {
@@ -849,7 +901,7 @@ class TeamSetupFragment : Fragment() {
                     }
                 } else {
                     currentName = nameEN; currentNameDE = nameDE
-                    val e2 = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+                    val e2 = PokedexData.byNameEN[nameEN.lowercase()]
                     if (e2 != null) { currentPokedexId = e2.spriteId; b.btnPickPokemon.text = "  $nameEN  #${e2.id}"; b.tvDexId.text = "#${e2.id}"; selectedTypes.clear(); selectedTypes.addAll(e2.types) }
                     else { currentPokedexId = 0; b.btnPickPokemon.text = "  $nameEN"; b.tvDexId.text = "" }
                     typeAdapter.notifyDataSetChanged(); if (bp > 0) selectBP(bp)
@@ -861,7 +913,7 @@ class TeamSetupFragment : Fragment() {
         b.btnPickStarter.setTextColor(Color.WHITE)
         b.btnPickStarter.setOnClickListener {
             showStarterPickerInline(onBack = backToAddPokemon) { nameDE, nameEN ->
-                val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+                val entry = PokedexData.byNameEN[nameEN.lowercase()]
                 val types = entry?.types ?: emptyList()
                 if (types.isNotEmpty()) {
                     if (onAdded != null) {
@@ -1080,12 +1132,12 @@ class TeamSetupFragment : Fragment() {
                     btnEvolve.isEnabled = nextEvos.isNotEmpty(); btnEvolve.alpha = if (nextEvos.isNotEmpty()) 1f else 0.3f
                     btnEvolve.setOnClickListener {
                         if (nextEvos.size == 1) {
-                            val evo = PokedexData.allPokemon.find { it.id == nextEvos[0] } ?: return@setOnClickListener
+                            val evo = PokedexData.byId[nextEvos[0]] ?: return@setOnClickListener
                             pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.spriteId, types = evo.types)); refreshSlots()
                         } else {
                             val popup = android.widget.PopupMenu(requireContext(), btnEvolve)
                             nextEvos.forEach { evoId ->
-                                val evo = PokedexData.allPokemon.find { it.id == evoId }
+                                val evo = PokedexData.byId[evoId]
                                 popup.menu.add(evo?.let { "${it.nameDE} / ${it.name}" } ?: "#$evoId").setOnMenuItemClickListener {
                                     if (evo != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = evo.name, nameDE = evo.nameDE, pokedexId = evo.spriteId, types = evo.types)); refreshSlots() }; true
                                 }
@@ -1096,7 +1148,7 @@ class TeamSetupFragment : Fragment() {
                     val prevId = com.pokemonbp.data.EvolutionData.previousEvolution(preset.pokedexId)
                     btnDusk.isEnabled = prevId != null; btnDusk.alpha = if (prevId != null) 1f else 0.3f
                     btnDusk.setOnClickListener {
-                        val prev = prevId?.let { id -> PokedexData.allPokemon.find { it.id == id } }
+                        val prev = prevId?.let { id -> PokedexData.byId[id] }
                         if (prev != null) { pokemonEntries[i] = entry.copy(preset = preset.copy(name = prev.name, nameDE = prev.nameDE, pokedexId = prev.spriteId, types = prev.types)); refreshSlots() }
                         else Toast.makeText(requireContext(), "Already at base form!", Toast.LENGTH_SHORT).show()
                     }
@@ -1156,16 +1208,23 @@ class TeamSetupFragment : Fragment() {
             recycler.adapter = TrainerRowAdapter(
                 trainers = all.toMutableList(), theme = theme, c = c,
                 onBattle = { trainer ->
+                    val isSameTrainer = teamATrainer?.id == trainer.id
                     teamATrainer = trainer; teamAList.clear()
-                    // Reset fainted state when trainer is (re)loaded
-                    faintedIndicesA.clear(); adapterA.faintedIndices = emptySet()
+                    if (!isSameTrainer) { faintedIndicesA.clear() }
                     trainer.pokemon.forEach { preset ->
                         teamAList.add(Pokemon(id = System.currentTimeMillis().toInt() + teamAList.size,
                             name = preset.name, nameDE = preset.nameDE,
                             types = preset.types, baseBP = preset.baseBP,
                             team = Team.TEAM_A, pokedexId = preset.pokedexId))
                     }
-                    activeIndexA = 0; adapterA.activeIndex = 0; adapterA.notifyDataSetChanged()
+                    // Pad to 4 with empty placeholder slots
+                    while (teamAList.size < 4) teamAList.add(Pokemon(
+                        id = -(teamAList.size + 1), name = "", nameDE = "",
+                        types = emptyList(), baseBP = 0, team = Team.TEAM_A))
+                    adapterA.isTrainerLocked = true
+                    adapterA.faintedIndices = faintedIndicesA.toSet()
+                    val firstLive = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA } ?: 0
+                    activeIndexA = firstLive; adapterA.activeIndex = firstLive; adapterA.notifyDataSetChanged()
                     updateTeamALabel()
                     updateDeloadPlayerButton()
                     updateBadgeDisplay()
@@ -1198,12 +1257,24 @@ class TeamSetupFragment : Fragment() {
         v.findViewById<android.widget.Button>(R.id.btn_close_dialog).setOnClickListener { hidePanels() }
     }
 
+    private fun isSameEnemy(a: EnemyTrainer?, b: EnemyTrainer): Boolean {
+        if (a == null) return false
+        return when {
+            a is EnemyTrainer.GymLeader    && b is EnemyTrainer.GymLeader    -> a.id == b.id
+            a is EnemyTrainer.Champion     && b is EnemyTrainer.Champion     -> a.nameEN == b.nameEN
+            a is EnemyTrainer.SavedTrainer && b is EnemyTrainer.SavedTrainer -> a.trainer.id == b.trainer.id
+            else -> false  // Wild / Random always reset
+        }
+    }
+
     private fun handleEnemySelected(enemyTrainer: EnemyTrainer, badge: Int?) {
+        val isSame = isSameEnemy(currentEnemyTrainer, enemyTrainer)
         currentEnemyTrainer = enemyTrainer
         teamBOverrideImageUrl = null
         teamBOverrideIconUrl  = null
         teamBList.clear()
-        faintedIndicesB.clear(); adapterB.faintedIndices = emptySet()
+        adapterB.isTrainerLocked = false
+        if (!isSame) { faintedIndicesB.clear() }
         val trainerImageUrl: String?
         when (enemyTrainer) {
             is EnemyTrainer.GymLeader -> {
@@ -1261,8 +1332,20 @@ class TeamSetupFragment : Fragment() {
             is EnemyTrainer.WildPokemon   -> SpriteUrls.trainerIconUrl("wild")
             is EnemyTrainer.SavedTrainer  -> SpriteUrls.avatarUrl(enemyTrainer.trainer.avatarId)
         }
-        activeIndexB = 0
-        adapterB.activeIndex = 0
+        // Lock and pad to 4 for fixed trainer rosters
+        when (enemyTrainer) {
+            is EnemyTrainer.GymLeader, is EnemyTrainer.Champion, is EnemyTrainer.SavedTrainer -> {
+                while (teamBList.size < 4) teamBList.add(Pokemon(
+                    id = -(teamBList.size + 1), name = "", nameDE = "",
+                    types = emptyList(), baseBP = 0, team = Team.TEAM_B))
+                adapterB.isTrainerLocked = true
+            }
+            else -> {}
+        }
+        adapterB.faintedIndices = faintedIndicesB.toSet()
+        val firstLiveB = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB } ?: 0
+        activeIndexB = firstLiveB
+        adapterB.activeIndex = firstLiveB
         adapterB.notifyDataSetChanged()
         binding.tvTeamBLabel.text = teamBLabel
         loadLabelIcon(labelIconUrl ?: SpriteUrls.battleUrl, binding.ivLabelB, R.drawable.ic_battle)
@@ -1663,7 +1746,7 @@ class TeamSetupFragment : Fragment() {
                         alpha = if (isBase) 1f else 0.35f
                         setPadding(dpPx(4), dpPx(4), dpPx(4), dpPx(4))
                     }
-                    val entry = PokedexData.allPokemon.find { it.name.equals(pokemon.nameEN, ignoreCase = true) }
+                    val entry = PokedexData.byNameEN[pokemon.nameEN.lowercase()]
                     android.widget.ImageView(requireContext()).apply {
                         layoutParams = android.widget.LinearLayout.LayoutParams(dpPx(58), dpPx(58))
                         scaleType = android.widget.ImageView.ScaleType.FIT_CENTER; adjustViewBounds = true
@@ -1828,7 +1911,9 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun updateBattleButton() {
-        val canBattle = teamAList.isNotEmpty() && teamBList.isNotEmpty()
+        val aReal = teamAList.any { it.types.isNotEmpty() }
+        val bReal = teamBList.any { it.types.isNotEmpty() }
+        val canBattle = aReal && bReal
         binding.btnCalculate.isEnabled = canBattle
         val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
         binding.btnCalculate.backgroundTintList =
@@ -1836,12 +1921,15 @@ class TeamSetupFragment : Fragment() {
 
         // Update button text to show which Pokémon will fight
         if (canBattle) {
-            val nameA = teamAList.getOrNull(activeIndexA)?.displayName() ?: "?"
-            val nameB = teamBList.getOrNull(activeIndexB)?.displayName() ?: "?"
+            val pokemonA = teamAList.getOrNull(activeIndexA)
+            val pokemonB = teamBList.getOrNull(activeIndexB)
+            val nameA = if (pokemonA != null && pokemonA.types.isNotEmpty()) pokemonA.displayName() else "?"
+            val nameB = if (pokemonB != null && pokemonB.types.isNotEmpty()) pokemonB.displayName() else "?"
             binding.btnCalculate.text = "  $nameA  vs  $nameB"
         } else {
             binding.btnCalculate.text = "  CALCULATE BATTLE"
         }
+        saveSession()
     }
 
     private fun showGalacticSubPanelInline(onBack: () -> Unit) {
@@ -2024,7 +2112,7 @@ class TeamSetupFragment : Fragment() {
             else   -> "Croagunk" to "Toxicroak"
         }
         val name = if (bp >= 5) second else first
-        val entry = PokedexData.allPokemon.find { it.name.equals(name, ignoreCase = true) }
+        val entry = PokedexData.byNameEN[name.lowercase()]
         return Pokemon(
             id = System.currentTimeMillis().toInt() + (0..999).random(),
             name = name,
@@ -2081,6 +2169,94 @@ class TeamSetupFragment : Fragment() {
             requireContext().assets.open("towns.txt").bufferedReader().readLines()
                 .map { it.trim() }.filter { it.isNotEmpty() }
         } catch (e: Exception) { emptyList() }
+    }
+
+    private fun saveSession() {
+        val ctx = context ?: return
+        val enemyType = when (currentEnemyTrainer) {
+            is EnemyTrainer.GymLeader    -> "GYMLEADER"
+            is EnemyTrainer.Champion     -> "CHAMPION"
+            is EnemyTrainer.WildPokemon  -> "WILD"
+            is EnemyTrainer.RandomTrainer -> "RANDOM"
+            is EnemyTrainer.SavedTrainer -> "SAVED_TRAINER"
+            null                         -> null
+        }
+        val enemyKey = when (val e = currentEnemyTrainer) {
+            is EnemyTrainer.GymLeader    -> e.id
+            is EnemyTrainer.Champion     -> e.nameEN
+            is EnemyTrainer.SavedTrainer -> e.trainer.id
+            else                         -> null
+        }
+        com.pokemonbp.data.SessionManager.save(ctx, com.pokemonbp.data.GameSession(
+            teamA = teamAList.toMutableList(),
+            teamB = teamBList.toMutableList(),
+            isLockedA = adapterA.isTrainerLocked,
+            isLockedB = adapterB.isTrainerLocked,
+            activeIndexA = activeIndexA,
+            activeIndexB = activeIndexB,
+            faintedA = faintedIndicesA.toSet(),
+            faintedB = faintedIndicesB.toSet(),
+            teamATrainerId = teamATrainer?.id,
+            teamBLabel = teamBLabel,
+            reverseMode = reverseMode,
+            enemyType = enemyType,
+            enemyKey = enemyKey
+        ))
+    }
+
+    private fun loadSession() {
+        val ctx = context ?: return
+        val session = com.pokemonbp.data.SessionManager.load(ctx) ?: return
+
+        teamAList.clear(); teamAList.addAll(session.teamA)
+        teamBList.clear(); teamBList.addAll(session.teamB)
+
+        adapterA.isTrainerLocked = session.isLockedA
+        adapterB.isTrainerLocked = session.isLockedB
+
+        activeIndexA = session.activeIndexA.coerceIn(0, maxOf(0, teamAList.size - 1))
+        activeIndexB = session.activeIndexB.coerceIn(0, maxOf(0, teamBList.size - 1))
+        adapterA.activeIndex = activeIndexA
+        adapterB.activeIndex = activeIndexB
+
+        faintedIndicesA.clear(); faintedIndicesA.addAll(session.faintedA)
+        faintedIndicesB.clear(); faintedIndicesB.addAll(session.faintedB)
+        adapterA.faintedIndices = faintedIndicesA.toSet()
+        adapterB.faintedIndices = faintedIndicesB.toSet()
+
+        adapterA.notifyDataSetChanged()
+        adapterB.notifyDataSetChanged()
+
+        teamBLabel = session.teamBLabel
+        reverseMode = session.reverseMode
+        binding.tvTeamBLabel.text = teamBLabel
+
+        // Restore player trainer reference
+        if (session.teamATrainerId != null) {
+            teamATrainer = com.pokemonbp.data.TrainerManager.loadTrainers(ctx)
+                .find { it.id == session.teamATrainerId }
+        }
+
+        // Restore enemy trainer reference for display/badge logic
+        if (session.enemyType != null) {
+            currentEnemyTrainer = when (session.enemyType) {
+                "GYMLEADER" -> com.pokemonbp.data.TrainerParser.loadGymLeaders(ctx)
+                    .find { it.id == session.enemyKey }
+                "CHAMPION" -> com.pokemonbp.data.TrainerParser.loadChampions(ctx)
+                    .find { it.nameEN == session.enemyKey }
+                "WILD" -> EnemyTrainer.WildPokemon
+                "RANDOM" -> EnemyTrainer.RandomTrainer
+                "SAVED_TRAINER" -> session.enemyKey?.let { key ->
+                    com.pokemonbp.data.TrainerManager.loadTrainers(ctx)
+                        .find { it.id == key }?.let { EnemyTrainer.SavedTrainer(it) }
+                }
+                else -> null
+            }
+        }
+
+        updateDeloadButton()
+        updateDeloadPlayerButton()
+        updateBadgeDisplay()
     }
 
     private fun restoreTrainerDisplay() {
@@ -2220,7 +2396,7 @@ class RoutePokemonDetailAdapter(
                 vh.tvValue1.text = valueParts?.getOrNull(0)?.trim() ?: ""
                 vh.tvValue2.text = valueParts?.getOrNull(1)?.trim() ?: ""
 
-                val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
+                val entry = PokedexData.byNameEN[p.nameEN.trim().lowercase()]
 
                 if (entry != null && entry.spriteId > 0) {
                     vh.ivSprite.loadPokemonSprite(ctx, entry.spriteId)

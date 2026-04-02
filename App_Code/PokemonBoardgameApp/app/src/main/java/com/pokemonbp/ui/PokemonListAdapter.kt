@@ -10,9 +10,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
-import android.widget.ImageView
-import android.widget.LinearLayout
-import com.pokemonbp.data.PokemonType
 import com.pokemonbp.R
 import com.pokemonbp.databinding.ItemPokemonBinding
 import com.pokemonbp.model.Pokemon
@@ -32,6 +29,8 @@ class PokemonListAdapter(
         set(value) { field = value; notifyDataSetChanged() }
 
     var forcedItemHeight: Int = 0  // 0 = wrap_content
+    var isTrainerLocked: Boolean = false
+    var onPlaceholderClick: ((pos: Int) -> Unit)? = null
 
     inner class PokemonViewHolder(val binding: ItemPokemonBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -58,6 +57,69 @@ class PokemonListAdapter(
 
         val pokemon = pokemonList[position]
         val c = ThemeManager.colorsFor(theme)
+        val ctx = holder.itemView.context
+
+        // Empty placeholder slot (trainer team padded to 4)
+        if (pokemon.types.isEmpty()) {
+            holder.binding.cardPokemon.setCardBackgroundColor(c.surfaceVariant)
+            holder.binding.cardPokemon.strokeColor = Color.parseColor("#33888888")
+            holder.binding.cardPokemon.strokeWidth = 1
+            holder.binding.cardPokemon.alpha = 0.4f
+            holder.binding.cardPokemon.cardElevation = 0f
+            holder.binding.tvPokemonName.text = ""
+            holder.binding.tvTypes.text = ""
+            holder.binding.tvBaseBp.visibility = android.view.View.GONE
+            holder.binding.btnDelete.visibility = android.view.View.GONE
+            holder.binding.ivFainted.visibility = android.view.View.GONE
+            holder.binding.btnRevive.visibility = android.view.View.GONE
+            holder.binding.ivMegaIcon.visibility = android.view.View.GONE
+            // Hide mid column so pokeball can fill and center
+            holder.binding.layoutPokemonMid.visibility = android.view.View.GONE
+            // Expand sprite to fill full card width for centered display
+            val density = ctx.resources.displayMetrics.density
+            val ph = if (forcedItemHeight > 0) {
+                val paddingPx = (8 * density).toInt() * 2
+                (forcedItemHeight - paddingPx).coerceAtLeast(24)
+            } else (56 * density).toInt()
+            holder.binding.ivSprite.layoutParams =
+                android.widget.LinearLayout.LayoutParams(0, ph, 1f)
+            holder.binding.ivSprite.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+            holder.binding.ivSprite.visibility = android.view.View.VISIBLE
+            Glide.with(ctx).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivSprite)
+            // Clickable if callback provided
+            val cb = onPlaceholderClick
+            if (cb != null) {
+                holder.binding.cardPokemon.isClickable = true
+                holder.binding.cardPokemon.setOnClickListener { cb.invoke(position) }
+            } else {
+                holder.binding.cardPokemon.isClickable = false
+                holder.binding.cardPokemon.setOnClickListener(null)
+            }
+            return
+        }
+
+        // Normal Pokémon — reset from any prior placeholder state
+        holder.binding.cardPokemon.isClickable = true
+        holder.binding.layoutPokemonMid.visibility = android.view.View.VISIBLE
+        holder.binding.ivSprite.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+        if (forcedItemHeight == 0) {
+            val density = ctx.resources.displayMetrics.density
+            val sp = (56 * density).toInt()
+            holder.binding.ivSprite.layoutParams =
+                android.widget.LinearLayout.LayoutParams(sp, sp).also {
+                    it.gravity = android.view.Gravity.CENTER_VERTICAL
+                }
+        } else {
+            // forcedItemHeight branch already set correct width/height above;
+            // just clear any leftover weight from a previous placeholder render
+            val lp = holder.binding.ivSprite.layoutParams
+            if (lp is android.widget.LinearLayout.LayoutParams && lp.weight != 0f) {
+                lp.weight = 0f
+                holder.binding.ivSprite.layoutParams = lp
+            }
+        }
+
         val typeColor = Color.parseColor(pokemon.types.first().colorHex)
         val isActive = position == activeIndex
         val isFainted = position in faintedIndices
@@ -82,7 +144,6 @@ class PokemonListAdapter(
         val cleanName = if (displayDE.isNotBlank()) "$displayDE / $displayEN" else displayEN.ifBlank { pokemon.types.joinToString("/") { it.displayName } }
         holder.binding.tvPokemonName.text = cleanName
 
-        val ctx = holder.itemView.context
         // Mega bracelet icon — top-right corner
         if (isMega) {
             holder.binding.ivMegaIcon.visibility = android.view.View.VISIBLE
@@ -93,13 +154,21 @@ class PokemonListAdapter(
         holder.binding.tvPokemonName.setTextColor(c.textPrimary)
         holder.binding.tvTypes.text = pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvTypes.setTextColor(typeColor)
-        loadTypeIcons(holder.binding.llTypes, pokemon.types, holder.itemView)
+        val types = pokemon.types
+        Glide.with(ctx).load(SpriteUrls.typeIconUrl(types[0].name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivType1)
+        Glide.with(ctx).load(if (types.size > 1) SpriteUrls.typeIconUrl(types[1].name) else SpriteUrls.noTypeUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivType2)
         Glide.with(ctx).load(SpriteUrls.faintedUrl).placeholder(R.drawable.ic_fainted).error(R.drawable.ic_fainted).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivFainted)
         Glide.with(ctx).load(SpriteUrls.reviveUrl).placeholder(R.drawable.ic_revive).error(R.drawable.ic_revive).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.btnRevive)
-        Glide.with(ctx).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
-            override fun onResourceReady(resource: android.graphics.drawable.Drawable, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { holder.binding.btnDelete.icon = resource }
-            override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
-        })
+
+        // Delete button — hidden when a trainer roster is locked
+        holder.binding.btnDelete.visibility = if (isTrainerLocked) android.view.View.GONE else android.view.View.VISIBLE
+        if (!isTrainerLocked) {
+            Glide.with(ctx).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+                override fun onResourceReady(resource: android.graphics.drawable.Drawable, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { holder.binding.btnDelete.icon = resource }
+                override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+            })
+        }
+
         if (isFainted) {
             holder.binding.tvBaseBp.visibility = android.view.View.GONE
             holder.binding.ivFainted.visibility = android.view.View.VISIBLE
@@ -148,24 +217,4 @@ class PokemonListAdapter(
 
     override fun getItemCount() = pokemonList.size
 
-    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View) {
-        container ?: return
-        container.removeAllViews()
-        val ctx = itemView.context
-        val density = ctx.resources.displayMetrics.density
-        val iconPx = (36 * density).toInt()
-        val marginEnd = (3 * density).toInt()
-        // Always render exactly 2 type slots; use NoType.png for an empty second slot
-        for (i in 0..1) {
-            val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(iconPx, iconPx)
-            if (i == 0) params.marginEnd = marginEnd
-            iv.layoutParams = params
-            iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            iv.adjustViewBounds = true
-            val url = if (i < types.size) SpriteUrls.typeIconUrl(types[i].name) else SpriteUrls.noTypeUrl
-            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            container.addView(iv)
-        }
-    }
 }

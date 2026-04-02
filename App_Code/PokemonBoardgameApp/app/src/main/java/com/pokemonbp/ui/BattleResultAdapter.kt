@@ -12,9 +12,6 @@ import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.R
 import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.data.TypeChart
-import android.widget.ImageView
-import android.widget.LinearLayout
-import com.pokemonbp.data.PokemonType
 import com.pokemonbp.databinding.ItemBattleResultBinding
 import com.pokemonbp.model.BattleResult
 
@@ -40,7 +37,10 @@ class BattleResultAdapter(
         holder.binding.tvResultName.setTextColor(c.textPrimary)
         holder.binding.tvResultTypes.text = result.pokemon.types.joinToString(" / ") { it.displayName }
         holder.binding.tvResultTypes.setTextColor(typeColor)
-        loadTypeIcons(holder.binding.llResultTypes, result.pokemon.types, holder.itemView)
+        val types = result.pokemon.types
+        val ctx = holder.itemView.context
+        Glide.with(ctx).load(SpriteUrls.typeIconUrl(types[0].name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivType1)
+        Glide.with(ctx).load(if (types.size > 1) SpriteUrls.typeIconUrl(types[1].name) else SpriteUrls.noTypeUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.binding.ivType2)
         holder.binding.tvBaseBp.text = "Base BP: ${result.pokemon.baseBP}"
         holder.binding.tvBaseBp.setTextColor(c.textSecondary)
 
@@ -116,23 +116,4 @@ class BattleResultAdapter(
 
     override fun getItemCount() = results.size
 
-    private fun loadTypeIcons(container: LinearLayout?, types: List<PokemonType>, itemView: android.view.View) {
-        container ?: return
-        container.removeAllViews()
-        val ctx = itemView.context
-        val dp = (30 * ctx.resources.displayMetrics.density).toInt()
-        val margin = (3 * ctx.resources.displayMetrics.density).toInt()
-        // Always 2 type slots; NoType.png for empty second slot
-        for (i in 0..1) {
-            val iv = ImageView(ctx)
-            val params = LinearLayout.LayoutParams(dp, dp)
-            params.marginEnd = margin
-            iv.layoutParams = params
-            iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            iv.adjustViewBounds = true
-            val url = if (i < types.size) SpriteUrls.typeIconUrl(types[i].name) else SpriteUrls.noTypeUrl
-            Glide.with(ctx).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(iv)
-            container.addView(iv)
-        }
-    }
 }
