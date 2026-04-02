@@ -104,7 +104,9 @@ class TrainerRowAdapter(
     private val c: com.pokemonbp.data.ThemeColors,
     private val onBattle: (PlayerTrainer) -> Unit,
     private val onManage: (PlayerTrainer) -> Unit,
-    private val onDelete: (PlayerTrainer) -> Unit
+    private val onDelete: (PlayerTrainer) -> Unit,
+    val loadedTrainerId: String? = null,
+    val faintedPokedexIds: Set<Int> = emptySet()
 ) : RecyclerView.Adapter<TrainerRowAdapter.VH>() {
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
@@ -156,20 +158,24 @@ class TrainerRowAdapter(
         holder.tvName.setTextColor(c.textPrimary)
 
         // Pokémon sprite slots
+        val isLoadedTrainer = trainer.id == loadedTrainerId
         for (i in 0..3) {
             val slot = holder.slots[i]
             val preset = trainer.pokemon.getOrNull(i)
-            slot.alpha = 1.0f
             if (preset != null && preset.pokedexId > 0) {
-                // No padding — sprite fills the slot fully via fitCenter
                 slot.setPadding(0, 0, 0, 0)
                 slot.loadPokemonSprite(ctx, preset.pokedexId)
+                val isFainted = isLoadedTrainer && preset.pokedexId in faintedPokedexIds
+                slot.alpha = if (isFainted) 0.25f else 1.0f
+                slot.colorFilter = if (isFainted)
+                    android.graphics.PorterDuffColorFilter(android.graphics.Color.GRAY, android.graphics.PorterDuff.Mode.MULTIPLY)
+                else null
             } else {
-                // Large padding keeps pokéball visually small as a placeholder
                 val pad = (18 * slot.context.resources.displayMetrics.density).toInt()
                 slot.setPadding(pad, pad, pad, pad)
                 Glide.with(ctx).load(SpriteUrls.pokeballUrl).placeholder(R.drawable.ic_pokeball).error(R.drawable.ic_pokeball).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(slot)
                 slot.alpha = 0.35f
+                slot.colorFilter = null
             }
         }
 

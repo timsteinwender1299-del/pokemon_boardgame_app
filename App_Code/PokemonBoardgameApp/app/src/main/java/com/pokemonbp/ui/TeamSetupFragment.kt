@@ -39,9 +39,11 @@ class TeamSetupFragment : Fragment() {
     private var wildMode = false
     private var reverseMode = false
 
-    // Fainted Pokémon tracking (in-memory per battle session)
-    private val faintedIndicesA = mutableSetOf<Int>()
-    private val faintedIndicesB = mutableSetOf<Int>()
+    // Fainted Pokémon tracking — indices for adapter display, pokedexIds for persistent identity
+    private val faintedIndicesA   = mutableSetOf<Int>()
+    private val faintedIndicesB   = mutableSetOf<Int>()
+    private val faintedPokedexA   = mutableSetOf<Int>()
+    private val faintedPokedexB   = mutableSetOf<Int>()
 
     private val panelBackStack = ArrayDeque<() -> Unit>()
 
@@ -86,6 +88,7 @@ class TeamSetupFragment : Fragment() {
             },
             onRevive = { pos ->
                 faintedIndicesA.remove(pos)
+                teamAList.getOrNull(pos)?.pokedexId?.let { if (it > 0) faintedPokedexA.remove(it) }
                 adapterA.faintedIndices = faintedIndicesA.toSet()
                 updateBattleButton()
             }
@@ -105,6 +108,7 @@ class TeamSetupFragment : Fragment() {
             },
             onRevive = { pos ->
                 faintedIndicesB.remove(pos)
+                teamBList.getOrNull(pos)?.pokedexId?.let { if (it > 0) faintedPokedexB.remove(it) }
                 adapterB.faintedIndices = faintedIndicesB.toSet()
                 updateBattleButton()
             }
@@ -194,6 +198,7 @@ class TeamSetupFragment : Fragment() {
                     teamAList.clear(); adapterA.notifyDataSetChanged()
                     teamBList.clear(); adapterB.notifyDataSetChanged()
                     faintedIndicesA.clear(); faintedIndicesB.clear()
+                    faintedPokedexA.clear(); faintedPokedexB.clear()
                     adapterA.faintedIndices = emptySet(); adapterB.faintedIndices = emptySet()
                     currentEnemyTrainer = null; teamBLabel = "Enemy Trainer"
                     binding.tvTeamBLabel.text = teamBLabel
@@ -221,13 +226,13 @@ class TeamSetupFragment : Fragment() {
         }
 
         binding.ivReloadA.setOnClickListener {
-            faintedIndicesA.clear()
+            faintedIndicesA.clear(); faintedPokedexA.clear()
             adapterA.faintedIndices = emptySet()
             if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
             updateBattleButton()
         }
         binding.ivReloadB.setOnClickListener {
-            faintedIndicesB.clear()
+            faintedIndicesB.clear(); faintedPokedexB.clear()
             adapterB.faintedIndices = emptySet()
             if (teamBList.isNotEmpty()) { activeIndexB = 0; adapterB.activeIndex = 0 }
             updateBattleButton()
@@ -368,11 +373,10 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun resetAllFainted() {
-        faintedIndicesA.clear()
-        faintedIndicesB.clear()
+        faintedIndicesA.clear(); faintedPokedexA.clear()
+        faintedIndicesB.clear(); faintedPokedexB.clear()
         adapterA.faintedIndices = emptySet()
         adapterB.faintedIndices = emptySet()
-        // Auto-select first available Pokémon
         if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
         if (teamBList.isNotEmpty()) { activeIndexB = 0; adapterB.activeIndex = 0 }
         updateBattleButton()
@@ -380,8 +384,8 @@ class TeamSetupFragment : Fragment() {
 
     private fun applyFaintA(pokemonIndex: Int): Boolean {
         faintedIndicesA.add(pokemonIndex)
+        teamAList.getOrNull(pokemonIndex)?.pokedexId?.let { if (it > 0) faintedPokedexA.add(it) }
         adapterA.faintedIndices = faintedIndicesA.toSet()
-        // Advance active to next non-fainted
         val next = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA }
         if (next != null) { activeIndexA = next; adapterA.activeIndex = next }
         updateBattleButton()
@@ -390,6 +394,7 @@ class TeamSetupFragment : Fragment() {
 
     private fun applyFaintB(pokemonIndex: Int): Boolean {
         faintedIndicesB.add(pokemonIndex)
+        teamBList.getOrNull(pokemonIndex)?.pokedexId?.let { if (it > 0) faintedPokedexB.add(it) }
         adapterB.faintedIndices = faintedIndicesB.toSet()
         val next = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB }
         if (next != null) { activeIndexB = next; adapterB.activeIndex = next }
@@ -782,6 +787,8 @@ class TeamSetupFragment : Fragment() {
         adapterB.isTrainerLocked = false
         teamBLabel = "Enemy Trainer"
         teamBList.clear()
+        faintedIndicesB.clear(); faintedPokedexB.clear()
+        adapterB.faintedIndices = emptySet()
         adapterB.notifyDataSetChanged()
         binding.tvTeamBLabel.text = teamBLabel
         Glide.with(requireContext()).load(SpriteUrls.battleUrl).placeholder(R.drawable.ic_battle).error(R.drawable.ic_battle).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(binding.ivLabelB)
@@ -800,7 +807,7 @@ class TeamSetupFragment : Fragment() {
         teamATrainer = null
         adapterA.isTrainerLocked = false
         teamAList.clear()
-        faintedIndicesA.clear()
+        faintedIndicesA.clear(); faintedPokedexA.clear()
         adapterA.faintedIndices = emptySet()
         adapterA.notifyDataSetChanged()
         updateTeamALabel()
@@ -1207,10 +1214,12 @@ class TeamSetupFragment : Fragment() {
             val all = TrainerManager.loadTrainers(requireContext())
             recycler.adapter = TrainerRowAdapter(
                 trainers = all.toMutableList(), theme = theme, c = c,
+                loadedTrainerId = teamATrainer?.id,
+                faintedPokedexIds = faintedPokedexA.toSet(),
                 onBattle = { trainer ->
                     val isSameTrainer = teamATrainer?.id == trainer.id
+                    if (!isSameTrainer) { faintedPokedexA.clear() }
                     teamATrainer = trainer; teamAList.clear()
-                    if (!isSameTrainer) { faintedIndicesA.clear() }
                     trainer.pokemon.forEach { preset ->
                         teamAList.add(Pokemon(id = System.currentTimeMillis().toInt() + teamAList.size,
                             name = preset.name, nameDE = preset.nameDE,
@@ -1222,6 +1231,9 @@ class TeamSetupFragment : Fragment() {
                         id = -(teamAList.size + 1), name = "", nameDE = "",
                         types = emptyList(), baseBP = 0, team = Team.TEAM_A))
                     adapterA.isTrainerLocked = true
+                    // Rebuild fainted indices from persisted pokedex IDs
+                    faintedIndicesA.clear()
+                    teamAList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexA) faintedIndicesA.add(idx) }
                     adapterA.faintedIndices = faintedIndicesA.toSet()
                     val firstLive = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA } ?: 0
                     activeIndexA = firstLive; adapterA.activeIndex = firstLive; adapterA.notifyDataSetChanged()
@@ -1269,12 +1281,12 @@ class TeamSetupFragment : Fragment() {
 
     private fun handleEnemySelected(enemyTrainer: EnemyTrainer, badge: Int?) {
         val isSame = isSameEnemy(currentEnemyTrainer, enemyTrainer)
+        if (!isSame) { faintedPokedexB.clear() }
         currentEnemyTrainer = enemyTrainer
         teamBOverrideImageUrl = null
         teamBOverrideIconUrl  = null
         teamBList.clear()
         adapterB.isTrainerLocked = false
-        if (!isSame) { faintedIndicesB.clear() }
         val trainerImageUrl: String?
         when (enemyTrainer) {
             is EnemyTrainer.GymLeader -> {
@@ -1342,6 +1354,9 @@ class TeamSetupFragment : Fragment() {
             }
             else -> {}
         }
+        // Rebuild fainted indices from persisted pokedex IDs
+        faintedIndicesB.clear()
+        teamBList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexB) faintedIndicesB.add(idx) }
         adapterB.faintedIndices = faintedIndicesB.toSet()
         val firstLiveB = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB } ?: 0
         activeIndexB = firstLiveB
@@ -2194,8 +2209,8 @@ class TeamSetupFragment : Fragment() {
             isLockedB = adapterB.isTrainerLocked,
             activeIndexA = activeIndexA,
             activeIndexB = activeIndexB,
-            faintedA = faintedIndicesA.toSet(),
-            faintedB = faintedIndicesB.toSet(),
+            faintedA = faintedPokedexA.toSet(),
+            faintedB = faintedPokedexB.toSet(),
             teamATrainerId = teamATrainer?.id,
             teamBLabel = teamBLabel,
             reverseMode = reverseMode,
@@ -2219,8 +2234,13 @@ class TeamSetupFragment : Fragment() {
         adapterA.activeIndex = activeIndexA
         adapterB.activeIndex = activeIndexB
 
-        faintedIndicesA.clear(); faintedIndicesA.addAll(session.faintedA)
-        faintedIndicesB.clear(); faintedIndicesB.addAll(session.faintedB)
+        // session.faintedA/B are pokedex IDs — rebuild index sets from team lists
+        faintedPokedexA.clear(); faintedPokedexA.addAll(session.faintedA)
+        faintedPokedexB.clear(); faintedPokedexB.addAll(session.faintedB)
+        faintedIndicesA.clear()
+        teamAList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexA) faintedIndicesA.add(idx) }
+        faintedIndicesB.clear()
+        teamBList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexB) faintedIndicesB.add(idx) }
         adapterA.faintedIndices = faintedIndicesA.toSet()
         adapterB.faintedIndices = faintedIndicesB.toSet()
 
