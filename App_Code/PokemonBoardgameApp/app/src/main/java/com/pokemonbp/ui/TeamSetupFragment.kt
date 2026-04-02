@@ -88,7 +88,11 @@ class TeamSetupFragment : Fragment() {
             },
             onRevive = { pos ->
                 faintedIndicesA.remove(pos)
-                teamAList.getOrNull(pos)?.pokedexId?.let { if (it > 0) faintedPokedexA.remove(it) }
+                val pid = teamAList.getOrNull(pos)?.pokedexId ?: 0
+                if (pid > 0) {
+                    faintedPokedexA.remove(pid)
+                    teamATrainer?.let { persistTrainerFainted(it, faintedPokedexA.toSet()) }
+                }
                 adapterA.faintedIndices = faintedIndicesA.toSet()
                 updateBattleButton()
             }
@@ -228,6 +232,7 @@ class TeamSetupFragment : Fragment() {
         binding.ivReloadA.setOnClickListener {
             faintedIndicesA.clear(); faintedPokedexA.clear()
             adapterA.faintedIndices = emptySet()
+            teamATrainer?.let { persistTrainerFainted(it, emptySet()) }
             if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
             updateBattleButton()
         }
@@ -382,9 +387,22 @@ class TeamSetupFragment : Fragment() {
         updateBattleButton()
     }
 
+    /** Persist fainted pokedex IDs back to the trainer's stored profile. */
+    private fun persistTrainerFainted(trainer: PlayerTrainer, ids: Set<Int>) {
+        val updated = trainer.copy(faintedPokemonIds = ids)
+        teamATrainer = updated
+        val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
+        val idx = all.indexOfFirst { it.id == updated.id }
+        if (idx >= 0) { all[idx] = updated; com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), all) }
+    }
+
     private fun applyFaintA(pokemonIndex: Int): Boolean {
         faintedIndicesA.add(pokemonIndex)
-        teamAList.getOrNull(pokemonIndex)?.pokedexId?.let { if (it > 0) faintedPokedexA.add(it) }
+        val pid = teamAList.getOrNull(pokemonIndex)?.pokedexId ?: 0
+        if (pid > 0) {
+            faintedPokedexA.add(pid)
+            teamATrainer?.let { persistTrainerFainted(it, faintedPokedexA.toSet()) }
+        }
         adapterA.faintedIndices = faintedIndicesA.toSet()
         val next = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA }
         if (next != null) { activeIndexA = next; adapterA.activeIndex = next }
@@ -1217,9 +1235,10 @@ class TeamSetupFragment : Fragment() {
                 loadedTrainerId = teamATrainer?.id,
                 faintedPokedexIds = faintedPokedexA.toSet(),
                 onBattle = { trainer ->
-                    val isSameTrainer = teamATrainer?.id == trainer.id
-                    if (!isSameTrainer) { faintedPokedexA.clear() }
                     teamATrainer = trainer; teamAList.clear()
+                    // Always load fainted state from the trainer's stored profile
+                    faintedPokedexA.clear()
+                    faintedPokedexA.addAll(trainer.faintedPokemonIds)
                     trainer.pokemon.forEach { preset ->
                         teamAList.add(Pokemon(id = System.currentTimeMillis().toInt() + teamAList.size,
                             name = preset.name, nameDE = preset.nameDE,
@@ -2234,28 +2253,31 @@ class TeamSetupFragment : Fragment() {
         adapterA.activeIndex = activeIndexA
         adapterB.activeIndex = activeIndexB
 
-        // session.faintedA/B are pokedex IDs — rebuild index sets from team lists
-        faintedPokedexA.clear(); faintedPokedexA.addAll(session.faintedA)
-        faintedPokedexB.clear(); faintedPokedexB.addAll(session.faintedB)
+        teamBLabel = session.teamBLabel
+        reverseMode = session.reverseMode
+        binding.tvTeamBLabel.text = teamBLabel
+
+        // Restore player trainer reference — fainted IDs come from trainer's stored profile
+        if (session.teamATrainerId != null) {
+            val restoredTrainer = com.pokemonbp.data.TrainerManager.loadTrainers(ctx)
+                .find { it.id == session.teamATrainerId }
+            teamATrainer = restoredTrainer
+            faintedPokedexA.clear()
+            restoredTrainer?.faintedPokemonIds?.let { faintedPokedexA.addAll(it) }
+        }
         faintedIndicesA.clear()
         teamAList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexA) faintedIndicesA.add(idx) }
+
+        // Restore Team B fainted from session (GymLeader/Champion have no persistent profile)
+        faintedPokedexB.clear(); faintedPokedexB.addAll(session.faintedB)
         faintedIndicesB.clear()
         teamBList.forEachIndexed { idx, p -> if (p.pokedexId > 0 && p.pokedexId in faintedPokedexB) faintedIndicesB.add(idx) }
+
         adapterA.faintedIndices = faintedIndicesA.toSet()
         adapterB.faintedIndices = faintedIndicesB.toSet()
 
         adapterA.notifyDataSetChanged()
         adapterB.notifyDataSetChanged()
-
-        teamBLabel = session.teamBLabel
-        reverseMode = session.reverseMode
-        binding.tvTeamBLabel.text = teamBLabel
-
-        // Restore player trainer reference
-        if (session.teamATrainerId != null) {
-            teamATrainer = com.pokemonbp.data.TrainerManager.loadTrainers(ctx)
-                .find { it.id == session.teamATrainerId }
-        }
 
         // Restore enemy trainer reference for display/badge logic
         if (session.enemyType != null) {

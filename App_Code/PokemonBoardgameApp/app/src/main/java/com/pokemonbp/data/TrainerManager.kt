@@ -80,6 +80,9 @@ object TrainerManager {
             val badgeArr = JSONArray()
             t.badges.forEach { badgeArr.put(it) }
             obj.put("badges", badgeArr)
+            val faintedArr = JSONArray()
+            t.faintedPokemonIds.forEach { faintedArr.put(it) }
+            obj.put("faintedPokemonIds", faintedArr)
             arr.put(obj)
         }
         context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -113,6 +116,10 @@ object TrainerManager {
                 val badges = if (badgeArr != null) {
                     (0 until badgeArr.length()).map { badgeArr.getInt(it) }.toSet()
                 } else emptySet()
+                val faintedArr = obj.optJSONArray("faintedPokemonIds")
+                val faintedIds = if (faintedArr != null) {
+                    (0 until faintedArr.length()).map { faintedArr.getInt(it) }.toSet()
+                } else emptySet()
                 list.add(PlayerTrainer(
                     id = obj.getString("id"),
                     name = obj.getString("name"),
@@ -120,7 +127,8 @@ object TrainerManager {
                     gender = runCatching { TrainerGender.valueOf(obj.getString("gender")) }
                         .getOrDefault(TrainerGender.MALE),
                     pokemon = pokemon,
-                    badges = badges
+                    badges = badges,
+                    faintedPokemonIds = faintedIds
                 ))
             }
         } catch (_: Exception) {}
