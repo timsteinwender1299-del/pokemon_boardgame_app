@@ -157,15 +157,14 @@ class TrainerRowAdapter(
         holder.tvName.text = trainer.name
         holder.tvName.setTextColor(c.textPrimary)
 
-        // Pokémon sprite slots
-        val isLoadedTrainer = trainer.id == loadedTrainerId
+        // Pokémon sprite slots — grey out any pokemon stored as fainted on the trainer's profile
         for (i in 0..3) {
             val slot = holder.slots[i]
             val preset = trainer.pokemon.getOrNull(i)
             if (preset != null && preset.pokedexId > 0) {
                 slot.setPadding(0, 0, 0, 0)
                 slot.loadPokemonSprite(ctx, preset.pokedexId)
-                val isFainted = isLoadedTrainer && preset.pokedexId in faintedPokedexIds
+                val isFainted = preset.pokedexId in trainer.faintedPokemonIds
                 slot.alpha = if (isFainted) 0.25f else 1.0f
                 slot.colorFilter = if (isFainted)
                     android.graphics.PorterDuffColorFilter(android.graphics.Color.GRAY, android.graphics.PorterDuff.Mode.MULTIPLY)
