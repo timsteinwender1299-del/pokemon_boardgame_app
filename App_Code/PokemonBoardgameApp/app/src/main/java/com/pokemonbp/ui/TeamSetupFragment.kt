@@ -1,7 +1,10 @@
 package com.pokemonbp.ui
 
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.*
@@ -46,6 +49,52 @@ class TeamSetupFragment : Fragment() {
     private val faintedPokedexB   = mutableSetOf<Int>()
 
     private val panelBackStack = ArrayDeque<() -> Unit>()
+
+    private var overlayBitmap: Bitmap? = null
+
+    private data class MapMarker(val x: Int, val y: Int, val radius: Int, val assetPath: String?)
+    private val mapMarkers: List<MapMarker> by lazy {
+        listOf(
+            // Big towns (1-8 sorted top→bottom)
+            MapMarker(791,  108, 75, "RouteTown/Town/Snowpoint.png"),
+            MapMarker(761,  463, 75, "RouteTown/Town/Eterna.png"),
+            MapMarker(1437, 527, 75, "RouteTown/Town/Veilstone.png"),
+            MapMarker(916,  670, 75, "RouteTown/Town/Hearthome.png"),
+            MapMarker(124,  784, 75, "RouteTown/Town/Canalave.png"),
+            MapMarker(518,  829, 75, "RouteTown/Town/Oreburgh.png"),
+            MapMarker(1759, 899, 75, "RouteTown/Town/Sunnyshore.png"),
+            MapMarker(1198, 1032,75, "RouteTown/Town/Pastoria.png"),
+            // Small towns (9-15 sorted top→bottom)
+            MapMarker(1186, 270, 60, "RouteTown/Town/ResortArea.png"),
+            MapMarker(204,  291, 60, null),
+            MapMarker(941,  458, 60, "RouteTown/Town/Celestic.png"),
+            MapMarker(371,  463, 60, "RouteTown/Town/Flori_Floaroma.png"),
+            MapMarker(1081, 648, 60, "RouteTown/Town/Trostu_Solaceon.png"),
+            MapMarker(338,  805, 60, "RouteTown/Town/Jubilife.png"),
+            MapMarker(320,  1054,60, "RouteTown/Town/Twinleaf.png"),
+            // Purple special routes (sorted left→right)
+            MapMarker(103,  992, 45, "RouteTown/Routes/Route_LakeVerity.png"),
+            MapMarker(197,  400, 45, "RouteTown/Routes/Route_IronIsland.png"),
+            MapMarker(527,  463, 45, "RouteTown/Routes/Route_EternaForest.png"),
+            MapMarker(557,  134, 45, "RouteTown/Routes/Route_LakeAcuity.png"),
+            MapMarker(740,  650, 45, "RouteTown/Routes/Route_Mt.Coronet.png"),
+            MapMarker(1241, 711, 45, "RouteTown/Routes/Route_LakeValor.png"),
+            MapMarker(1569, 99,  45, "RouteTown/Routes/Route_StarkMountain.png"),
+            MapMarker(1673, 579, 45, "RouteTown/Routes/Route_TurnbackCave.png"),
+            // Green normal routes (sorted left→right)
+            MapMarker(321,  928, 38, "RouteTown/Routes/Route201.png"),
+            MapMarker(519,  644, 38, "RouteTown/Routes/Route206.png"),
+            MapMarker(560,  293, 38, null),
+            MapMarker(745,  834, 38, "RouteTown/Routes/Route208.png"),
+            MapMarker(754,  301, 38, "RouteTown/Routes/Route216.png"),
+            MapMarker(1040, 1036,38, "RouteTown/Routes/Route212.png"),
+            MapMarker(1147, 482, 38, "RouteTown/Routes/Route210.png"),
+            MapMarker(1182, 887, 38, "RouteTown/Routes/Route_GreatMarsh_Safari.png"),
+            MapMarker(1292, 100, 38, "RouteTown/Routes/Route_SurvivalArea.png"),
+            MapMarker(1454, 743, 38, "RouteTown/Routes/Route_ValorLakefront.png"),
+            MapMarker(1467, 1016,38, "RouteTown/Routes/Route213.png"),
+        )
+    }
 
     private val mainActivity get() = activity as? MainActivity
 
@@ -515,27 +564,87 @@ class TeamSetupFragment : Fragment() {
     }
 
     private fun showMapDetail() {
-        binding.layoutWildRoutes.visibility = android.view.View.GONE
-        binding.layoutRouteDetail.visibility = android.view.View.GONE
-        binding.layoutTownDetail.visibility = android.view.View.GONE
-        binding.layoutRollsheet.visibility = android.view.View.GONE
-        binding.layoutMapDetail.visibility = android.view.View.VISIBLE
+        binding.layoutWildRoutes.visibility = View.GONE
+        binding.layoutRouteDetail.visibility = View.GONE
+        binding.layoutTownDetail.visibility = View.GONE
+        binding.layoutRollsheet.visibility = View.GONE
+        binding.layoutMapDetail.visibility = View.VISIBLE
+        dismissMapOverlay() // reset any previously open overlay
+
+        // Load the full map from assets
         try {
             val stream = requireContext().assets.open("MapFull.png")
-            val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
+            val bitmap = BitmapFactory.decodeStream(stream)
             stream.close()
             binding.ivMapImage.setImageBitmap(bitmap)
         } catch (_: Exception) {
-            // fallback to remote if asset missing
             Glide.with(requireContext())
                 .load(com.pokemonbp.data.SpriteUrls.mapFullUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.ivMapImage)
         }
-        binding.tvMapBack.setOnClickListener {
-            binding.layoutMapDetail.visibility = android.view.View.GONE
-            binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
+
+        // Touch: convert view coords → image coords and find nearest marker
+        binding.ivMapImage.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val iv = v as android.widget.ImageView
+                val inverse = Matrix()
+                iv.imageMatrix.invert(inverse)
+                val pt = floatArrayOf(event.x, event.y)
+                inverse.mapPoints(pt)
+                val imgX = pt[0]
+                val imgY = pt[1]
+
+                // Find the closest marker whose tap area contains the touch point
+                val hit = mapMarkers
+                    .filter { m ->
+                        val dx = m.x - imgX
+                        val dy = m.y - imgY
+                        (dx * dx + dy * dy) <= (m.radius * m.radius * 2.25f) // 1.5× radius tolerance
+                    }
+                    .minByOrNull { m ->
+                        val dx = m.x - imgX
+                        val dy = m.y - imgY
+                        dx * dx + dy * dy
+                    }
+
+                if (hit != null && hit.assetPath != null) {
+                    showMapOverlay(hit.assetPath)
+                }
+                v.performClick()
+            }
+            true
         }
+
+        // Dismiss overlay when tapped
+        binding.layoutMapOverlay.setOnClickListener {
+            dismissMapOverlay()
+        }
+
+        binding.tvMapBack.setOnClickListener {
+            dismissMapOverlay()
+            binding.layoutMapDetail.visibility = View.GONE
+            binding.layoutWildRoutes.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showMapOverlay(assetPath: String) {
+        try {
+            val stream = requireContext().assets.open(assetPath)
+            val newBitmap = BitmapFactory.decodeStream(stream)
+            stream.close()
+            overlayBitmap?.recycle()
+            overlayBitmap = newBitmap
+            binding.ivMapOverlayImage.setImageBitmap(newBitmap)
+            binding.layoutMapOverlay.visibility = View.VISIBLE
+        } catch (_: Exception) { }
+    }
+
+    private fun dismissMapOverlay() {
+        binding.layoutMapOverlay.visibility = View.GONE
+        binding.ivMapOverlayImage.setImageBitmap(null)
+        overlayBitmap?.recycle()
+        overlayBitmap = null
     }
 
     private fun handleRouteClick(route: com.pokemonbp.data.RouteLocation) {
@@ -2553,7 +2662,12 @@ class TeamSetupFragment : Fragment() {
         updateDeloadButton()
     }
 
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
+    override fun onDestroyView() {
+        overlayBitmap?.recycle()
+        overlayBitmap = null
+        super.onDestroyView()
+        _binding = null
+    }
 }
 
 data class StarterPokemon(val nameDE: String, val nameEN: String)
