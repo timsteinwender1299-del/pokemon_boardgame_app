@@ -213,6 +213,7 @@ object SpriteUrls {
     val dawnstoneUrl: String  = "$BASE_URL/Icons/Dawnstone.png"
     val duskstoneUrl: String  = "$BASE_URL/Icons/Duskstone.png"
     val garbageBinUrl: String = "$BASE_URL/Icons/Garbage%20Bin.png"
+    val mapFullUrl: String    = "$BASE_URL/RouteTown/mapFull.png"
 
     /** No local drawables anymore — always use URL */
     fun localResId(context: Context, pokedexId: Int): Int = 0

@@ -23,6 +23,21 @@ object PokedexData {
         )
     }
 
+    /** O(1) lookup by Pokédex ID — base form wins when IDs collide with Megas */
+    val byId: Map<Int, PokedexEntry> by lazy {
+        buildMap { allPokemon.forEach { if (!containsKey(it.id)) put(it.id, it) } }
+    }
+
+    /** O(1) lookup by sprite ID — needed for Mega evolutions whose spriteId ≠ id */
+    val bySpriteId: Map<Int, PokedexEntry> by lazy {
+        allPokemon.associateBy { it.spriteId }
+    }
+
+    /** O(1) lookup by English name (case-insensitive) */
+    val byNameEN: Map<String, PokedexEntry> by lazy {
+        allPokemon.associateBy { it.name.lowercase() }
+    }
+
     private val megaEvolutions: List<PokedexEntry> = listOf(
         // Gen 1 Megas
         PokedexEntry(3,   "Mega Venusaur",      "Mega-Bisaflor",     listOf(PokemonType.GRASS, PokemonType.POISON), true, "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10033.png", spriteId = 10033),
