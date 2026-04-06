@@ -520,10 +520,18 @@ class TeamSetupFragment : Fragment() {
         binding.layoutTownDetail.visibility = android.view.View.GONE
         binding.layoutRollsheet.visibility = android.view.View.GONE
         binding.layoutMapDetail.visibility = android.view.View.VISIBLE
-        Glide.with(requireContext())
-            .load(com.pokemonbp.data.SpriteUrls.mapFullUrl)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .into(binding.ivMapImage)
+        try {
+            val stream = requireContext().assets.open("MapFull.png")
+            val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
+            stream.close()
+            binding.ivMapImage.setImageBitmap(bitmap)
+        } catch (_: Exception) {
+            // fallback to remote if asset missing
+            Glide.with(requireContext())
+                .load(com.pokemonbp.data.SpriteUrls.mapFullUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(binding.ivMapImage)
+        }
         binding.tvMapBack.setOnClickListener {
             binding.layoutMapDetail.visibility = android.view.View.GONE
             binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
