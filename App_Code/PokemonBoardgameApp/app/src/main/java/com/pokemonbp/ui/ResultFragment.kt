@@ -183,6 +183,7 @@ class ResultFragment : Fragment() {
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_player)?.text = teamALabel
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_champion)?.text = teamBLabel
 
+        // Trainer image
         val trainerImageView = dialog.findViewById<android.widget.ImageView>(R.id.iv_victory_trainer)
         val imageUrl = teamATrainerImageUrl
         if (imageUrl != null && trainerImageView != null) {
@@ -192,6 +193,27 @@ class ResultFragment : Fragment() {
                 .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
                 .fitCenter()
                 .into(trainerImageView)
+        }
+
+        // Pokemon sprites
+        val pokemonRow = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_pokemon)
+        val pokemonList = battleResult?.teamA?.filter { it.pokemon.pokedexId > 0 } ?: emptyList()
+        if (pokemonRow != null && pokemonList.isNotEmpty()) {
+            val sizePx = (72 * resources.displayMetrics.density).toInt()
+            pokemonList.forEach { br ->
+                val spriteUrl = br.pokemon.spriteUrl() ?: return@forEach
+                val iv = android.widget.ImageView(ctx)
+                val params = android.widget.LinearLayout.LayoutParams(0, sizePx, 1f)
+                iv.layoutParams = params
+                iv.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                iv.adjustViewBounds = true
+                pokemonRow.addView(iv)
+                com.bumptech.glide.Glide.with(this)
+                    .load(spriteUrl)
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                    .fitCenter()
+                    .into(iv)
+            }
         }
 
         dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)

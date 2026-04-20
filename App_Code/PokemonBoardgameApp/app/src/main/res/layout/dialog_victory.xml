@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#DD000000">
@@ -9,114 +10,119 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:padding="20dp"
         android:background="#F5C518"
-        android:layout_margin="24dp">
+        android:layout_marginHorizontal="20dp">
 
-        <!-- Trophy + VICTORY header -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🏆"
-            android:textSize="64sp"
-            android:gravity="center"
-            android:layout_marginBottom="4dp"/>
-
+        <!-- VICTORY! title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="VICTORY!"
-            android:textSize="36sp"
+            android:textSize="40sp"
             android:textStyle="bold"
             android:textColor="#1A1A1A"
             android:gravity="center"
             android:fontFamily="serif"
             android:layout_marginBottom="2dp"/>
 
+        <!-- Hall of Fame subtitle -->
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="has entered the HALL OF FAME"
+            android:textSize="13sp"
+            android:textColor="#333333"
+            android:gravity="center"
+            android:layout_marginBottom="14dp"/>
+
+        <!-- Trainer image (left) + info (right) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <!-- Trainer image — left aligned, larger -->
+            <ImageView
+                android:id="@+id/iv_victory_trainer"
+                android:layout_width="110dp"
+                android:layout_height="140dp"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:visibility="gone"
+                android:layout_marginEnd="12dp"/>
+
+            <!-- Player name + defeated champion -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="start">
+
+                <TextView
+                    android:id="@+id/tv_victory_player"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Player"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A1A"
+                    android:layout_marginBottom="6dp"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33000000"
+                    android:layout_marginBottom="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Defeated"
+                    android:textSize="12sp"
+                    android:textColor="#555555"/>
+
+                <TextView
+                    android:id="@+id/tv_victory_champion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Champion"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#8B0000"
+                    android:layout_marginBottom="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All 8 Badges + League Champion!"
+                    android:textSize="11sp"
+                    android:textColor="#444444"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#1A1A1A"
-            android:layout_marginVertical="8dp"
-            android:alpha="0.3"/>
+            android:background="#33000000"
+            android:layout_marginBottom="10dp"/>
 
-        <TextView
-            android:id="@+id/tv_victory_player"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Player"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:gravity="center"
-            android:layout_marginBottom="2dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="has entered the"
-            android:textSize="14sp"
-            android:textColor="#333333"
-            android:gravity="center"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="HALL OF FAME"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#8B0000"
-            android:gravity="center"
-            android:fontFamily="serif"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- Player trainer image -->
-        <ImageView
-            android:id="@+id/iv_victory_trainer"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:visibility="gone"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- Defeated champion text -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Defeated"
-            android:textSize="14sp"
-            android:textColor="#333333"
-            android:gravity="center"/>
-
-        <TextView
-            android:id="@+id/tv_victory_champion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Champion"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:gravity="center"
-            android:layout_marginBottom="4dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="All 8 Badges + League Champion!"
-            android:textSize="12sp"
-            android:textColor="#444444"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
+        <!-- Pokemon sprites row — filled programmatically -->
+        <LinearLayout
+            android:id="@+id/layout_victory_pokemon"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#1A1A1A"
-            android:layout_marginBottom="16dp"
-            android:alpha="0.3"/>
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="14dp"/>
 
+        <!-- Continue button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_victory_continue"
             android:layout_width="wrap_content"
@@ -127,8 +133,7 @@
             android:textColor="#FFFFFF"
             android:paddingHorizontal="48dp"
             app:cornerRadius="26dp"
-            app:backgroundTint="#1A1A1A"
-            xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            app:backgroundTint="#1A1A1A"/>
 
     </LinearLayout>
 
