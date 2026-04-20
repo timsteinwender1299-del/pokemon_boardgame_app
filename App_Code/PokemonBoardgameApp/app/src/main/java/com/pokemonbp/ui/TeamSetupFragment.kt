@@ -404,6 +404,7 @@ class TeamSetupFragment : Fragment() {
             }
             resultFrag.onAllFaintedA = { resetAllFainted() }
             resultFrag.onAllFaintedB = { resetAllFainted() }
+            resultFrag.isChampionBattle = capturedEnemy is EnemyTrainer.Champion
 
             (activity as MainActivity).navigateToResults(resultFrag)
         }

@@ -30,6 +30,7 @@ class ResultFragment : Fragment() {
     var teamBTrainerImageUrl: String? = null
 
     var reverseMode: Boolean = false
+    var isChampionBattle: Boolean = false
 
     // Faint tracking — set by TeamSetupFragment
     var teamAPokemonCount: Int = 1
@@ -147,9 +148,16 @@ class ResultFragment : Fragment() {
         binding.btnYouWon.setOnClickListener {
             val allFainted = onYouWon?.invoke() ?: false
             if (allFainted) {
-                showWinnerPopup("🏆 $teamALabel Wins!") {
-                    onAllFaintedB?.invoke()
-                    requireActivity().onBackPressed()
+                if (isChampionBattle) {
+                    showVictoryScreen {
+                        onAllFaintedB?.invoke()
+                        requireActivity().onBackPressed()
+                    }
+                } else {
+                    showWinnerPopup("🏆 $teamALabel Wins!") {
+                        onAllFaintedB?.invoke()
+                        requireActivity().onBackPressed()
+                    }
                 }
             } else {
                 requireActivity().onBackPressed()
@@ -164,6 +172,35 @@ class ResultFragment : Fragment() {
             .setCancelable(false)
             .setPositiveButton("OK") { _, _ -> onDismiss() }
             .show()
+    }
+
+    private fun showVictoryScreen(onDismiss: () -> Unit) {
+        val ctx = requireContext()
+        val dialog = android.app.Dialog(ctx, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_victory)
+        dialog.setCancelable(false)
+
+        dialog.findViewById<android.widget.TextView>(R.id.tv_victory_player)?.text = teamALabel
+        dialog.findViewById<android.widget.TextView>(R.id.tv_victory_champion)?.text = teamBLabel
+
+        val trainerImageView = dialog.findViewById<android.widget.ImageView>(R.id.iv_victory_trainer)
+        val imageUrl = teamATrainerImageUrl
+        if (imageUrl != null && trainerImageView != null) {
+            trainerImageView.visibility = android.view.View.VISIBLE
+            com.bumptech.glide.Glide.with(this)
+                .load(imageUrl)
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .fitCenter()
+                .into(trainerImageView)
+        }
+
+        dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)
+            ?.setOnClickListener {
+                dialog.dismiss()
+                onDismiss()
+            }
+
+        dialog.show()
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }
