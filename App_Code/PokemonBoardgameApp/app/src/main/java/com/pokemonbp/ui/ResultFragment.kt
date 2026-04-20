@@ -186,7 +186,7 @@ class ResultFragment : Fragment() {
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_title)?.typeface = monoface
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_stars_top)?.typeface = monoface
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_stars_bottom)?.typeface = monoface
-        dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)?.typeface = monoface
+        dialog.findViewById<android.widget.TextView>(R.id.tv_victory_tap_hint)?.typeface = monoface
 
         val playerTv = dialog.findViewById<android.widget.TextView>(R.id.tv_victory_player)
         playerTv?.text = teamALabel
@@ -231,11 +231,11 @@ class ResultFragment : Fragment() {
             chunk.forEach { pokemon -> row?.addView(makePokemonCell(pokemon)) }
         }
 
-        dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)
-            ?.setOnClickListener {
-                dialog.dismiss()
-                onDismiss()
-            }
+        // Tap anywhere to dismiss
+        dialog.window?.decorView?.setOnClickListener {
+            dialog.dismiss()
+            onDismiss()
+        }
 
         dialog.show()
     }
