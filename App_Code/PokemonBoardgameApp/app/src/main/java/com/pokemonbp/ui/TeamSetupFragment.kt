@@ -218,6 +218,8 @@ class TeamSetupFragment : Fragment() {
             }
         }
 
+        adapterB.onLongPress = { pos, anchor -> showEditEnemyPokemonPanel(pos, anchor) }
+
         binding.recyclerTeamA.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerTeamA.adapter = adapterA
         binding.recyclerTeamB.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -1163,6 +1165,171 @@ class TeamSetupFragment : Fragment() {
         }
 
         // Offset upward so popup sits on top of the card (negative yOff = move up by card height)
+        popup.showAsDropDown(anchor, 0, -anchor.height)
+    }
+
+    // ── Edit Pokémon popup (long-press on Team B card) ────────────────────────
+
+    private fun showEditEnemyPokemonPanel(pos: Int, anchor: android.view.View) {
+        val pokemon = teamBList.getOrNull(pos) ?: return
+        if (pokemon.types.isEmpty()) return
+        val c = ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
+
+        val view = layoutInflater.inflate(R.layout.popup_edit_pokemon, null)
+        val cardRoot = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_popup_root)
+        val ivSprite  = view.findViewById<android.widget.ImageView>(R.id.iv_popup_sprite)
+        val tvName    = view.findViewById<android.widget.TextView>(R.id.tv_popup_name)
+        val ivType1   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type1)
+        val ivType2   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type2)
+        val btnFaint  = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_faint)
+        val btnDel    = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_delete)
+        val btnDevo   = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_devolve)
+        val btnEvo    = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_evolve)
+        val btnMinus  = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_bp_minus)
+        val tvBp      = view.findViewById<android.widget.TextView>(R.id.tv_popup_bp)
+        val btnPlus   = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_bp_plus)
+
+        var currentPreset = com.pokemonbp.model.PokemonPreset(
+            name = pokemon.name, nameDE = pokemon.nameDE,
+            pokedexId = pokemon.pokedexId, types = pokemon.types, baseBP = pokemon.baseBP
+        )
+        var currentBp = pokemon.baseBP.coerceIn(1, 12)
+
+        fun typeColor() = if (currentPreset.types.isNotEmpty())
+            Color.parseColor(currentPreset.types.first().colorHex) else c.accent
+
+        fun refresh() {
+            val tc = typeColor()
+            cardRoot.setCardBackgroundColor(c.surface)
+            cardRoot.strokeColor = tc
+            tvName.setTextColor(c.textPrimary)
+            tvBp.setTextColor(c.accent)
+
+            ivSprite.loadPokemonSprite(requireContext(), currentPreset.pokedexId)
+
+            val dEN = if (currentPreset.name.startsWith("Mega ", ignoreCase = true)) currentPreset.name.substring(5) else currentPreset.name
+            val dDE = currentPreset.nameDE.removePrefix("Mega-").let { if (it == currentPreset.nameDE) currentPreset.nameDE.removePrefix("mega-") else it }
+            tvName.text = if (dDE.isNotBlank()) "$dDE / $dEN" else dEN
+
+            val types = currentPreset.types
+            Glide.with(requireContext()).load(com.pokemonbp.data.SpriteUrls.typeIconUrl(types[0].name)).diskCacheStrategy(DiskCacheStrategy.ALL).into(ivType1)
+            Glide.with(requireContext()).load(if (types.size > 1) com.pokemonbp.data.SpriteUrls.typeIconUrl(types[1].name) else com.pokemonbp.data.SpriteUrls.noTypeUrl).diskCacheStrategy(DiskCacheStrategy.ALL).into(ivType2)
+
+            val nextEvos = com.pokemonbp.data.EvolutionData.nextEvolutions(currentPreset.pokedexId)
+            btnEvo.isEnabled = nextEvos.isNotEmpty()
+            btnEvo.alpha = if (nextEvos.isNotEmpty()) 1.0f else 0.3f
+
+            val prevEvo = com.pokemonbp.data.EvolutionData.previousEvolution(currentPreset.pokedexId)
+            btnDevo.isEnabled = prevEvo != null
+            btnDevo.alpha = if (prevEvo != null) 1.0f else 0.3f
+
+            tvBp.text = "BP: $currentBp"
+            btnMinus.isEnabled = currentBp > 1
+            btnPlus.isEnabled = currentBp < 12
+        }
+
+        fun loadIcon(url: String, btn: android.widget.ImageButton) {
+            Glide.with(requireContext()).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+                    override fun onResourceReady(r: android.graphics.drawable.Drawable, t: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?) { btn.setImageDrawable(r) }
+                    override fun onLoadCleared(p: android.graphics.drawable.Drawable?) {}
+                })
+        }
+        loadIcon(com.pokemonbp.data.SpriteUrls.dawnstoneUrl, btnEvo)
+        loadIcon(com.pokemonbp.data.SpriteUrls.duskstoneUrl, btnDevo)
+
+        refresh()
+
+        lateinit var popup: android.widget.PopupWindow
+
+        btnMinus.setOnClickListener { if (currentBp > 1)  { currentBp--; refresh() } }
+        btnPlus.setOnClickListener  { if (currentBp < 12) { currentBp++; refresh() } }
+
+        btnEvo.setOnClickListener {
+            val nextEvos = com.pokemonbp.data.EvolutionData.nextEvolutions(currentPreset.pokedexId)
+            fun applyEvo(evoId: Int) {
+                val entry = PokedexData.bySpriteId[evoId] ?: PokedexData.byId[evoId] ?: return
+                currentPreset = com.pokemonbp.model.PokemonPreset(
+                    name = entry.name, nameDE = entry.nameDE,
+                    pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+                )
+                refresh()
+            }
+            if (nextEvos.size == 1) {
+                applyEvo(nextEvos[0])
+            } else {
+                val pm = android.widget.PopupMenu(requireContext(), btnEvo)
+                nextEvos.forEach { evoId ->
+                    val e = PokedexData.byId[evoId]
+                    pm.menu.add(if (e != null) "${e.nameDE} / ${e.name}" else "#$evoId")
+                        .setOnMenuItemClickListener { applyEvo(evoId); true }
+                }
+                pm.show()
+            }
+        }
+
+        btnDevo.setOnClickListener {
+            val prevId = com.pokemonbp.data.EvolutionData.previousEvolution(currentPreset.pokedexId) ?: return@setOnClickListener
+            val entry = PokedexData.byId[prevId] ?: return@setOnClickListener
+            currentPreset = com.pokemonbp.model.PokemonPreset(
+                name = entry.name, nameDE = entry.nameDE,
+                pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+            )
+            refresh()
+        }
+
+        btnFaint.setOnClickListener {
+            faintedIndicesB.add(pos)
+            faintedPokedexB.add(pokemon.pokedexId)
+            adapterB.faintedIndices = faintedIndicesB.toSet()
+            popup.dismiss()
+        }
+
+        btnDel.setOnClickListener {
+            val displayName = currentPreset.nameDE.ifBlank { currentPreset.name }
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Delete Pokémon")
+                .setMessage("Do you want to delete '$displayName'?")
+                .setPositiveButton("Delete") { _, _ ->
+                    val empty = Pokemon(id = System.currentTimeMillis().toInt(), name = "", nameDE = "",
+                        types = emptyList(), baseBP = 0, team = Team.TEAM_B, pokedexId = 0)
+                    teamBList[pos] = empty
+                    adapterB.notifyItemChanged(pos)
+                    popup.dismiss()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        popup = android.widget.PopupWindow(view, anchor.width,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+            isOutsideTouchable = true
+            elevation = 24f
+            setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+
+        popup.setOnDismissListener {
+            if (teamBList.getOrNull(pos)?.types?.isNotEmpty() == true) {
+                teamBList[pos] = pokemon.copy(
+                    name = currentPreset.name, nameDE = currentPreset.nameDE,
+                    pokedexId = currentPreset.pokedexId, types = currentPreset.types,
+                    baseBP = currentBp
+                )
+                adapterB.notifyItemChanged(pos)
+                // Persist to SavedTrainer if applicable
+                val savedEnemy = currentEnemyTrainer as? EnemyTrainer.SavedTrainer
+                if (savedEnemy != null) {
+                    val presets = teamBList.filter { it.types.isNotEmpty() }
+                        .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP) }
+                    val updated = savedEnemy.trainer.copy(pokemon = presets)
+                    currentEnemyTrainer = EnemyTrainer.SavedTrainer(updated)
+                    val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
+                    val idx = all.indexOfFirst { it.id == updated.id }
+                    if (idx >= 0) { all[idx] = updated; com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), all) }
+                }
+            }
+        }
+
         popup.showAsDropDown(anchor, 0, -anchor.height)
     }
 
