@@ -177,7 +177,17 @@ class ResultFragment : Fragment() {
 
     private fun showVictoryScreen(onDismiss: () -> Unit) {
         val ctx = requireContext()
-        val dialog = android.app.Dialog(ctx, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        var dismissed = false
+        val dialog = object : android.app.Dialog(ctx, android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
+            override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+                if (ev.action == android.view.MotionEvent.ACTION_UP && !dismissed) {
+                    dismissed = true
+                    dismiss()
+                    onDismiss()
+                }
+                return true
+            }
+        }
         dialog.setContentView(R.layout.dialog_victory)
         dialog.setCancelable(false)
 
@@ -229,12 +239,6 @@ class ResultFragment : Fragment() {
         pokemonList.chunked(2).forEachIndexed { rowIdx, chunk ->
             val row = if (rowIdx == 0) row1 else row2
             chunk.forEach { pokemon -> row?.addView(makePokemonCell(pokemon)) }
-        }
-
-        // Tap anywhere to dismiss
-        dialog.findViewById<android.widget.ScrollView>(R.id.scroll_victory)?.setOnClickListener {
-            dialog.dismiss()
-            onDismiss()
         }
 
         dialog.show()
