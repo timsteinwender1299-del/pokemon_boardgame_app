@@ -1,76 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DD000000">
+    android:background="#0A0A2A"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:padding="20dp"
-        android:background="#F5C518"
-        android:layout_marginHorizontal="20dp">
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="32dp">
 
-        <!-- VICTORY! title -->
+        <!-- Stars row -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="VICTORY!"
-            android:textSize="40sp"
+            android:text="★  ★  ★  ★  ★"
+            android:textSize="18sp"
+            android:textColor="#FFD700"
+            android:gravity="center"
+            android:letterSpacing="0.2"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- HALL OF FAME title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HALL OF FAME"
+            android:textSize="34sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
+            android:textColor="#FFD700"
             android:gravity="center"
             android:fontFamily="serif"
-            android:layout_marginBottom="16dp"/>
+            android:letterSpacing="0.15"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Trainer image (left) + player name (right) -->
+        <!-- Gold divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#FFD700"
+            android:alpha="0.7"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Trainer image -->
+        <ImageView
+            android:id="@+id/iv_victory_trainer"
+            android:layout_width="130dp"
+            android:layout_height="160dp"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Player name -->
+        <TextView
+            android:id="@+id/tv_victory_player"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Player"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:fontFamily="serif"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Gold divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#FFD700"
+            android:alpha="0.7"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Pokemon grid — two rows added programmatically -->
         <LinearLayout
+            android:id="@+id/layout_victory_row1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:gravity="center"
+            android:layout_marginBottom="4dp"/>
 
-            <ImageView
-                android:id="@+id/iv_victory_trainer"
-                android:layout_width="110dp"
-                android:layout_height="140dp"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
-                android:visibility="gone"
-                android:layout_marginEnd="16dp"/>
-
-            <TextView
-                android:id="@+id/tv_victory_player"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Player"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="#1A1A1A"/>
-
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#33000000"
-            android:layout_marginBottom="10dp"/>
-
-        <!-- Pokemon sprites row — filled programmatically -->
         <LinearLayout
-            android:id="@+id/layout_victory_pokemon"
+            android:id="@+id/layout_victory_row2"
             android:layout_width="match_parent"
-            android:layout_height="72dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="28dp"/>
+
+        <!-- Gold divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#FFD700"
+            android:alpha="0.7"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Stars row bottom -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="★  ★  ★  ★  ★"
+            android:textSize="18sp"
+            android:textColor="#FFD700"
+            android:gravity="center"
+            android:letterSpacing="0.2"
+            android:layout_marginBottom="20dp"/>
 
         <!-- Continue button -->
         <com.google.android.material.button.MaterialButton
@@ -80,11 +121,11 @@
             android:text="Continue"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:paddingHorizontal="48dp"
-            app:cornerRadius="26dp"
-            app:backgroundTint="#1A1A1A"/>
+            android:textColor="#0A0A2A"
+            android:paddingHorizontal="56dp"
+            app:cornerRadius="4dp"
+            app:backgroundTint="#FFD700"/>
 
     </LinearLayout>
 
-</FrameLayout>
+</ScrollView>

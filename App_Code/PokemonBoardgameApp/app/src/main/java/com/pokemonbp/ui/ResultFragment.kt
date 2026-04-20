@@ -194,25 +194,51 @@ class ResultFragment : Fragment() {
                 .into(trainerImageView)
         }
 
-        // Pokemon sprites
-        val pokemonRow = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_pokemon)
+        // Pokemon grid — row1: slots 0-2, row2: slots 3-5
+        val row1 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row1)
+        val row2 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row2)
         val pokemonList = battleResult?.teamA?.filter { it.pokemon.pokedexId > 0 } ?: emptyList()
-        if (pokemonRow != null && pokemonList.isNotEmpty()) {
-            val sizePx = (72 * resources.displayMetrics.density).toInt()
-            pokemonList.forEach { br ->
-                val spriteUrl = br.pokemon.spriteUrl() ?: return@forEach
-                val iv = android.widget.ImageView(ctx)
-                val params = android.widget.LinearLayout.LayoutParams(0, sizePx, 1f)
-                iv.layoutParams = params
-                iv.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-                iv.adjustViewBounds = true
-                pokemonRow.addView(iv)
+        val density = resources.displayMetrics.density
+        val spritePx = (80 * density).toInt()
+
+        fun makePokemonCell(br: com.pokemonbp.model.BattleResult): android.widget.LinearLayout {
+            val cell = android.widget.LinearLayout(ctx)
+            cell.orientation = android.widget.LinearLayout.VERTICAL
+            cell.gravity = android.view.Gravity.CENTER_HORIZONTAL
+            val cellParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            cell.layoutParams = cellParams
+
+            val iv = android.widget.ImageView(ctx)
+            val ivParams = android.widget.LinearLayout.LayoutParams(spritePx, spritePx)
+            iv.layoutParams = ivParams
+            iv.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            iv.adjustViewBounds = true
+            cell.addView(iv)
+
+            val tv = android.widget.TextView(ctx)
+            tv.text = br.pokemon.name
+            tv.textSize = 10f
+            tv.setTextColor(android.graphics.Color.parseColor("#AAAAFF"))
+            tv.gravity = android.view.Gravity.CENTER
+            tv.layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+            cell.addView(tv)
+
+            val spriteUrl = br.pokemon.spriteUrl()
+            if (spriteUrl != null) {
                 com.bumptech.glide.Glide.with(this)
                     .load(spriteUrl)
                     .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
                     .fitCenter()
                     .into(iv)
             }
+            return cell
+        }
+
+        pokemonList.forEachIndexed { idx, br ->
+            val cell = makePokemonCell(br)
+            if (idx < 3) row1?.addView(cell) else row2?.addView(cell)
         }
 
         dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)
