@@ -57,8 +57,8 @@
             <!-- Trainer image — left, tall -->
             <ImageView
                 android:id="@+id/iv_victory_trainer"
-                android:layout_width="120dp"
-                android:layout_height="200dp"
+                android:layout_width="160dp"
+                android:layout_height="260dp"
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:visibility="gone"

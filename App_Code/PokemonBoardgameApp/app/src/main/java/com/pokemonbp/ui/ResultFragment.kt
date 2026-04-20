@@ -208,7 +208,7 @@ class ResultFragment : Fragment() {
         val row1 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row1)
         val row2 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row2)
         val pokemonList = teamAFullRoster.filter { it.pokedexId > 0 && it.name.isNotBlank() }
-        val spritePx = (110 * resources.displayMetrics.density).toInt()
+        val spritePx = (150 * resources.displayMetrics.density).toInt()
 
         fun makePokemonCell(pokemon: com.pokemonbp.model.Pokemon): android.widget.ImageView {
             val iv = android.widget.ImageView(ctx)
