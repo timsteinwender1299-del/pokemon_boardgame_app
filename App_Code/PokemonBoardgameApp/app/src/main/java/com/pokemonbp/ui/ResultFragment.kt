@@ -31,6 +31,7 @@ class ResultFragment : Fragment() {
 
     var reverseMode: Boolean = false
     var isChampionBattle: Boolean = false
+    var teamAFullRoster: List<com.pokemonbp.model.Pokemon> = emptyList()
 
     // Faint tracking — set by TeamSetupFragment
     var teamAPokemonCount: Int = 1
@@ -197,26 +198,24 @@ class ResultFragment : Fragment() {
         // Pokemon grid — row1: slots 0-2, row2: slots 3-5
         val row1 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row1)
         val row2 = dialog.findViewById<android.widget.LinearLayout>(R.id.layout_victory_row2)
-        val pokemonList = battleResult?.teamA?.filter { it.pokemon.pokedexId > 0 } ?: emptyList()
+        val pokemonList = teamAFullRoster.filter { it.pokedexId > 0 && it.name.isNotBlank() }
         val density = resources.displayMetrics.density
         val spritePx = (80 * density).toInt()
 
-        fun makePokemonCell(br: com.pokemonbp.model.BattleResult): android.widget.LinearLayout {
+        fun makePokemonCell(pokemon: com.pokemonbp.model.Pokemon): android.widget.LinearLayout {
             val cell = android.widget.LinearLayout(ctx)
             cell.orientation = android.widget.LinearLayout.VERTICAL
             cell.gravity = android.view.Gravity.CENTER_HORIZONTAL
-            val cellParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            cell.layoutParams = cellParams
+            cell.layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
 
             val iv = android.widget.ImageView(ctx)
-            val ivParams = android.widget.LinearLayout.LayoutParams(spritePx, spritePx)
-            iv.layoutParams = ivParams
+            iv.layoutParams = android.widget.LinearLayout.LayoutParams(spritePx, spritePx)
             iv.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
             iv.adjustViewBounds = true
             cell.addView(iv)
 
             val tv = android.widget.TextView(ctx)
-            tv.text = br.pokemon.name
+            tv.text = pokemon.name
             tv.textSize = 10f
             tv.setTextColor(android.graphics.Color.parseColor("#AAAAFF"))
             tv.gravity = android.view.Gravity.CENTER
@@ -225,7 +224,7 @@ class ResultFragment : Fragment() {
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
             cell.addView(tv)
 
-            val spriteUrl = br.pokemon.spriteUrl()
+            val spriteUrl = pokemon.spriteUrl()
             if (spriteUrl != null) {
                 com.bumptech.glide.Glide.with(this)
                     .load(spriteUrl)
@@ -236,9 +235,10 @@ class ResultFragment : Fragment() {
             return cell
         }
 
-        pokemonList.forEachIndexed { idx, br ->
-            val cell = makePokemonCell(br)
-            if (idx < 3) row1?.addView(cell) else row2?.addView(cell)
+        // Split into rows of 3
+        pokemonList.chunked(3).forEachIndexed { rowIdx, chunk ->
+            val row = if (rowIdx == 0) row1 else row2
+            chunk.forEach { pokemon -> row?.addView(makePokemonCell(pokemon)) }
         }
 
         dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_victory_continue)

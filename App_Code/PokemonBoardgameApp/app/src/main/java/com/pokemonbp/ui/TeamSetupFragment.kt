@@ -405,6 +405,7 @@ class TeamSetupFragment : Fragment() {
             resultFrag.onAllFaintedA = { resetAllFainted() }
             resultFrag.onAllFaintedB = { resetAllFainted() }
             resultFrag.isChampionBattle = capturedEnemy is EnemyTrainer.Champion
+            resultFrag.teamAFullRoster = teamAList.filter { it.name.isNotBlank() && it.pokedexId > 0 }
 
             (activity as MainActivity).navigateToResults(resultFrag)
         }
