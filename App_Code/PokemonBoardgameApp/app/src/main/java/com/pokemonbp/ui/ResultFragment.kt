@@ -215,10 +215,10 @@ class ResultFragment : Fragment() {
             iv.layoutParams = android.widget.LinearLayout.LayoutParams(0, spritePx, 1f)
             iv.scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
             iv.adjustViewBounds = true
-            val spriteUrl = pokemon.spriteUrl()
-            if (spriteUrl != null) {
+            if (pokemon.pokedexId > 0) {
                 com.bumptech.glide.Glide.with(this)
-                    .load(spriteUrl)
+                    .load(com.pokemonbp.data.SpriteUrls.urlFor(pokemon.pokedexId))
+                    .placeholder(R.drawable.ic_pokeball)
                     .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
                     .fitCenter()
                     .into(iv)
