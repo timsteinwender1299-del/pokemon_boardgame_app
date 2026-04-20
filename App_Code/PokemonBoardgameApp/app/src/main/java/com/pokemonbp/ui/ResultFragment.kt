@@ -232,7 +232,7 @@ class ResultFragment : Fragment() {
         }
 
         // Tap anywhere to dismiss
-        dialog.window?.decorView?.setOnClickListener {
+        dialog.findViewById<android.widget.ScrollView>(R.id.scroll_victory)?.setOnClickListener {
             dialog.dismiss()
             onDismiss()
         }
