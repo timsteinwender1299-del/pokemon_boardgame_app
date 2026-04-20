@@ -25,27 +25,16 @@
             android:textColor="#1A1A1A"
             android:gravity="center"
             android:fontFamily="serif"
-            android:layout_marginBottom="2dp"/>
+            android:layout_marginBottom="16dp"/>
 
-        <!-- Hall of Fame subtitle -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="has entered the HALL OF FAME"
-            android:textSize="13sp"
-            android:textColor="#333333"
-            android:gravity="center"
-            android:layout_marginBottom="14dp"/>
-
-        <!-- Trainer image (left) + info (right) -->
+        <!-- Trainer image (left) + player name (right) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
-            <!-- Trainer image — left aligned, larger -->
             <ImageView
                 android:id="@+id/iv_victory_trainer"
                 android:layout_width="110dp"
@@ -53,57 +42,18 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:visibility="gone"
-                android:layout_marginEnd="12dp"/>
+                android:layout_marginEnd="16dp"/>
 
-            <!-- Player name + defeated champion -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/tv_victory_player"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="start">
+                android:text="Player"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"/>
 
-                <TextView
-                    android:id="@+id/tv_victory_player"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Player"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:layout_marginBottom="6dp"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#33000000"
-                    android:layout_marginBottom="6dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Defeated"
-                    android:textSize="12sp"
-                    android:textColor="#555555"/>
-
-                <TextView
-                    android:id="@+id/tv_victory_champion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Champion"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#8B0000"
-                    android:layout_marginBottom="6dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="All 8 Badges + League Champion!"
-                    android:textSize="11sp"
-                    android:textColor="#444444"/>
-
-            </LinearLayout>
         </LinearLayout>
 
         <!-- Divider -->
@@ -120,7 +70,7 @@
             android:layout_height="72dp"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="14dp"/>
+            android:layout_marginBottom="16dp"/>
 
         <!-- Continue button -->
         <com.google.android.material.button.MaterialButton

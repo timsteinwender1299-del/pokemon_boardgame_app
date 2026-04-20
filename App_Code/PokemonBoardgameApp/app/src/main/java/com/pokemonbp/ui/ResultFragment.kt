@@ -181,7 +181,6 @@ class ResultFragment : Fragment() {
         dialog.setCancelable(false)
 
         dialog.findViewById<android.widget.TextView>(R.id.tv_victory_player)?.text = teamALabel
-        dialog.findViewById<android.widget.TextView>(R.id.tv_victory_champion)?.text = teamBLabel
 
         // Trainer image
         val trainerImageView = dialog.findViewById<android.widget.ImageView>(R.id.iv_victory_trainer)
