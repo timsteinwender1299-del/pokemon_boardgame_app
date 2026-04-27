@@ -46,6 +46,8 @@ object EvolutionData {
         3   to listOf(10033),
         6   to listOf(10034, 10035), // Charizard → Mega X / Mega Y
         9   to listOf(10036),
+        15  to listOf(10090),        // Beedrill → Mega Beedrill
+        18  to listOf(10091),        // Pidgeot → Mega Pidgeot
         65  to listOf(10037),
         80  to listOf(10071),
         94  to listOf(10038),
@@ -80,6 +82,7 @@ object EvolutionData {
         181 to listOf(10045), 208 to listOf(10072),
         212 to listOf(10046), 214 to listOf(10073),
         229 to listOf(10047), 248 to listOf(10048),
+        302 to listOf(10062), // Sableye → Mega Sableye
 
         // Gen 3
         252 to listOf(253), 253 to listOf(254),
@@ -114,6 +117,8 @@ object EvolutionData {
         359 to listOf(10057), 362 to listOf(10074),
         373 to listOf(10081), 376 to listOf(10076),
         380 to listOf(10082), 381 to listOf(10083),
+        382 to listOf(10077), // Kyogre → Primal Kyogre
+        383 to listOf(10078), // Groudon → Primal Groudon
         384 to listOf(10079),
 
         // Gen 4 (Sinnoh)
@@ -131,6 +136,7 @@ object EvolutionData {
         459 to listOf(460),
         // Megas Gen 4
         445 to listOf(10058), 448 to listOf(10059), 460 to listOf(10060),
+        475 to listOf(10063), // Gallade → Mega Gallade
 
         // Gen 5 (Unova)
         495 to listOf(496), 496 to listOf(497),   // Snivy
@@ -188,6 +194,8 @@ object EvolutionData {
         629 to listOf(630),                        // Vullaby
         633 to listOf(634), 634 to listOf(635),   // Deino
         636 to listOf(637),                        // Larvesta
+        // Mega Gen 5
+        531 to listOf(10061),                      // Audino → Mega Audino
 
         // Gen 6 (Kalos)
         650 to listOf(651), 651 to listOf(652),   // Chespin
@@ -214,6 +222,8 @@ object EvolutionData {
         708 to listOf(709),                        // Phantump
         710 to listOf(711),                        // Pumpkaboo
         712 to listOf(713),                        // Bergmite
+        // Mega Gen 6
+        719 to listOf(10084),                      // Diancie → Mega Diancie
 
         // Gen 7 (Alola)
         722 to listOf(723), 723 to listOf(724),   // Rowlet

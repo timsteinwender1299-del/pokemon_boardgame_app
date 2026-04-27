@@ -276,7 +276,7 @@ class StarterPickerDialog(
         }
 
         // Sprite
-        val entry = PokedexData.allPokemon.find { it.name.equals(pokemon.nameEN, ignoreCase = true) }
+        val entry = PokedexData.byNameEN[pokemon.nameEN.lowercase()]
         val ivSprite = ImageView(ctx).apply {
             layoutParams = LinearLayout.LayoutParams(dp(58), dp(58))
             scaleType = ImageView.ScaleType.FIT_CENTER

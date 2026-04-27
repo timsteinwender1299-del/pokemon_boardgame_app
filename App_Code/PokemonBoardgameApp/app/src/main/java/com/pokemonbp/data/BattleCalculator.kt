@@ -30,7 +30,7 @@ object BattleCalculator {
         var forcedZero = false
 
         for (opponent in opponents) {
-            val bpResult = TypeChart.getBpResult(attacker.baseBP, attacker.types, opponent.types, reversed)
+            val bpResult = TypeChart.getBpResult(attacker.effectiveBp, attacker.types, opponent.types, reversed)
             allDetails.addAll(bpResult.details)
 
             if (bpResult.zeroedOut) {
@@ -41,12 +41,12 @@ object BattleCalculator {
             }
         }
 
-        val finalBP = if (forcedZero) 0 else maxOf(0, attacker.baseBP + totalModifier)
+        val finalBP = if (forcedZero) 0 else maxOf(0, attacker.effectiveBp + totalModifier)
 
         return BattleResult(
             pokemon = attacker,
             finalBP = finalBP,
-            bpModifier = if (forcedZero) -attacker.baseBP else totalModifier,
+            bpModifier = if (forcedZero) -attacker.effectiveBp else totalModifier,
             matchupDetails = allDetails,
             opponentName = opponentNames,
             zeroedOut = forcedZero

@@ -6,7 +6,7 @@ Wasser / Water:
 
  Froxy / Froakie
  Amphizel / Frogadier
- Quajutsu / Greninja	
+ Quajutsu / Greninja
 
  Robball / Popplio
  Marikeck / Brionne
@@ -14,4 +14,9 @@ Wasser / Water:
 
  Hydropi / Mudkip
  Moorabbel / Marshtomp
- Sumpex / Swampert	
+ Sumpex / Swampert
+
+ Karnimani / Totodile
+ Tyracroc / Croconaw
+ Impergator / Feraligatr
+

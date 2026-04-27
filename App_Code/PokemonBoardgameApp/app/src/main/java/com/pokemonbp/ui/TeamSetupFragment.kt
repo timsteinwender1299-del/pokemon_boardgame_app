@@ -5,10 +5,15 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.PointF
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import com.davemorrissey.labs.subscaleview.ImageSource
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import kotlin.math.abs
+import kotlin.math.sqrt
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,6 +52,9 @@ class TeamSetupFragment : Fragment() {
     private val faintedIndicesB   = mutableSetOf<Int>()
     private val faintedPokedexA   = mutableSetOf<Int>()
     private val faintedPokedexB   = mutableSetOf<Int>()
+
+    // XP tracking — indices of Team A pokemon that actively fought and won this fight
+    private val activeParticipantsA = mutableSetOf<Int>()
 
     private val panelBackStack = ArrayDeque<() -> Unit>()
 
@@ -386,6 +394,7 @@ class TeamSetupFragment : Fragment() {
             resultFrag.teamBPokemonCount = teamBList.size
             resultFrag.onYouLost  = { applyFaintA(capturedA) }
             resultFrag.onYouWon   = {
+                activeParticipantsA.add(capturedA)
                 val allFainted = applyFaintB(capturedB)
                 // Award gym badge if applicable
                 val gym = capturedEnemy as? EnemyTrainer.GymLeader
@@ -405,7 +414,7 @@ class TeamSetupFragment : Fragment() {
                 allFainted
             }
             resultFrag.onAllFaintedA = { resetAllFainted() }
-            resultFrag.onAllFaintedB = { resetAllFainted() }
+            resultFrag.onAllFaintedB = { distributeXpToTeamA(); resetAllFainted() }
             resultFrag.isChampionBattle = capturedEnemy is EnemyTrainer.Champion
             resultFrag.teamAFullRoster = teamAList.filter { it.name.isNotBlank() && it.pokedexId > 0 }
 
@@ -436,11 +445,43 @@ class TeamSetupFragment : Fragment() {
     private fun resetAllFainted() {
         faintedIndicesA.clear(); faintedPokedexA.clear()
         faintedIndicesB.clear(); faintedPokedexB.clear()
+        activeParticipantsA.clear()
         adapterA.faintedIndices = emptySet()
         adapterB.faintedIndices = emptySet()
         if (teamAList.isNotEmpty()) { activeIndexA = 0; adapterA.activeIndex = 0 }
         if (teamBList.isNotEmpty()) { activeIndexB = 0; adapterB.activeIndex = 0 }
         updateBattleButton()
+    }
+
+    /** Distribute XP to all alive Team A pokemon after winning a full trainer fight. */
+    private fun distributeXpToTeamA() {
+        val trainer = teamATrainer ?: return
+        var changed = false
+        for (i in teamAList.indices) {
+            val p = teamAList[i]
+            if (p.types.isEmpty()) continue          // placeholder slot
+            if (i in faintedIndicesA) continue       // fainted — no XP
+            if (p.xpLocked) continue                 // XP/Level locked
+            val gain = if (i in activeParticipantsA) 2 else 1
+            val rawXp = p.xp + gain
+            val levelUps = rawXp / 4
+            val newXp = rawXp % 4
+            val newLevel = p.level + levelUps
+            if (levelUps > 0 || newXp != p.xp) {
+                teamAList[i] = p.copy(level = newLevel, xp = newXp)
+                changed = true
+            }
+        }
+        if (changed) {
+            adapterA.notifyDataSetChanged()
+            val presets = teamAList.filter { it.types.isNotEmpty() }
+                .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP, level = it.level, xp = it.xp, xpLocked = it.xpLocked) }
+            val updated = trainer.copy(pokemon = presets)
+            teamATrainer = updated
+            val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
+            val idx = all.indexOfFirst { it.id == updated.id }
+            if (idx >= 0) { all[idx] = updated; com.pokemonbp.data.TrainerManager.saveTrainers(requireContext(), all) }
+        }
     }
 
     /** Persist fainted pokedex IDs back to the trainer's stored profile. */
@@ -454,46 +495,132 @@ class TeamSetupFragment : Fragment() {
 
     private fun applyFaintA(pokemonIndex: Int): Boolean {
         faintedIndicesA.add(pokemonIndex)
+        activeParticipantsA.remove(pokemonIndex)
         val pid = teamAList.getOrNull(pokemonIndex)?.pokedexId ?: 0
         if (pid > 0) {
             faintedPokedexA.add(pid)
             teamATrainer?.let { persistTrainerFainted(it, faintedPokedexA.toSet()) }
         }
         adapterA.faintedIndices = faintedIndicesA.toSet()
-        val next = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA }
+        val next = (0 until teamAList.size).firstOrNull { it !in faintedIndicesA && teamAList[it].types.isNotEmpty() }
         if (next != null) { activeIndexA = next; adapterA.activeIndex = next }
         updateBattleButton()
-        return faintedIndicesA.size >= teamAList.size
+        val realCount = teamAList.count { it.types.isNotEmpty() }
+        return faintedIndicesA.count { teamAList.getOrNull(it)?.types?.isNotEmpty() == true } >= realCount
     }
 
     private fun applyFaintB(pokemonIndex: Int): Boolean {
         faintedIndicesB.add(pokemonIndex)
         teamBList.getOrNull(pokemonIndex)?.pokedexId?.let { if (it > 0) faintedPokedexB.add(it) }
         adapterB.faintedIndices = faintedIndicesB.toSet()
-        val next = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB }
+        val next = (0 until teamBList.size).firstOrNull { it !in faintedIndicesB && teamBList[it].types.isNotEmpty() }
         if (next != null) { activeIndexB = next; adapterB.activeIndex = next }
         updateBattleButton()
-        return faintedIndicesB.size >= teamBList.size
+        val realCount = teamBList.count { it.types.isNotEmpty() }
+        return faintedIndicesB.count { teamBList.getOrNull(it)?.types?.isNotEmpty() == true } >= realCount
     }
 
     private fun setupWildRouteGrid() {
         val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
-        val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: AppTheme.COLORFUL)
-        val legendary = routes.filter { it.isLegendary }
-        val normal    = routes.filter { !it.isLegendary }
 
-        binding.rvLegendaryRoutes.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvLegendaryRoutes.adapter = WildRouteAdapter(legendary, c) { route ->
-            handleRouteClick(route)
+        // Build interactive map into the frame
+        val frame = binding.frameRouteMap
+        frame.removeAllViews()
+
+        val mapView = SubsamplingScaleImageView(requireContext()).apply {
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            setImage(ImageSource.asset("MapFull.png"))
+            setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE)
+            maxScale = 6f
         }
-        binding.rvNormalRoutes.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvNormalRoutes.adapter = WildRouteAdapter(normal, c) { route ->
-            handleRouteClick(route)
+
+        val overlay = RouteMapOverlayView(requireContext()).apply {
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+            isClickable = false; isFocusable = false
+            this.mapView = mapView
+            hotspots = RouteMapCoordinates.hotspots
+            legendaryNames = routes.filter { it.isLegendary }.map { it.displayName }.toSet()
+            showDebugGrid = false
+        }
+
+        val tvHov = android.widget.TextView(requireContext()).apply {
+            val lp = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL)
+            lp.topMargin = dpPx(10)
+            layoutParams = lp
+            setPadding(dpPx(16), dpPx(6), dpPx(16), dpPx(6))
+            textSize = 15f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            background = androidx.core.content.ContextCompat.getDrawable(
+                requireContext(), R.drawable.bg_route_hover_label)
+            visibility = android.view.View.INVISIBLE
+        }
+
+        frame.addView(mapView)
+        frame.addView(overlay)
+        frame.addView(tvHov)
+
+        mapView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
+            override fun onReady() { overlay.setImageDimensions(mapView.sWidth, mapView.sHeight) }
+            override fun onImageLoaded() {}
+            override fun onPreviewLoadError(e: Exception) {}
+            override fun onImageLoadError(e: Exception) {}
+            override fun onTileLoadError(e: Exception) {}
+            override fun onPreviewReleased() {}
+        })
+        mapView.setOnStateChangedListener(object : SubsamplingScaleImageView.OnStateChangedListener {
+            override fun onScaleChanged(newScale: Float, origin: Int) = overlay.invalidate()
+            override fun onCenterChanged(newCenter: PointF, origin: Int) = overlay.invalidate()
+        })
+
+        val slop = android.view.ViewConfiguration.get(requireContext()).scaledTouchSlop.toFloat()
+        var downX = 0f; var downY = 0f
+        mapView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.x; downY = event.y
+                    updateRouteMapHover(event.x, event.y, mapView, overlay, tvHov)
+                }
+                MotionEvent.ACTION_MOVE ->
+                    updateRouteMapHover(event.x, event.y, mapView, overlay, tvHov)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val isTap = event.action == MotionEvent.ACTION_UP &&
+                        abs(event.x - downX) < slop * 3 && abs(event.y - downY) < slop * 3
+                    if (isTap && mapView.isImageLoaded) {
+                        val src = mapView.viewToSourceCoord(event.x, event.y)
+                        if (src != null) {
+                            val w = mapView.sWidth.toFloat(); val h = mapView.sHeight.toFloat()
+                            val tapR = w * 0.06f
+                            val hit = RouteMapCoordinates.hotspots.minByOrNull { hs ->
+                                val dx = src.x - hs.x * w; val dy = src.y - hs.y * h
+                                sqrt(dx * dx + dy * dy)
+                            }
+                            if (hit != null) {
+                                val dx = src.x - hit.x * w; val dy = src.y - hit.y * h
+                                if (sqrt(dx * dx + dy * dy) < tapR) {
+                                    val loc = routes.find { it.displayName == hit.routeName }
+                                    if (loc != null) { overlay.setSelected(hit.routeName); handleRouteClick(loc) }
+                                }
+                            }
+                        }
+                    }
+                    tvHov.visibility = android.view.View.INVISIBLE
+                    overlay.hoveredName = null; overlay.invalidate()
+                }
+            }
+            false
         }
 
         binding.btnRandomRoute.setOnClickListener {
-            val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
-            if (routes.isNotEmpty()) handleRandomRouteClick(routes.random())
+            val r = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
+            if (r.isNotEmpty()) handleRandomRouteClick(r.random())
         }
         binding.btnRandomTown.setOnClickListener {
             val towns = loadTowns()
@@ -513,8 +640,6 @@ class TeamSetupFragment : Fragment() {
         binding.btnRollsheetGalactic.setOnClickListener {
             showRollSheetInline("RollSheet — Galactic Time!", rollSheetGalacticEntries())
         }
-        binding.btnMap.setOnClickListener { showMapDetail() }
-
         binding.tvRollsheetBack.setOnClickListener {
             binding.layoutRollsheet.visibility = android.view.View.GONE
             binding.layoutWildRoutes.visibility = android.view.View.VISIBLE
@@ -742,7 +867,7 @@ class TeamSetupFragment : Fragment() {
                 if (items[position] is RouteDetailItem.Header) 3 else 1
         }
         binding.rvRoutePokemon.layoutManager = glm
-        binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c)
+        binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c) { p -> loadRouteEncounterAsEnemy(p) }
     }
 
     private fun roundedScreenBg(color: Int) =
@@ -927,6 +1052,37 @@ class TeamSetupFragment : Fragment() {
         }
     }
 
+    private fun updateRouteMapHover(
+        viewX: Float, viewY: Float,
+        mapView: SubsamplingScaleImageView,
+        overlay: RouteMapOverlayView,
+        tvName: android.widget.TextView
+    ) {
+        if (!mapView.isImageLoaded) return
+        val src = mapView.viewToSourceCoord(viewX, viewY) ?: return
+        val w = mapView.sWidth.toFloat(); val h = mapView.sHeight.toFloat()
+        val hoverR = w * 0.07f
+        val nearest = RouteMapCoordinates.hotspots.minByOrNull { hs ->
+            val dx = src.x - hs.x * w; val dy = src.y - hs.y * h
+            sqrt(dx * dx + dy * dy)
+        }
+        if (nearest != null) {
+            val dx = src.x - nearest.x * w; val dy = src.y - nearest.y * h
+            if (sqrt(dx * dx + dy * dy) < hoverR) {
+                tvName.text = nearest.routeName
+                tvName.visibility = android.view.View.VISIBLE
+                overlay.hoveredName = nearest.routeName
+            } else {
+                tvName.visibility = android.view.View.INVISIBLE
+                overlay.hoveredName = null
+            }
+        } else {
+            tvName.visibility = android.view.View.INVISIBLE
+            overlay.hoveredName = null
+        }
+        overlay.invalidate()
+    }
+
     /** Removes the nested Pokédex shell (header + hinge + screen background) from a dialog
      *  layout inflated inline, so the content blends into the outer screen panel. */
     private fun stripDialogChrome(root: android.view.View) {
@@ -994,21 +1150,35 @@ class TeamSetupFragment : Fragment() {
         val cardRoot = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_popup_root)
         val ivSprite  = view.findViewById<android.widget.ImageView>(R.id.iv_popup_sprite)
         val tvName    = view.findViewById<android.widget.TextView>(R.id.tv_popup_name)
+        val tvLevelXp    = view.findViewById<android.widget.TextView>(R.id.tv_popup_level_xp)
+        val xpBarContainer = view.findViewById<android.widget.LinearLayout>(R.id.ll_popup_xp_bar)
+        val xpSegs       = listOf(
+            view.findViewById<android.view.View>(R.id.xp_seg_1),
+            view.findViewById<android.view.View>(R.id.xp_seg_2),
+            view.findViewById<android.view.View>(R.id.xp_seg_3),
+            view.findViewById<android.view.View>(R.id.xp_seg_4)
+        )
+        val btnLevelMinus  = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_level_minus)
+        val btnLevelPlus   = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_level_plus)
+        val btnLevelUp     = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_level_up)
         val ivType1   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type1)
         val ivType2   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type2)
         val btnFaint  = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_faint)
         val btnDel    = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_delete)
         val btnDevo   = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_devolve)
         val btnEvo    = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_evolve)
+        val btnLockXp = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_lock_xp)
         val btnMinus  = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_bp_minus)
         val tvBp      = view.findViewById<android.widget.TextView>(R.id.tv_popup_bp)
         val btnPlus   = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_bp_plus)
 
         var currentPreset = com.pokemonbp.model.PokemonPreset(
             name = pokemon.name, nameDE = pokemon.nameDE,
-            pokedexId = pokemon.pokedexId, types = pokemon.types, baseBP = pokemon.baseBP
+            pokedexId = pokemon.pokedexId, types = pokemon.types, baseBP = pokemon.baseBP,
+            level = pokemon.level, xp = pokemon.xp, xpLocked = pokemon.xpLocked
         )
-        var currentBp = pokemon.baseBP.coerceIn(1, 12)
+        var xpLocked = pokemon.xpLocked
+        var currentBp = pokemon.baseBP.coerceIn(0, 20)
 
         fun typeColor() = if (currentPreset.types.isNotEmpty())
             Color.parseColor(currentPreset.types.first().colorHex) else c.accent
@@ -1019,6 +1189,29 @@ class TeamSetupFragment : Fragment() {
             cardRoot.strokeColor = tc
             tvName.setTextColor(c.textPrimary)
             tvBp.setTextColor(c.accent)
+            tvLevelXp.setTextColor(c.textSecondary)
+            tvLevelXp.text = "Lv. ${currentPreset.level}"
+            // XP bar container: dark rounded background with yellow border
+            val xpContainerBg = android.graphics.drawable.GradientDrawable()
+            xpContainerBg.setColor(Color.BLACK)
+            xpContainerBg.cornerRadius = 6f * resources.displayMetrics.density
+            xpContainerBg.setStroke((2f * resources.displayMetrics.density).toInt(), Color.BLACK)
+            xpBarContainer.background = xpContainerBg
+            // Fill each segment based on current XP
+            xpSegs.forEachIndexed { i, seg ->
+                val segBg = android.graphics.drawable.GradientDrawable()
+                segBg.cornerRadius = 3f * resources.displayMetrics.density
+                segBg.setColor(if (i < currentPreset.xp) Color.parseColor("#00BCD4") else c.surface)
+                seg.background = segBg
+            }
+            btnLevelUp.visibility = if (currentPreset.xp >= 4) android.view.View.VISIBLE else android.view.View.GONE
+            if (xpLocked) {
+                btnLockXp.setImageResource(R.drawable.ic_lock)
+                btnLockXp.setColorFilter(android.graphics.Color.parseColor("#FFC107"))
+            } else {
+                btnLockXp.setImageResource(R.drawable.ic_lock_open)
+                btnLockXp.setColorFilter(android.graphics.Color.parseColor("#9E9E9E"))
+            }
 
             ivSprite.loadPokemonSprite(requireContext(), currentPreset.pokedexId)
 
@@ -1038,9 +1231,9 @@ class TeamSetupFragment : Fragment() {
             btnDevo.isEnabled = prevEvo != null
             btnDevo.alpha = if (prevEvo != null) 1.0f else 0.3f
 
-            tvBp.text = "BP: $currentBp"
-            btnMinus.isEnabled = currentBp > 1
-            btnPlus.isEnabled = currentBp < 12
+            tvBp.text = "BP: ${currentPreset.level + currentBp}"
+            btnMinus.isEnabled = currentBp > 0
+            btnPlus.isEnabled = currentBp < 20
         }
 
         fun loadIcon(url: String, btn: android.widget.ImageButton) {
@@ -1057,16 +1250,53 @@ class TeamSetupFragment : Fragment() {
 
         lateinit var popup: android.widget.PopupWindow
 
-        btnMinus.setOnClickListener { if (currentBp > 1)  { currentBp--; refresh() } }
-        btnPlus.setOnClickListener  { if (currentBp < 12) { currentBp++; refresh() } }
+        btnLockXp.setOnClickListener { xpLocked = !xpLocked; refresh() }
+        btnMinus.setOnClickListener { if (currentBp > 0)  { currentBp--; refresh() } }
+        btnPlus.setOnClickListener  { if (currentBp < 20) { currentBp++; refresh() } }
+
+        xpBarContainer.setOnTouchListener { v, event ->
+            if (event.action == android.view.MotionEvent.ACTION_DOWN ||
+                event.action == android.view.MotionEvent.ACTION_MOVE) {
+                val newXp = ((event.x / v.width.toFloat()) * 4).toInt().coerceIn(0, 4)
+                if (newXp != currentPreset.xp) {
+                    currentPreset = currentPreset.copy(xp = newXp)
+                    refresh()
+                }
+                true
+            } else false
+        }
+        xpSegs.forEachIndexed { i, seg ->
+            seg.setOnClickListener {
+                currentPreset = if (i < currentPreset.xp) {
+                    currentPreset.copy(xp = i)
+                } else {
+                    currentPreset.copy(xp = i + 1)
+                }
+                refresh()
+            }
+        }
+        btnLevelMinus.setOnClickListener {
+            if (currentPreset.level > 1) {
+                currentPreset = currentPreset.copy(level = currentPreset.level - 1)
+                refresh()
+            }
+        }
+        btnLevelPlus.setOnClickListener {
+            currentPreset = currentPreset.copy(level = currentPreset.level + 1)
+            refresh()
+        }
+        btnLevelUp.setOnClickListener {
+            currentPreset = currentPreset.copy(level = currentPreset.level + 1, xp = 0)
+            refresh()
+        }
 
         btnEvo.setOnClickListener {
             val nextEvos = com.pokemonbp.data.EvolutionData.nextEvolutions(currentPreset.pokedexId)
             fun applyEvo(evoId: Int) {
                 val entry = PokedexData.bySpriteId[evoId] ?: PokedexData.byId[evoId] ?: return
-                currentPreset = com.pokemonbp.model.PokemonPreset(
+                currentPreset = currentPreset.copy(
                     name = entry.name, nameDE = entry.nameDE,
-                    pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+                    pokedexId = entry.spriteId, types = entry.types
                 )
                 refresh()
             }
@@ -1075,7 +1305,7 @@ class TeamSetupFragment : Fragment() {
             } else {
                 val pm = android.widget.PopupMenu(requireContext(), btnEvo)
                 nextEvos.forEach { evoId ->
-                    val e = PokedexData.byId[evoId]
+                    val e = PokedexData.bySpriteId[evoId] ?: PokedexData.byId[evoId]
                     pm.menu.add(if (e != null) "${e.nameDE} / ${e.name}" else "#$evoId")
                         .setOnMenuItemClickListener { applyEvo(evoId); true }
                 }
@@ -1085,10 +1315,10 @@ class TeamSetupFragment : Fragment() {
 
         btnDevo.setOnClickListener {
             val prevId = com.pokemonbp.data.EvolutionData.previousEvolution(currentPreset.pokedexId) ?: return@setOnClickListener
-            val entry = PokedexData.byId[prevId] ?: return@setOnClickListener
-            currentPreset = com.pokemonbp.model.PokemonPreset(
+            val entry = PokedexData.bySpriteId[prevId] ?: PokedexData.byId[prevId] ?: return@setOnClickListener
+            currentPreset = currentPreset.copy(
                 name = entry.name, nameDE = entry.nameDE,
-                pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+                pokedexId = entry.spriteId, types = entry.types
             )
             refresh()
         }
@@ -1134,10 +1364,10 @@ class TeamSetupFragment : Fragment() {
                 .show()
         }
 
-        // Show popup overlaid exactly on the pressed card
-        val anchorLoc = IntArray(2); anchor.getLocationOnScreen(anchorLoc)
-        popup = android.widget.PopupWindow(view, anchor.width,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+        // Show popup spanning the full Team A RecyclerView width
+        val recycler = binding.recyclerTeamA
+        val recyclerLoc = IntArray(2); recycler.getLocationOnScreen(recyclerLoc)
+        popup = android.widget.PopupWindow(view, recycler.width, recycler.height, true).apply {
             isOutsideTouchable = true
             elevation = 24f
             setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
@@ -1148,13 +1378,14 @@ class TeamSetupFragment : Fragment() {
                 teamAList[pos] = pokemon.copy(
                     name = currentPreset.name, nameDE = currentPreset.nameDE,
                     pokedexId = currentPreset.pokedexId, types = currentPreset.types,
-                    baseBP = currentBp
+                    baseBP = currentBp, level = currentPreset.level, xp = currentPreset.xp,
+                    xpLocked = xpLocked
                 )
                 adapterA.notifyItemChanged(pos)
                 val trainer = teamATrainer
                 if (trainer != null) {
                     val presets = teamAList.filter { it.types.isNotEmpty() }
-                        .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP) }
+                        .map { com.pokemonbp.model.PokemonPreset(name = it.name, nameDE = it.nameDE, pokedexId = it.pokedexId, types = it.types, baseBP = it.baseBP, level = it.level, xp = it.xp, xpLocked = it.xpLocked) }
                     val updated = trainer.copy(pokemon = presets)
                     teamATrainer = updated
                     val all = com.pokemonbp.data.TrainerManager.loadTrainers(requireContext())
@@ -1164,8 +1395,7 @@ class TeamSetupFragment : Fragment() {
             }
         }
 
-        // Offset upward so popup sits on top of the card (negative yOff = move up by card height)
-        popup.showAsDropDown(anchor, 0, -anchor.height)
+        popup.showAtLocation(recycler, android.view.Gravity.NO_GRAVITY, recyclerLoc[0], recyclerLoc[1])
     }
 
     // ── Edit Pokémon popup (long-press on Team B card) ────────────────────────
@@ -1179,6 +1409,7 @@ class TeamSetupFragment : Fragment() {
         val cardRoot = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_popup_root)
         val ivSprite  = view.findViewById<android.widget.ImageView>(R.id.iv_popup_sprite)
         val tvName    = view.findViewById<android.widget.TextView>(R.id.tv_popup_name)
+        val tvLevelXp = view.findViewById<android.widget.TextView>(R.id.tv_popup_level_xp)
         val ivType1   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type1)
         val ivType2   = view.findViewById<android.widget.ImageView>(R.id.iv_popup_type2)
         val btnFaint  = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_faint)
@@ -1189,11 +1420,19 @@ class TeamSetupFragment : Fragment() {
         val tvBp      = view.findViewById<android.widget.TextView>(R.id.tv_popup_bp)
         val btnPlus   = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_bp_plus)
 
+        val btnLockXpEnemy = view.findViewById<android.widget.ImageButton>(R.id.btn_popup_lock_xp)
+        btnLockXpEnemy.visibility = android.view.View.GONE
+        view.findViewById<android.widget.LinearLayout>(R.id.ll_popup_xp_bar).visibility = android.view.View.GONE
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_level_minus).visibility = android.view.View.GONE
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_popup_level_plus).visibility = android.view.View.GONE
+        tvLevelXp.visibility = android.view.View.GONE
+
         var currentPreset = com.pokemonbp.model.PokemonPreset(
             name = pokemon.name, nameDE = pokemon.nameDE,
             pokedexId = pokemon.pokedexId, types = pokemon.types, baseBP = pokemon.baseBP
         )
-        var currentBp = pokemon.baseBP.coerceIn(1, 12)
+        var currentBp = pokemon.baseBP.coerceIn(0, 20)
+        tvLevelXp.visibility = android.view.View.GONE
 
         fun typeColor() = if (currentPreset.types.isNotEmpty())
             Color.parseColor(currentPreset.types.first().colorHex) else c.accent
@@ -1223,9 +1462,9 @@ class TeamSetupFragment : Fragment() {
             btnDevo.isEnabled = prevEvo != null
             btnDevo.alpha = if (prevEvo != null) 1.0f else 0.3f
 
-            tvBp.text = "BP: $currentBp"
-            btnMinus.isEnabled = currentBp > 1
-            btnPlus.isEnabled = currentBp < 12
+            tvBp.text = "BP: ${currentPreset.level + currentBp}"
+            btnMinus.isEnabled = currentBp > 0
+            btnPlus.isEnabled = currentBp < 20
         }
 
         fun loadIcon(url: String, btn: android.widget.ImageButton) {
@@ -1242,16 +1481,16 @@ class TeamSetupFragment : Fragment() {
 
         lateinit var popup: android.widget.PopupWindow
 
-        btnMinus.setOnClickListener { if (currentBp > 1)  { currentBp--; refresh() } }
-        btnPlus.setOnClickListener  { if (currentBp < 12) { currentBp++; refresh() } }
+        btnMinus.setOnClickListener { if (currentBp > 0)  { currentBp--; refresh() } }
+        btnPlus.setOnClickListener  { if (currentBp < 20) { currentBp++; refresh() } }
 
         btnEvo.setOnClickListener {
             val nextEvos = com.pokemonbp.data.EvolutionData.nextEvolutions(currentPreset.pokedexId)
             fun applyEvo(evoId: Int) {
                 val entry = PokedexData.bySpriteId[evoId] ?: PokedexData.byId[evoId] ?: return
-                currentPreset = com.pokemonbp.model.PokemonPreset(
+                currentPreset = currentPreset.copy(
                     name = entry.name, nameDE = entry.nameDE,
-                    pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+                    pokedexId = entry.spriteId, types = entry.types
                 )
                 refresh()
             }
@@ -1260,7 +1499,7 @@ class TeamSetupFragment : Fragment() {
             } else {
                 val pm = android.widget.PopupMenu(requireContext(), btnEvo)
                 nextEvos.forEach { evoId ->
-                    val e = PokedexData.byId[evoId]
+                    val e = PokedexData.bySpriteId[evoId] ?: PokedexData.byId[evoId]
                     pm.menu.add(if (e != null) "${e.nameDE} / ${e.name}" else "#$evoId")
                         .setOnMenuItemClickListener { applyEvo(evoId); true }
                 }
@@ -1270,10 +1509,10 @@ class TeamSetupFragment : Fragment() {
 
         btnDevo.setOnClickListener {
             val prevId = com.pokemonbp.data.EvolutionData.previousEvolution(currentPreset.pokedexId) ?: return@setOnClickListener
-            val entry = PokedexData.byId[prevId] ?: return@setOnClickListener
-            currentPreset = com.pokemonbp.model.PokemonPreset(
+            val entry = PokedexData.bySpriteId[prevId] ?: PokedexData.byId[prevId] ?: return@setOnClickListener
+            currentPreset = currentPreset.copy(
                 name = entry.name, nameDE = entry.nameDE,
-                pokedexId = entry.id, types = entry.types, baseBP = currentPreset.baseBP
+                pokedexId = entry.spriteId, types = entry.types
             )
             refresh()
         }
@@ -1301,8 +1540,9 @@ class TeamSetupFragment : Fragment() {
                 .show()
         }
 
-        popup = android.widget.PopupWindow(view, anchor.width,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+        val recyclerB = binding.recyclerTeamB
+        val recyclerBLoc = IntArray(2); recyclerB.getLocationOnScreen(recyclerBLoc)
+        popup = android.widget.PopupWindow(view, recyclerB.width, recyclerB.height, true).apply {
             isOutsideTouchable = true
             elevation = 24f
             setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
@@ -1330,7 +1570,7 @@ class TeamSetupFragment : Fragment() {
             }
         }
 
-        popup.showAsDropDown(anchor, 0, -anchor.height)
+        popup.showAtLocation(recyclerB, android.view.Gravity.NO_GRAVITY, recyclerBLoc[0], recyclerBLoc[1])
     }
 
     // ── Add Pokémon panel ──────────────────────────────────────────────────────
@@ -1366,8 +1606,9 @@ class TeamSetupFragment : Fragment() {
         b.btnPickFromRoute.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#CC0000"))
         b.btnPickFromRoute.setTextColor(Color.WHITE)
 
-        val bpBtns = listOf(b.bp1, b.bp2, b.bp3, b.bp4, b.bp5, b.bp6,
-                            b.bp7, b.bp8, b.bp9, b.bp10, b.bp11, b.bp12)
+        val bpBtns = listOf(b.bp0, b.bp1, b.bp2, b.bp3, b.bp4, b.bp5, b.bp6,
+                            b.bp7, b.bp8, b.bp9, b.bp10, b.bp11, b.bp12, b.bp13,
+                            b.bp14, b.bp15, b.bp16, b.bp17, b.bp18, b.bp19, b.bp20)
 
         fun styleBp(btn: com.google.android.material.button.MaterialButton, selected: Boolean) {
             val red = Color.parseColor("#CC0000")
@@ -1380,11 +1621,11 @@ class TeamSetupFragment : Fragment() {
                 btn.strokeColor = android.content.res.ColorStateList.valueOf(red); btn.strokeWidth = 2
             }
         }
-        fun selectBP(v: Int) { selectedBP = v; bpBtns.forEachIndexed { i, b2 -> styleBp(b2, i + 1 == v) } }
+        fun selectBP(v: Int) { selectedBP = v; bpBtns.forEachIndexed { i, b2 -> styleBp(b2, i == v) } }
         bpBtns.forEachIndexed { i, btn ->
             styleBp(btn, false)
             if (theme == AppTheme.RETRO) btn.typeface = android.graphics.Typeface.MONOSPACE
-            btn.setOnClickListener { selectBP(i + 1) }
+            btn.setOnClickListener { selectBP(i) }
         }
 
         val typeAdapter = TypeSelectionAdapter(com.pokemonbp.data.PokemonType.values().toList(), selectedTypes, theme) { type, sel ->
@@ -1645,8 +1886,8 @@ class TeamSetupFragment : Fragment() {
                     }
                     tvName.text = if (preset.nameDE == preset.name) preset.name else "${preset.nameDE} / ${preset.name}"
                     tvBpValue.text = "${entry.bp}"
-                    btnBpMinus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp <= 1) 12 else entry.bp - 1); refreshSlots() }
-                    btnBpPlus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp >= 12) 1 else entry.bp + 1); refreshSlots() }
+                    btnBpMinus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp <= 0) 0 else entry.bp - 1); refreshSlots() }
+                    btnBpPlus.setOnClickListener { pokemonEntries[i] = entry.copy(bp = if (entry.bp >= 20) 20 else entry.bp + 1); refreshSlots() }
                     Glide.with(requireContext()).load(SpriteUrls.garbageBinUrl).placeholder(R.drawable.ic_garbage_bin).error(R.drawable.ic_garbage_bin).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(btnRemove)
                     btnRemove.setOnClickListener { pokemonEntries[i] = null; refreshSlots() }
                     Glide.with(requireContext()).load(SpriteUrls.dawnstoneUrl).placeholder(R.drawable.ic_dawnstone).error(R.drawable.ic_dawnstone).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().into(btnEvolve)
@@ -1740,7 +1981,8 @@ class TeamSetupFragment : Fragment() {
                         teamAList.add(Pokemon(id = System.currentTimeMillis().toInt() + teamAList.size,
                             name = preset.name, nameDE = preset.nameDE,
                             types = preset.types, baseBP = preset.baseBP,
-                            team = Team.TEAM_A, pokedexId = preset.pokedexId))
+                            team = Team.TEAM_A, pokedexId = preset.pokedexId,
+                            level = preset.level, xp = preset.xp, xpLocked = preset.xpLocked))
                     }
                     // Pad to 4 with empty placeholder slots
                     while (teamAList.size < 4) teamAList.add(Pokemon(
@@ -1996,43 +2238,129 @@ class TeamSetupFragment : Fragment() {
         val c = ThemeManager.colorsFor(theme)
         val routes = com.pokemonbp.data.RouteData.loadRoutes(requireContext())
 
-        fun buildRouteGrid() {
-            val view = layoutInflater.inflate(R.layout.dialog_route_picker, binding.layoutPanelSub, false)
-            view.layoutParams = android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
-            stripDialogChrome(view)
-            val spRoute = view.findViewById<android.widget.LinearLayout>(R.id.screen_panel)
-            spRoute?.setBackgroundColor(c.background)
-            spRoute?.addView(buildBackRow(), 0)
-
+        fun buildRouteMap() {
             fun handleRoute(location: com.pokemonbp.data.RouteLocation) {
                 if (!location.isLegendary) {
                     showRoutePokemonGridInline(location.displayName, location.tiers[0].pokemon,
-                        onBack = { rebuildSubPanelContent("Route") { buildRouteGrid() } },
+                        onBack = { rebuildSubPanelContent("Route") { buildRouteMap() } },
                         onPicked = { p -> onPicked(p.nameDE, p.nameEN, p.bp) })
                 } else {
                     showRouteTierPickerInline(location,
-                        onBack = { rebuildSubPanelContent("Route") { buildRouteGrid() } },
+                        onBack = { rebuildSubPanelContent("Route") { buildRouteMap() } },
                         onPicked = onPicked)
                 }
             }
+            // Root: vertical LinearLayout — back row on top, map fills rest
+            val root = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+                setBackgroundColor(c.background)
+            }
+            root.addView(buildBackRow())
 
-            val legendary = routes.filter { it.isLegendary }
-            val normal    = routes.filter { !it.isLegendary }
-            val rvLegendary = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_legendary_routes)
-            val rvNormal    = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_normal_routes)
-            rvLegendary.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-            rvNormal.layoutManager    = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-            rvLegendary.adapter = WildRouteAdapter(legendary, c) { handleRoute(it) }
-            rvNormal.adapter    = WildRouteAdapter(normal, c) { handleRoute(it) }
+            val mapContainer = android.widget.FrameLayout(requireContext()).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+            }
 
-            view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_close_route)
-                .setOnClickListener { popBack() }
-            binding.layoutPanelSub.addView(view)
+            val mapView = SubsamplingScaleImageView(requireContext()).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+                setImage(ImageSource.asset("MapFull.png"))
+                setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE)
+                maxScale = 6f
+            }
+
+            val overlay = RouteMapOverlayView(requireContext()).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT)
+                isClickable = false; isFocusable = false
+                this.mapView = mapView
+                hotspots = RouteMapCoordinates.hotspots
+                legendaryNames = routes.filter { it.isLegendary }.map { it.displayName }.toSet()
+                showDebugGrid = false
+            }
+
+            val tvHov = android.widget.TextView(requireContext()).apply {
+                val lp = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL)
+                lp.topMargin = dpPx(10)
+                layoutParams = lp
+                setPadding(dpPx(16), dpPx(6), dpPx(16), dpPx(6))
+                textSize = 15f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(Color.WHITE)
+                background = androidx.core.content.ContextCompat.getDrawable(
+                    requireContext(), R.drawable.bg_route_hover_label)
+                visibility = android.view.View.INVISIBLE
+            }
+
+            mapContainer.addView(mapView)
+            mapContainer.addView(overlay)
+            mapContainer.addView(tvHov)
+            root.addView(mapContainer)
+
+            mapView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
+                override fun onReady() { overlay.setImageDimensions(mapView.sWidth, mapView.sHeight) }
+                override fun onImageLoaded() {}
+                override fun onPreviewLoadError(e: Exception) {}
+                override fun onImageLoadError(e: Exception) {}
+                override fun onTileLoadError(e: Exception) {}
+                override fun onPreviewReleased() {}
+            })
+            mapView.setOnStateChangedListener(object : SubsamplingScaleImageView.OnStateChangedListener {
+                override fun onScaleChanged(newScale: Float, origin: Int) = overlay.invalidate()
+                override fun onCenterChanged(newCenter: PointF, origin: Int) = overlay.invalidate()
+            })
+
+            val slop = android.view.ViewConfiguration.get(requireContext()).scaledTouchSlop.toFloat()
+            var downX = 0f; var downY = 0f
+            mapView.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        downX = event.x; downY = event.y
+                        updateRouteMapHover(event.x, event.y, mapView, overlay, tvHov)
+                    }
+                    MotionEvent.ACTION_MOVE ->
+                        updateRouteMapHover(event.x, event.y, mapView, overlay, tvHov)
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        val isTap = event.action == MotionEvent.ACTION_UP &&
+                            abs(event.x - downX) < slop * 3 && abs(event.y - downY) < slop * 3
+                        if (isTap && mapView.isImageLoaded) {
+                            val src = mapView.viewToSourceCoord(event.x, event.y)
+                            if (src != null) {
+                                val w = mapView.sWidth.toFloat(); val h = mapView.sHeight.toFloat()
+                                val tapR = w * 0.06f
+                                val hit = RouteMapCoordinates.hotspots.minByOrNull { hs ->
+                                    val dx = src.x - hs.x * w; val dy = src.y - hs.y * h
+                                    sqrt(dx * dx + dy * dy)
+                                }
+                                if (hit != null) {
+                                    val dx = src.x - hit.x * w; val dy = src.y - hit.y * h
+                                    if (sqrt(dx * dx + dy * dy) < tapR) {
+                                        val loc = routes.find { it.displayName == hit.routeName }
+                                        if (loc != null) { overlay.setSelected(hit.routeName); handleRoute(loc) }
+                                    }
+                                }
+                            }
+                        }
+                        tvHov.visibility = android.view.View.INVISIBLE
+                        overlay.hoveredName = null; overlay.invalidate()
+                    }
+                }
+                false
+            }
+
+            binding.layoutPanelSub.addView(root)
         }
 
-        pushSubPanel("Route", buildContent = { buildRouteGrid() }, onBack = onBack)
+        pushSubPanel("Route", buildContent = { buildRouteMap() }, onBack = onBack)
     }
 
     private fun showRouteTierPickerInline(
@@ -2440,7 +2768,45 @@ class TeamSetupFragment : Fragment() {
         binding.rvRoutePokemon.layoutManager =
             androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3)
         val c = com.pokemonbp.data.ThemeManager.colorsFor(mainActivity?.currentTheme ?: com.pokemonbp.data.AppTheme.COLORFUL)
-        binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c)
+        binding.rvRoutePokemon.adapter = RoutePokemonDetailAdapter(items, c) { p -> loadRouteEncounterAsEnemy(p) }
+    }
+
+    private fun loadRouteEncounterAsEnemy(p: com.pokemonbp.data.RoutePokemon) {
+        val entry = PokedexData.byNameEN[p.nameEN.trim().lowercase()]
+        val types = entry?.types ?: emptyList()
+        if (types.isEmpty()) return
+        val bp = if (p.bp > 0) p.bp else 1
+
+        currentEnemyTrainer = EnemyTrainer.WildPokemon
+        teamBLabel = "Wild Pokémon"
+        teamBList.clear()
+        teamBList.add(Pokemon(
+            id = System.currentTimeMillis().toInt(),
+            name = p.nameEN, nameDE = p.nameDE,
+            types = types, baseBP = bp,
+            team = Team.TEAM_B, pokedexId = entry?.spriteId ?: 0
+        ))
+        while (teamBList.size < 4) teamBList.add(Pokemon(
+            id = -(teamBList.size + 1), name = "", nameDE = "",
+            types = emptyList(), baseBP = 0, team = Team.TEAM_B))
+        faintedIndicesB.clear()
+        activeIndexB = 0
+        adapterB.isTrainerLocked = false
+        adapterB.faintedIndices = emptySet()
+        adapterB.activeIndex = 0
+        adapterB.notifyDataSetChanged()
+        binding.tvTeamBLabel.text = teamBLabel
+
+        binding.layoutRouteDetail.visibility = android.view.View.GONE
+        binding.layoutWildRoutes.visibility = android.view.View.GONE
+        binding.layoutMainContent.visibility = android.view.View.VISIBLE
+        wildMode = false
+        Glide.with(requireContext()).load(SpriteUrls.wildPokemonMenuUrl)
+            .placeholder(R.drawable.ic_wild_pokemon_menu).error(R.drawable.ic_wild_pokemon_menu)
+            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL).fitCenter()
+            .into(binding.ivWildButton)
+        binding.root.setBackgroundColor(requireContext().getColor(R.color.pokedex_red))
+        updateBattleButton()
     }
 
     private fun updateBattleButton() {
@@ -2881,7 +3247,8 @@ sealed class RouteDetailItem {
 
 class RoutePokemonDetailAdapter(
     private val items: List<RouteDetailItem>,
-    private val c: com.pokemonbp.data.ThemeColors
+    private val c: com.pokemonbp.data.ThemeColors,
+    private val onClick: ((com.pokemonbp.data.RoutePokemon) -> Unit)? = null
 ) : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
 
     companion object {
@@ -2932,6 +3299,12 @@ class RoutePokemonDetailAdapter(
                 val vh  = holder as PokemonVH
                 val p   = item.pokemon
                 val ctx = holder.itemView.context
+
+                if (onClick != null) {
+                    vh.itemView.setOnClickListener { onClick.invoke(p) }
+                    vh.itemView.isClickable = true
+                    vh.itemView.foreground = ctx.obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground)).getDrawable(0)
+                }
 
                 vh.tvName.text = p.nameDE
                 vh.tvNameEn.text = p.nameEN

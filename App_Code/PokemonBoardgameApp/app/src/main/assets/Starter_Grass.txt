@@ -6,7 +6,7 @@ Pflanze / Grass:
 
  Felori / Sprigatito
  Feliospa / Floragato
- Maskagato / Meowscarada	
+ Maskagato / Meowscarada
 
  Bisasam / Bulbasaur
  Bisaknosp / Ivysaur
@@ -14,4 +14,9 @@ Pflanze / Grass:
 
  Bauz / Rowlet
  Arboretoss / Dartrix
- Silvarro / Decidueye	
+ Silvarro / Decidueye
+
+ Geckarbor / Treecko
+ Reptain / Grovyle
+ Gewaldro / Sceptile
+

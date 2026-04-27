@@ -15,3 +15,7 @@ Wasser / Water:
  Hydropi / Mudkip
  Moorabbel / Marshtomp
  Sumpex / Swampert	
+
+ Karnimani / Totodile
+ Tyracroc / Croconaw
+ Impergator / Feraligatr

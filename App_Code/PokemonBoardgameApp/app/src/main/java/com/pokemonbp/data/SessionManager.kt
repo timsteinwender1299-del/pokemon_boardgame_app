@@ -88,6 +88,9 @@ object SessionManager {
             obj.put("types", types)
             obj.put("baseBP", p.baseBP)
             obj.put("pokedexId", p.pokedexId)
+            obj.put("level", p.level)
+            obj.put("xp", p.xp)
+            obj.put("xpLocked", p.xpLocked)
             arr.put(obj)
         }
         return arr
@@ -108,7 +111,10 @@ object SessionManager {
                 types = types,
                 baseBP = obj.optInt("baseBP", 0),
                 team = team,
-                pokedexId = obj.optInt("pokedexId", 0)
+                pokedexId = obj.optInt("pokedexId", 0),
+                level = obj.optInt("level", 1),
+                xp = obj.optInt("xp", 0),
+                xpLocked = obj.optBoolean("xpLocked", false)
             ))
         }
         return list

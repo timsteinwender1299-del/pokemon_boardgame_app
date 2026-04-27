@@ -13,6 +13,7 @@ import com.pokemonbp.data.ThemeManager
 import com.pokemonbp.R
 import com.pokemonbp.databinding.ItemPokemonBinding
 import com.pokemonbp.model.Pokemon
+import com.pokemonbp.model.Team
 
 class PokemonListAdapter(
     private val pokemonList: MutableList<Pokemon>,
@@ -31,6 +32,7 @@ class PokemonListAdapter(
     var forcedItemHeight: Int = 0  // 0 = wrap_content
     var isTrainerLocked: Boolean = false
     var onPlaceholderClick: ((pos: Int) -> Unit)? = null
+    var onLongPress: ((pos: Int, anchor: android.view.View) -> Unit)? = null
 
     inner class PokemonViewHolder(val binding: ItemPokemonBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -73,6 +75,7 @@ class PokemonListAdapter(
             holder.binding.ivFainted.visibility = android.view.View.GONE
             holder.binding.btnRevive.visibility = android.view.View.GONE
             holder.binding.ivMegaIcon.visibility = android.view.View.GONE
+            holder.binding.tvLevel.visibility = android.view.View.GONE
             // Hide mid column so pokeball can fill and center
             holder.binding.layoutPokemonMid.visibility = android.view.View.GONE
             // Expand sprite to fill full card width for centered display
@@ -177,8 +180,16 @@ class PokemonListAdapter(
             holder.binding.tvBaseBp.visibility = android.view.View.VISIBLE
             holder.binding.ivFainted.visibility = android.view.View.GONE
             holder.binding.btnRevive.visibility = android.view.View.GONE
-            holder.binding.tvBaseBp.text = "BP: ${pokemon.baseBP}"
+            holder.binding.tvBaseBp.text = "BP: ${pokemon.effectiveBp}"
             holder.binding.tvBaseBp.setTextColor(c.accent)
+        }
+
+        if (pokemon.team == Team.TEAM_A) {
+            holder.binding.tvLevel.visibility = android.view.View.VISIBLE
+            holder.binding.tvLevel.text = "Lv. ${pokemon.level}"
+            holder.binding.tvLevel.setTextColor(c.textSecondary)
+        } else {
+            holder.binding.tvLevel.visibility = android.view.View.GONE
         }
 
         if (theme == AppTheme.RETRO) {
@@ -202,6 +213,17 @@ class PokemonListAdapter(
                 activeIndex = pos
                 onSelected(pos)
             }
+        }
+
+        val longPress = onLongPress
+        if (longPress != null) {
+            holder.binding.cardPokemon.setOnLongClickListener {
+                val pos = holder.adapterPosition
+                if (pos != RecyclerView.NO_ID.toInt()) longPress.invoke(pos, holder.binding.cardPokemon)
+                true
+            }
+        } else {
+            holder.binding.cardPokemon.setOnLongClickListener(null)
         }
 
         holder.binding.btnDelete.setOnClickListener {

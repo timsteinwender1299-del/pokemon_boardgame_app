@@ -33,6 +33,8 @@ object ThemeManager {
     private const val PREF_KEY = "app_theme"
     private const val PREF_FILE = "pokemonbp_prefs"
 
+    private val colorCache = mutableMapOf<AppTheme, ThemeColors>()
+
     fun save(context: Context, theme: AppTheme) {
         context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
             .edit().putString(PREF_KEY, theme.name).apply()
@@ -44,7 +46,9 @@ object ThemeManager {
         return AppTheme.values().firstOrNull { it.name == name } ?: AppTheme.DARK
     }
 
-    fun colorsFor(theme: AppTheme): ThemeColors = when (theme) {
+    fun colorsFor(theme: AppTheme): ThemeColors = colorCache.getOrPut(theme) { buildColorsFor(theme) }
+
+    private fun buildColorsFor(theme: AppTheme): ThemeColors = when (theme) {
 
         AppTheme.DARK -> ThemeColors(
             background       = Color.parseColor("#0D0D0D"),

@@ -15,3 +15,7 @@ Pflanze / Grass:
  Bauz / Rowlet
  Arboretoss / Dartrix
  Silvarro / Decidueye	
+
+ Geckarbor / Treecko
+ Reptain / Grovyle
+ Gewaldro / Sceptile

@@ -36,9 +36,10 @@ class AddPokemonDialogFragment(
 
     private val bpButtons: List<MaterialButton> by lazy {
         listOf(
-            binding.bp1, binding.bp2, binding.bp3, binding.bp4,
-            binding.bp5, binding.bp6, binding.bp7, binding.bp8,
-            binding.bp9, binding.bp10, binding.bp11, binding.bp12
+            binding.bp0, binding.bp1, binding.bp2, binding.bp3, binding.bp4,
+            binding.bp5, binding.bp6, binding.bp7, binding.bp8, binding.bp9,
+            binding.bp10, binding.bp11, binding.bp12, binding.bp13, binding.bp14,
+            binding.bp15, binding.bp16, binding.bp17, binding.bp18, binding.bp19, binding.bp20
         )
     }
 
@@ -66,7 +67,7 @@ class AddPokemonDialogFragment(
 
         // BP buttons
         bpButtons.forEachIndexed { index, btn ->
-            val bpValue = index + 1
+            val bpValue = index
             styleBpButton(btn, selected = false, Color.parseColor("#CC0000"))
             if (theme == AppTheme.RETRO) btn.typeface = Typeface.MONOSPACE
             btn.setOnClickListener { selectBP(bpValue) }
@@ -90,7 +91,7 @@ class AddPokemonDialogFragment(
                 Toast.makeText(requireContext(), "Pick a Pokémon or select types!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (selectedBP < 1) {
+            if (selectedBP < 0) {
                 Toast.makeText(requireContext(), "Select a BP value!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -120,7 +121,7 @@ class AddPokemonDialogFragment(
         selectedBP = value
         val c = ThemeManager.colorsFor(theme)
         bpButtons.forEachIndexed { index, btn ->
-            styleBpButton(btn, selected = (index + 1 == value), c.accent)
+            styleBpButton(btn, selected = (index == value), c.accent)
         }
     }
 
@@ -145,7 +146,7 @@ class AddPokemonDialogFragment(
 
     private fun openRoutePicker() {
         RoutePickerDialog(theme) { nameDE, nameEN, bp ->
-            val entry = PokedexData.allPokemon.find { it.name.equals(nameEN.trim(), ignoreCase = true) }
+            val entry = PokedexData.byNameEN[nameEN.trim().lowercase()]
             val types = entry?.types ?: emptyList()
             if (types.isNotEmpty() && bp > 0) {
                 onPokemonAdded(Pokemon(
@@ -167,7 +168,7 @@ class AddPokemonDialogFragment(
     private fun applyRouteEntry(nameDE: String, nameEN: String, bp: Int) {
         currentName = nameEN
         currentNameDE = nameDE
-        val entry = PokedexData.allPokemon.find { it.name.equals(nameEN, ignoreCase = true) }
+        val entry = PokedexData.byNameEN[nameEN.lowercase()]
         if (entry != null) {
             currentPokedexId = entry.id
             binding.btnPickPokemon.text = "  $nameEN  #${entry.id}"

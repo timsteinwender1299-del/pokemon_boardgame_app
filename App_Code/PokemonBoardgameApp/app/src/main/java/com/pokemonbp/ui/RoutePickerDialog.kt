@@ -4,10 +4,13 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -18,50 +21,149 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.davemorrissey.labs.subscaleview.ImageSource
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.button.MaterialButton
 import com.pokemonbp.R
 import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.RouteData
 import com.pokemonbp.data.RouteLocation
+import com.pokemonbp.data.RouteMapCoordinates
 import com.pokemonbp.data.RoutePokemon
 import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeColors
 import com.pokemonbp.data.ThemeManager
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 class RoutePickerDialog(
     private val theme: AppTheme,
     private val onPokemonPicked: (nameDE: String, nameEN: String, bp: Int) -> Unit
 ) : DialogFragment() {
 
+    private lateinit var allRoutes: List<RouteLocation>
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val routes = RouteData.loadRoutes(requireContext())
-        val c = ThemeManager.colorsFor(theme)
-        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_route_picker, null)
-        view.findViewById<LinearLayout>(R.id.screen_panel).setBackgroundColor(c.surface)
+        allRoutes = RouteData.loadRoutes(requireContext())
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_route_map, null)
 
-        val legendary = routes.filter { it.isLegendary }
-        val normal    = routes.filter { !it.isLegendary }
-        val rvLegendary = view.findViewById<RecyclerView>(R.id.rv_legendary_routes)
-        val rvNormal    = view.findViewById<RecyclerView>(R.id.rv_normal_routes)
-        rvLegendary.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-        rvNormal.layoutManager    = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-        rvLegendary.adapter = WildRouteAdapter(legendary, c) { handleRouteClick(it) }
-        rvNormal.adapter    = WildRouteAdapter(normal, c) { handleRouteClick(it) }
+        val mapView    = view.findViewById<SubsamplingScaleImageView>(R.id.iv_route_map)
+        val overlay    = view.findViewById<RouteMapOverlayView>(R.id.v_route_overlay)
+        val tvHovName  = view.findViewById<android.widget.TextView>(R.id.tv_route_hover_name)
+        val btnClose   = view.findViewById<MaterialButton>(R.id.btn_close_route_map)
 
-        view.findViewById<MaterialButton>(R.id.btn_close_route).setOnClickListener { dismiss() }
-        // btn_team_galactic is wired in showRoutePickerInline (RandomTrainer flow); no action here.
+        mapView.setImage(ImageSource.asset("MapFull.png"))
+        mapView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE)
+        mapView.maxScale = 6f
+
+        overlay.mapView = mapView
+        overlay.hotspots = RouteMapCoordinates.hotspots
+        overlay.legendaryNames = allRoutes.filter { it.isLegendary }.map { it.displayName }.toSet()
+
+        mapView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
+            override fun onReady() {
+                overlay.setImageDimensions(mapView.sWidth, mapView.sHeight)
+            }
+            override fun onImageLoaded() {}
+            override fun onPreviewLoadError(e: Exception) {}
+            override fun onImageLoadError(e: Exception) {}
+            override fun onTileLoadError(e: Exception) {}
+            override fun onPreviewReleased() {}
+        })
+
+        mapView.setOnStateChangedListener(object : SubsamplingScaleImageView.OnStateChangedListener {
+            override fun onScaleChanged(newScale: Float, origin: Int) = overlay.invalidate()
+            override fun onCenterChanged(newCenter: PointF, origin: Int) = overlay.invalidate()
+        })
+
+        // Touch handling: return false so SSIV keeps pan/zoom; we get all events anyway
+        val slop = ViewConfiguration.get(requireContext()).scaledTouchSlop.toFloat()
+        var downX = 0f; var downY = 0f
+        mapView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.x; downY = event.y
+                    updateHover(event.x, event.y, mapView, overlay, tvHovName)
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    updateHover(event.x, event.y, mapView, overlay, tvHovName)
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val isTap = event.action == MotionEvent.ACTION_UP &&
+                        abs(event.x - downX) < slop * 3 && abs(event.y - downY) < slop * 3
+                    if (isTap && mapView.isImageLoaded) {
+                        val src = mapView.viewToSourceCoord(event.x, event.y)
+                        if (src != null) tryHitHotspot(src.x, src.y, overlay)
+                    }
+                    tvHovName.visibility = View.INVISIBLE
+                    overlay.hoveredName = null
+                    overlay.invalidate()
+                }
+            }
+            false
+        }
+
+        btnClose.setOnClickListener { dismiss() }
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(view)
             .create()
         dialog.setOnShowListener {
             val dm = requireContext().resources.displayMetrics
-            val w = (dm.widthPixels * 0.92).toInt()
-            val h = (dm.heightPixels * 0.82).toInt()
+            val w = (dm.widthPixels * 0.95).toInt()
+            val h = (dm.heightPixels * 0.90).toInt()
             dialog.window?.setLayout(w, h)
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
         return dialog
+    }
+
+    private fun updateHover(
+        viewX: Float, viewY: Float,
+        mapView: SubsamplingScaleImageView,
+        overlay: RouteMapOverlayView,
+        tvName: android.widget.TextView
+    ) {
+        if (!mapView.isImageLoaded) return
+        val src = mapView.viewToSourceCoord(viewX, viewY) ?: return
+        val w = mapView.sWidth.toFloat(); val h = mapView.sHeight.toFloat()
+        val hoverRadius = w * 0.07f
+        val nearest = RouteMapCoordinates.hotspots.minByOrNull { hs ->
+            val dx = src.x - hs.x * w; val dy = src.y - hs.y * h
+            sqrt(dx * dx + dy * dy)
+        }
+        if (nearest != null) {
+            val dx = src.x - nearest.x * w; val dy = src.y - nearest.y * h
+            if (sqrt(dx * dx + dy * dy) < hoverRadius) {
+                tvName.text = nearest.routeName
+                tvName.visibility = View.VISIBLE
+                overlay.hoveredName = nearest.routeName
+            } else {
+                tvName.visibility = View.INVISIBLE
+                overlay.hoveredName = null
+            }
+        } else {
+            tvName.visibility = View.INVISIBLE
+            overlay.hoveredName = null
+        }
+        overlay.invalidate()
+    }
+
+    private fun tryHitHotspot(srcX: Float, srcY: Float, overlay: RouteMapOverlayView) {
+        val w = overlay.mapView?.sWidth?.toFloat() ?: return
+        val h = overlay.mapView?.sHeight?.toFloat() ?: return
+        val tapRadius = w * 0.06f
+        val hit = RouteMapCoordinates.hotspots.minByOrNull { hs ->
+            val dx = srcX - hs.x * w
+            val dy = srcY - hs.y * h
+            sqrt(dx * dx + dy * dy)
+        } ?: return
+        val dx = srcX - hit.x * w
+        val dy = srcY - hit.y * h
+        if (sqrt(dx * dx + dy * dy) > tapRadius) return
+        val location = allRoutes.find { it.displayName == hit.routeName } ?: return
+        overlay.setSelected(hit.routeName)
+        handleRouteClick(location)
     }
 
     private fun handleRouteClick(location: RouteLocation) {
@@ -245,7 +347,7 @@ class RoutePokemonGridAdapter(
         holder.tvValue1.text = valueParts?.getOrNull(0)?.trim() ?: ""
         holder.tvValue2.text = valueParts?.getOrNull(1)?.trim() ?: ""
 
-        val entry = PokedexData.allPokemon.find { it.name.equals(p.nameEN.trim(), ignoreCase = true) }
+        val entry = PokedexData.byNameEN[p.nameEN.trim().lowercase()]
 
         // Sprite
         if (entry != null && entry.spriteId > 0) {

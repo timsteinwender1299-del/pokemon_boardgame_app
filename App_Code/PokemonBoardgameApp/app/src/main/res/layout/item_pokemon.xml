@@ -90,6 +90,16 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
 
+            <!-- Level display -->
+            <TextView android:id="@+id/tv_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingEnd="2dp"
+                android:paddingBottom="1dp"
+                android:visibility="gone"/>
+
             <!-- Bottom row: BP / fainted / revive — then delete -->
             <LinearLayout
                 android:layout_width="wrap_content"

@@ -205,12 +205,12 @@ class AddPlayerDialog(
                     // BP control
                     tvBpValue.text = "${entry.bp}"
                     btnBpMinus.setOnClickListener {
-                        val next = if (entry.bp <= 1) 12 else entry.bp - 1
+                        val next = if (entry.bp <= 0) 0 else entry.bp - 1
                         pokemonEntries[i] = entry.copy(bp = next)
                         refreshSlots()
                     }
                     btnBpPlus.setOnClickListener {
-                        val next = if (entry.bp >= 12) 1 else entry.bp + 1
+                        val next = if (entry.bp >= 20) 20 else entry.bp + 1
                         pokemonEntries[i] = entry.copy(bp = next)
                         refreshSlots()
                     }
@@ -241,7 +241,7 @@ class AddPlayerDialog(
                     btnEvolve.alpha = if (nextEvos.isNotEmpty()) 1f else 0.3f
                     btnEvolve.setOnClickListener {
                         if (nextEvos.size == 1) {
-                            val evo = PokedexData.allPokemon.find { it.id == nextEvos[0] } ?: return@setOnClickListener
+                            val evo = PokedexData.byId[nextEvos[0]] ?: return@setOnClickListener
                             pokemonEntries[i] = entry.copy(preset = preset.copy(
                                 name = evo.name, nameDE = evo.nameDE,
                                 pokedexId = evo.id, types = evo.types))
@@ -249,7 +249,7 @@ class AddPlayerDialog(
                         } else {
                             val popup = android.widget.PopupMenu(requireContext(), btnEvolve)
                             nextEvos.forEach { evoId ->
-                                val evo = PokedexData.allPokemon.find { it.id == evoId }
+                                val evo = PokedexData.byId[evoId]
                                 popup.menu.add(evo?.let { "${it.nameDE} / ${it.name}" } ?: "#$evoId")
                                     .setOnMenuItemClickListener {
                                         if (evo != null) {
@@ -277,7 +277,7 @@ class AddPlayerDialog(
                     btnDusk.isEnabled = prevEvoId != null
                     btnDusk.alpha = if (prevEvoId != null) 1f else 0.3f
                     btnDusk.setOnClickListener {
-                        val prev = prevEvoId?.let { id -> PokedexData.allPokemon.find { it.id == id } }
+                        val prev = prevEvoId?.let { id -> PokedexData.byId[id] }
                         if (prev != null) {
                             pokemonEntries[i] = entry.copy(preset = preset.copy(
                                 name = prev.name, nameDE = prev.nameDE,

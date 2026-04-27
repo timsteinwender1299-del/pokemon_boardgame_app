@@ -71,6 +71,9 @@ object TrainerManager {
                 pk.put("nameDE", p.nameDE)
                 pk.put("pokedexId", p.pokedexId)
                 pk.put("baseBP", p.baseBP)
+                pk.put("level", p.level)
+                pk.put("xp", p.xp)
+                pk.put("xpLocked", p.xpLocked)
                 val types = JSONArray()
                 p.types.forEach { types.put(it.name) }
                 pk.put("types", types)
@@ -109,7 +112,10 @@ object TrainerManager {
                         nameDE = pk.optString("nameDE", ""),
                         pokedexId = pk.optInt("pokedexId", 0),
                         baseBP = pk.optInt("baseBP", 1),
-                        types = types
+                        types = types,
+                        level = pk.optInt("level", 1),
+                        xp = pk.optInt("xp", 0),
+                        xpLocked = pk.optBoolean("xpLocked", false)
                     )
                 }
                 val badgeArr = obj.optJSONArray("badges")

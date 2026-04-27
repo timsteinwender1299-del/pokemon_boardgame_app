@@ -79,6 +79,11 @@ class ResultFragment : Fragment() {
             null -> { binding.tvWinner.text = "⚔️ It's a Tie!"; binding.tvWinner.setTextColor(c.accent) }
         }
 
+        val rollNeeded = (11 + result.teamBTotalBP - result.teamATotalBP).coerceIn(1, 20)
+        binding.tvDiceRoll.text = "🎲 Roll to Win: $rollNeeded"
+        binding.tvDiceRoll.setTextColor(c.accent)
+        if (isRetro) binding.tvDiceRoll.typeface = Typeface.MONOSPACE
+
         binding.tvTeamAResultLabel.text = teamALabel
         binding.tvTeamAResultLabel.setTextColor(c.teamA)
         binding.tvTeamBResultLabel.text = teamBLabel

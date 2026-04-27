@@ -7,8 +7,12 @@ data class PokemonPreset(
     val nameDE: String = "",
     val pokedexId: Int,
     val types: List<PokemonType>,
-    val baseBP: Int = 1
+    val baseBP: Int = 1,
+    val level: Int = 1,
+    val xp: Int = 0,
+    val xpLocked: Boolean = false
 ) {
+    val effectiveBp: Int get() = level + baseBP
     fun spriteUrl(): String? = if (pokedexId > 0)
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokedexId.png"
     else null
@@ -22,8 +26,12 @@ data class Pokemon(
     val types: List<PokemonType>,
     val baseBP: Int,
     val team: Team,
-    val pokedexId: Int = 0
+    val pokedexId: Int = 0,
+    val level: Int = 1,
+    val xp: Int = 0,
+    val xpLocked: Boolean = false
 ) {
+    val effectiveBp: Int get() = level + baseBP
     fun spriteUrl(): String? = if (pokedexId > 0)
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokedexId.png"
     else null

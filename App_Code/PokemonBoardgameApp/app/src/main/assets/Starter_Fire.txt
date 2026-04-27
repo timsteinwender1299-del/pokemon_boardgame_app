@@ -6,13 +6,17 @@ Feuer / Fire:
 
  Fynx / Fennekin
  Rutena / Braixen
- Fennexis / Delphox	
+ Fennexis / Delphox
 
- Glumanda / Charmander 
+ Glumanda / Charmander
  Glutexo / Charmeleon
  Glurak / Charizard
 
  Krokel / Fuecoco
  Lokroko / Crocalor
- Skelokrog / Skeledirge	
+ Skelokrog / Skeledirge
+
+ Flemmli / Torchic
+ Jungglut / Combusken
+ Lohgock / Blaziken
 
