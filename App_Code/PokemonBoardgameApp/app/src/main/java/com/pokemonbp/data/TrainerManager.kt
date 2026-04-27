@@ -77,6 +77,9 @@ object TrainerManager {
                 val types = JSONArray()
                 p.types.forEach { types.put(it.name) }
                 pk.put("types", types)
+                val itemArr = JSONArray()
+                p.items.forEach { itemArr.put(it.name) }
+                pk.put("items", itemArr)
                 pkArr.put(pk)
             }
             obj.put("pokemon", pkArr)
@@ -107,6 +110,12 @@ object TrainerManager {
                     val types = (0 until tArr.length()).mapNotNull {
                         runCatching { PokemonType.valueOf(tArr.getString(it)) }.getOrNull()
                     }
+                    val itemsArr = pk.optJSONArray("items")
+                    val items = if (itemsArr != null) {
+                        (0 until itemsArr.length()).mapNotNull {
+                            runCatching { PokemonItem.valueOf(itemsArr.getString(it)) }.getOrNull()
+                        }
+                    } else emptyList()
                     PokemonPreset(
                         name = pk.getString("name"),
                         nameDE = pk.optString("nameDE", ""),
@@ -115,7 +124,8 @@ object TrainerManager {
                         types = types,
                         level = pk.optInt("level", 1),
                         xp = pk.optInt("xp", 0),
-                        xpLocked = pk.optBoolean("xpLocked", false)
+                        xpLocked = pk.optBoolean("xpLocked", false),
+                        items = items
                     )
                 }
                 val badgeArr = obj.optJSONArray("badges")

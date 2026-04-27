@@ -38,11 +38,19 @@
                 android:includeFontPadding="false"/>
         </LinearLayout>
 
-        <!-- Centre: reverse mode indicator (non-interactive) -->
+        <!-- Centre: reverse + assault vest indicators (non-interactive) -->
         <ImageView
             android:id="@+id/iv_reverse_indicator"
             android:layout_width="40dp" android:layout_height="40dp"
             android:src="@drawable/reverse_deactivated"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"/>
+
+        <ImageView
+            android:id="@+id/iv_assault_vest_indicator"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/assault_vest_deactivated"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
 

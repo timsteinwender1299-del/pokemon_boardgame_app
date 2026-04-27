@@ -1,5 +1,6 @@
 package com.pokemonbp.model
 
+import com.pokemonbp.data.PokemonItem
 import com.pokemonbp.data.PokemonType
 
 data class PokemonPreset(
@@ -10,9 +11,10 @@ data class PokemonPreset(
     val baseBP: Int = 1,
     val level: Int = 1,
     val xp: Int = 0,
-    val xpLocked: Boolean = false
+    val xpLocked: Boolean = false,
+    val items: List<PokemonItem> = emptyList()
 ) {
-    val effectiveBp: Int get() = level + baseBP
+    val effectiveBp: Int get() = level + baseBP + items.sumOf { it.effectiveBpBonus(types) }
     fun spriteUrl(): String? = if (pokedexId > 0)
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokedexId.png"
     else null
@@ -29,9 +31,10 @@ data class Pokemon(
     val pokedexId: Int = 0,
     val level: Int = 1,
     val xp: Int = 0,
-    val xpLocked: Boolean = false
+    val xpLocked: Boolean = false,
+    val items: List<PokemonItem> = emptyList()
 ) {
-    val effectiveBp: Int get() = level + baseBP
+    val effectiveBp: Int get() = level + baseBP + items.sumOf { it.effectiveBpBonus(types) }
     fun spriteUrl(): String? = if (pokedexId > 0)
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokedexId.png"
     else null

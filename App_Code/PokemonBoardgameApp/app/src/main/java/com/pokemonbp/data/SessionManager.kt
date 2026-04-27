@@ -17,6 +17,7 @@ data class GameSession(
     val teamATrainerId: String?,
     val teamBLabel: String,
     val reverseMode: Boolean,
+    val assaultVestMode: Boolean,
     // Enemy trainer reconstruction: type + key
     val enemyType: String?,  // "GYMLEADER" | "CHAMPION" | "WILD" | "RANDOM" | "SAVED_TRAINER"
     val enemyKey: String?    // gym leader id | champion nameEN | saved trainer id
@@ -40,6 +41,7 @@ object SessionManager {
         if (session.teamATrainerId != null) obj.put("teamATrainerId", session.teamATrainerId)
         obj.put("teamBLabel", session.teamBLabel)
         obj.put("reverseMode", session.reverseMode)
+        obj.put("assaultVestMode", session.assaultVestMode)
         if (session.enemyType != null) obj.put("enemyType", session.enemyType)
         if (session.enemyKey != null) obj.put("enemyKey", session.enemyKey)
         context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -65,6 +67,7 @@ object SessionManager {
                 teamATrainerId = obj.optString("teamATrainerId", "").takeIf { it.isNotEmpty() },
                 teamBLabel = obj.optString("teamBLabel", "Enemy Trainer"),
                 reverseMode = obj.optBoolean("reverseMode", false),
+                assaultVestMode = obj.optBoolean("assaultVestMode", false),
                 enemyType = obj.optString("enemyType", "").takeIf { it.isNotEmpty() },
                 enemyKey = obj.optString("enemyKey", "").takeIf { it.isNotEmpty() }
             )
@@ -91,6 +94,9 @@ object SessionManager {
             obj.put("level", p.level)
             obj.put("xp", p.xp)
             obj.put("xpLocked", p.xpLocked)
+            val itemArr = JSONArray()
+            p.items.forEach { itemArr.put(it.name) }
+            obj.put("items", itemArr)
             arr.put(obj)
         }
         return arr
@@ -104,6 +110,10 @@ object SessionManager {
             val types = (0 until typesArr.length()).mapNotNull {
                 runCatching { PokemonType.valueOf(typesArr.getString(it)) }.getOrNull()
             }
+            val itemsArr = obj.optJSONArray("items") ?: JSONArray()
+            val items = (0 until itemsArr.length()).mapNotNull {
+                runCatching { PokemonItem.valueOf(itemsArr.getString(it)) }.getOrNull()
+            }
             list.add(Pokemon(
                 id = obj.getInt("id"),
                 name = obj.optString("name", ""),
@@ -114,7 +124,8 @@ object SessionManager {
                 pokedexId = obj.optInt("pokedexId", 0),
                 level = obj.optInt("level", 1),
                 xp = obj.optInt("xp", 0),
-                xpLocked = obj.optBoolean("xpLocked", false)
+                xpLocked = obj.optBoolean("xpLocked", false),
+                items = items
             ))
         }
         return list

@@ -45,11 +45,22 @@
                 android:includeFontPadding="false"/>
         </LinearLayout>
 
-        <!-- Centre: Reverse toggle button -->
+        <!-- Centre: Reverse + AssaultVest toggle buttons -->
         <ImageView
             android:id="@+id/iv_reverse_button"
             android:layout_width="40dp" android:layout_height="40dp"
             android:src="@drawable/reverse_deactivated"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <ImageView
+            android:id="@+id/iv_assault_vest_button"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/assault_vest_deactivated"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:clickable="true"

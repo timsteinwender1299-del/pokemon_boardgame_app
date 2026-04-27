@@ -377,6 +377,8 @@ class RollSheetAdapter(
     private val c: ThemeColors
 ) : RecyclerView.Adapter<RollSheetAdapter.VH>() {
 
+    private var selectedPosition = -1
+
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
         val tvEvent: TextView = v.findViewById(R.id.tv_rs_event)
         val tvText:  TextView = v.findViewById(R.id.tv_rs_text)
@@ -396,7 +398,20 @@ class RollSheetAdapter(
         holder.tvText.setTextColor(c.textSecondary)
         holder.tvMin.text = e.min
         holder.tvMax.text = e.max
-        holder.itemView.setBackgroundColor(if (position % 2 == 0) 0x0AFFFFFF else 0x00000000)
+
+        val isSelected = position == selectedPosition
+        holder.itemView.setBackgroundColor(when {
+            isSelected          -> 0xCCFF8F00.toInt()
+            position % 2 == 0  -> 0x0AFFFFFF
+            else               -> 0x00000000
+        })
+
+        holder.itemView.setOnClickListener {
+            val prev = selectedPosition
+            selectedPosition = if (selectedPosition == position) -1 else position
+            if (prev != -1) notifyItemChanged(prev)
+            notifyItemChanged(position)
+        }
     }
 
     override fun getItemCount() = entries.size

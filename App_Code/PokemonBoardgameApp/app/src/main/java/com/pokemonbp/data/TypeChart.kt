@@ -123,7 +123,8 @@ object TypeChart {
         NORMAL,               // Regular +1 / -1
         ZERO_NULLIFIES_ALL,   // Single-type, immunity → BP = 0
         ZERO_MINUS_TWO,       // Multi-type, immunity hit → -2 BP
-        CANCELLED_BY_ZERO     // Would have been +1/-1 but cancelled by same-type immunity
+        CANCELLED_BY_ZERO,    // Would have been +1/-1 but cancelled by same-type immunity
+        BLOCKED_BY_AV         // Negative modifier suppressed by Assault Vest
     }
 
     data class MatchupDetail(

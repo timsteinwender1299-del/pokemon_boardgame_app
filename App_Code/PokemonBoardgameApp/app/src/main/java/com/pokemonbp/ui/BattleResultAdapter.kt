@@ -17,7 +17,8 @@ import com.pokemonbp.model.BattleResult
 
 class BattleResultAdapter(
     private val results: List<BattleResult>,
-    private val theme: AppTheme
+    private val theme: AppTheme,
+    private val assaultVest: Boolean = false
 ) : RecyclerView.Adapter<BattleResultAdapter.ResultViewHolder>() {
 
     inner class ResultViewHolder(val binding: ItemBattleResultBinding) : RecyclerView.ViewHolder(binding.root)
@@ -106,6 +107,8 @@ class BattleResultAdapter(
                         val ch = if (detail.bpChange > 0) "+${detail.bpChange}" else "${detail.bpChange}"
                         "${detail.attackerType.displayName} → ${detail.defenderType.displayName}: ✖ Cancelled (would be $ch)"
                     }
+                    TypeChart.BpChangeReason.BLOCKED_BY_AV ->
+                        "${detail.attackerType.displayName} → ${detail.defenderType.displayName}: 🛡️ Blocked by Assault Vest"
                 }
                 sb.appendLine(line)
             }

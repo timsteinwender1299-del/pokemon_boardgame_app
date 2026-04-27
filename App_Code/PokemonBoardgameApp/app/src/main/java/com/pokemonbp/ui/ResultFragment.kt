@@ -30,6 +30,7 @@ class ResultFragment : Fragment() {
     var teamBTrainerImageUrl: String? = null
 
     var reverseMode: Boolean = false
+    var assaultVestMode: Boolean = false
     var isChampionBattle: Boolean = false
     var teamAFullRoster: List<com.pokemonbp.model.Pokemon> = emptyList()
 
@@ -66,6 +67,9 @@ class ResultFragment : Fragment() {
 
         binding.ivReverseIndicator.setImageResource(
             if (reverseMode) R.drawable.reverse_activated else R.drawable.reverse_deactivated
+        )
+        binding.ivAssaultVestIndicator.setImageResource(
+            if (assaultVestMode) R.drawable.assault_vest_activated else R.drawable.assault_vest_deactivated
         )
 
         val isRetro = theme == AppTheme.RETRO
@@ -115,7 +119,7 @@ class ResultFragment : Fragment() {
         }
 
         binding.recyclerResultA.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerResultA.adapter = BattleResultAdapter(result.teamA, theme)
+        binding.recyclerResultA.adapter = BattleResultAdapter(result.teamA, theme, assaultVest = assaultVestMode)
         binding.recyclerResultB.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerResultB.adapter = BattleResultAdapter(result.teamB, theme)
 
