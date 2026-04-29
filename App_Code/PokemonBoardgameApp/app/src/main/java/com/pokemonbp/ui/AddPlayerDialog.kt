@@ -34,7 +34,10 @@ class AddPlayerDialog(
     private var selectedGender: TrainerGender = existingTrainer?.gender ?: TrainerGender.MALE
     private val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
     private val selectedBadges: MutableSet<Int> = existingTrainer?.badges?.toMutableSet() ?: mutableSetOf()
-    private val selectedTrainerItems: MutableSet<TrainerItem> = existingTrainer?.trainerItems?.toMutableSet() ?: mutableSetOf()
+    // 8 ordered slots — null = empty
+    private val itemSlots: MutableList<TrainerItem?> = MutableList(8) { null }.also { slots ->
+        existingTrainer?.trainerItems?.forEachIndexed { i, item -> if (i < 8) slots[i] = item }
+    }
     private lateinit var avatarAdapter: AvatarAdapter
     private var avatarPickerVisible = false
 
@@ -125,32 +128,54 @@ class AddPlayerDialog(
         refreshBadges()
 
         // ── Trainer Items row ──────────────────────────────────────────────────
-        val trainerItemDefs = TrainerItem.values()  // 4 defined items
-        val tItemViews = listOf(
+        val allTItemViews = listOf(
             view.findViewById<android.widget.ImageView>(R.id.iv_titem_1),
             view.findViewById(R.id.iv_titem_2),
             view.findViewById(R.id.iv_titem_3),
-            view.findViewById<android.widget.ImageView>(R.id.iv_titem_4)
+            view.findViewById(R.id.iv_titem_4),
+            view.findViewById(R.id.iv_titem_5),
+            view.findViewById(R.id.iv_titem_6),
+            view.findViewById(R.id.iv_titem_7),
+            view.findViewById<android.widget.ImageView>(R.id.iv_titem_8)
         )
         fun refreshTrainerItems() {
-            tItemViews.forEachIndexed { i, iv ->
-                val item = trainerItemDefs[i]
-                val selected = item in selectedTrainerItems
-                iv.alpha = if (selected) 1f else 0.3f
-                Glide.with(requireContext()).load(item.iconUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .placeholder(R.drawable.ic_item_placeholder)
-                    .error(R.drawable.ic_item_placeholder)
-                    .into(iv)
+            allTItemViews.forEachIndexed { i, iv ->
+                val item = itemSlots[i]
+                iv.alpha = if (item != null) 1f else 0.3f
+                if (item != null) {
+                    Glide.with(requireContext()).load(item.iconUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .placeholder(R.drawable.ic_item_placeholder)
+                        .error(R.drawable.ic_item_placeholder)
+                        .into(iv)
+                } else {
+                    iv.setImageResource(R.drawable.ic_item_placeholder)
+                }
             }
         }
-        tItemViews.forEachIndexed { i, iv ->
-            val item = trainerItemDefs[i]
+        allTItemViews.forEachIndexed { slotIndex, iv ->
             iv.isClickable = true; iv.isFocusable = true
-            iv.setOnClickListener {
-                if (item in selectedTrainerItems) selectedTrainerItems.remove(item)
-                else selectedTrainerItems.add(item)
-                refreshTrainerItems()
+            iv.setOnClickListener { anchor ->
+                val popup = android.widget.PopupMenu(requireContext(), anchor)
+                if (itemSlots[slotIndex] != null) {
+                    popup.menu.add(0, -1, 0, "❌ Remove")
+                }
+                TrainerItem.values().forEachIndexed { itemIndex, item ->
+                    popup.menu.add(0, itemIndex, itemIndex + 1, "${item.nameDE} / ${item.nameEN}")
+                }
+                popup.setOnMenuItemClickListener { menuItem ->
+                    if (menuItem.itemId == -1) {
+                        itemSlots[slotIndex] = null
+                    } else {
+                        val chosen = TrainerItem.values()[menuItem.itemId]
+                        // Remove from any other slot to avoid duplicates
+                        for (j in itemSlots.indices) { if (itemSlots[j] == chosen) itemSlots[j] = null }
+                        itemSlots[slotIndex] = chosen
+                    }
+                    refreshTrainerItems()
+                    true
+                }
+                popup.show()
             }
         }
         refreshTrainerItems()
@@ -349,7 +374,7 @@ class AddPlayerDialog(
                 gender = selectedGender,
                 pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) },
                 badges = selectedBadges.toSet(),
-                trainerItems = selectedTrainerItems.toSet()
+                trainerItems = itemSlots.filterNotNull().toSet()
             )
             if (existingTrainer == null) {
                 val all = TrainerManager.loadTrainers(requireContext())
