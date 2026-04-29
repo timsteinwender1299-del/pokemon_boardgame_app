@@ -155,27 +155,28 @@ class AddPlayerDialog(
         }
         allTItemViews.forEachIndexed { slotIndex, iv ->
             iv.isClickable = true; iv.isFocusable = true
-            iv.setOnClickListener { anchor ->
-                val popup = android.widget.PopupMenu(requireContext(), anchor)
+            iv.setOnClickListener {
+                val options = mutableListOf<String>()
+                val actions = mutableListOf<() -> Unit>()
                 if (itemSlots[slotIndex] != null) {
-                    popup.menu.add(0, -1, 0, "❌ Remove")
+                    options.add("❌ Remove")
+                    actions.add { itemSlots[slotIndex] = null }
                 }
-                TrainerItem.values().forEachIndexed { itemIndex, item ->
-                    popup.menu.add(0, itemIndex, itemIndex + 1, "${item.nameDE} / ${item.nameEN}")
-                }
-                popup.setOnMenuItemClickListener { menuItem ->
-                    if (menuItem.itemId == -1) {
-                        itemSlots[slotIndex] = null
-                    } else {
-                        val chosen = TrainerItem.values()[menuItem.itemId]
-                        // Remove from any other slot to avoid duplicates
-                        for (j in itemSlots.indices) { if (itemSlots[j] == chosen) itemSlots[j] = null }
-                        itemSlots[slotIndex] = chosen
+                TrainerItem.values().forEach { item ->
+                    options.add("${item.nameDE} / ${item.nameEN}")
+                    actions.add {
+                        for (j in itemSlots.indices) { if (itemSlots[j] == item) itemSlots[j] = null }
+                        itemSlots[slotIndex] = item
                     }
-                    refreshTrainerItems()
-                    true
                 }
-                popup.show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Trainer Item")
+                    .setItems(options.toTypedArray()) { _, which ->
+                        actions[which]()
+                        refreshTrainerItems()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         }
         refreshTrainerItems()
