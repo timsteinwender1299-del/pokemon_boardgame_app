@@ -154,29 +154,49 @@ class AddPlayerDialog(
             }
         }
         allTItemViews.forEachIndexed { slotIndex, iv ->
-            iv.isClickable = true; iv.isFocusable = true
             iv.setOnClickListener {
-                val options = mutableListOf<String>()
-                val actions = mutableListOf<() -> Unit>()
-                if (itemSlots[slotIndex] != null) {
-                    options.add("❌ Remove")
-                    actions.add { itemSlots[slotIndex] = null }
+                val ctx = requireContext()
+                val dp = resources.displayMetrics.density
+
+                val opts = mutableListOf<Pair<String, TrainerItem?>>()
+                if (itemSlots[slotIndex] != null) opts.add("❌ Remove" to null)
+                TrainerItem.values().forEach { item -> opts.add("${item.nameDE} / ${item.nameEN}" to item) }
+
+                val container = android.widget.LinearLayout(ctx).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    setBackgroundColor(0xFF1A1A2E.toInt())
                 }
-                TrainerItem.values().forEach { item ->
-                    options.add("${item.nameDE} / ${item.nameEN}")
-                    actions.add {
-                        for (j in itemSlots.indices) { if (itemSlots[j] == item) itemSlots[j] = null }
-                        itemSlots[slotIndex] = item
-                    }
+
+                var popup: android.widget.PopupWindow? = null
+                opts.forEach { (label, item) ->
+                    android.widget.TextView(ctx).apply {
+                        text = label
+                        textSize = 13f
+                        setTextColor(0xFFEEEEEE.toInt())
+                        setPadding((12 * dp).toInt(), (10 * dp).toInt(), (12 * dp).toInt(), (10 * dp).toInt())
+                        setOnClickListener {
+                            if (item == null) {
+                                itemSlots[slotIndex] = null
+                            } else {
+                                for (j in itemSlots.indices) { if (itemSlots[j] == item) itemSlots[j] = null }
+                                itemSlots[slotIndex] = item
+                            }
+                            refreshTrainerItems()
+                            popup?.dismiss()
+                        }
+                    }.also { container.addView(it) }
                 }
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Trainer Item")
-                    .setItems(options.toTypedArray()) { _, which ->
-                        actions[which]()
-                        refreshTrainerItems()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+
+                popup = android.widget.PopupWindow(
+                    container,
+                    (160 * dp).toInt(),
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                    true
+                ).also {
+                    it.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1A1A2E.toInt()))
+                    it.elevation = 16f * dp
+                    it.showAsDropDown(iv, 0, 0)
+                }
             }
         }
         refreshTrainerItems()
