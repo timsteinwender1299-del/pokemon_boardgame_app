@@ -35,7 +35,7 @@ class AddPlayerDialog(
     private val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
     private val selectedBadges: MutableSet<Int> = existingTrainer?.badges?.toMutableSet() ?: mutableSetOf()
     // 8 ordered slots — null = empty
-    private val itemSlots: MutableList<TrainerItem?> = MutableList(8) { null }.also { slots ->
+    private val itemSlots: MutableList<TrainerItem?> = MutableList<TrainerItem?>(8) { null }.also { slots ->
         existingTrainer?.trainerItems?.forEachIndexed { i, item -> if (i < 8) slots[i] = item }
     }
     private lateinit var avatarAdapter: AvatarAdapter
