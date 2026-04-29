@@ -189,13 +189,13 @@ class AddPlayerDialog(
 
                 popup = android.widget.PopupWindow(
                     container,
-                    (160 * dp).toInt(),
+                    (180 * dp).toInt(),
                     android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
                     true
                 ).also {
                     it.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1A1A2E.toInt()))
                     it.elevation = 16f * dp
-                    it.showAsDropDown(iv, 0, 0)
+                    it.showAtLocation(iv, android.view.Gravity.CENTER, 0, 0)
                 }
             }
         }
