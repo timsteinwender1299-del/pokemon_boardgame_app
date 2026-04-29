@@ -19,6 +19,7 @@ import com.pokemonbp.data.AppTheme
 import com.pokemonbp.data.EvolutionData
 import com.pokemonbp.data.SpriteUrls
 import com.pokemonbp.data.ThemeManager
+import com.pokemonbp.data.TrainerItem
 import com.pokemonbp.data.TrainerManager
 import com.pokemonbp.model.*
 import java.util.UUID
@@ -33,6 +34,7 @@ class AddPlayerDialog(
     private var selectedGender: TrainerGender = existingTrainer?.gender ?: TrainerGender.MALE
     private val pokemonEntries = mutableListOf<TrainerPokemonEntry?>()
     private val selectedBadges: MutableSet<Int> = existingTrainer?.badges?.toMutableSet() ?: mutableSetOf()
+    private val selectedTrainerItems: MutableSet<TrainerItem> = existingTrainer?.trainerItems?.toMutableSet() ?: mutableSetOf()
     private lateinit var avatarAdapter: AvatarAdapter
     private var avatarPickerVisible = false
 
@@ -121,6 +123,37 @@ class AddPlayerDialog(
             }
         }
         refreshBadges()
+
+        // ── Trainer Items row ──────────────────────────────────────────────────
+        val trainerItemDefs = TrainerItem.values()  // 4 defined items
+        val tItemViews = listOf(
+            view.findViewById<android.widget.ImageView>(R.id.iv_titem_1),
+            view.findViewById(R.id.iv_titem_2),
+            view.findViewById(R.id.iv_titem_3),
+            view.findViewById<android.widget.ImageView>(R.id.iv_titem_4)
+        )
+        fun refreshTrainerItems() {
+            tItemViews.forEachIndexed { i, iv ->
+                val item = trainerItemDefs[i]
+                val selected = item in selectedTrainerItems
+                iv.alpha = if (selected) 1f else 0.3f
+                Glide.with(requireContext()).load(item.iconUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.ic_item_placeholder)
+                    .error(R.drawable.ic_item_placeholder)
+                    .into(iv)
+            }
+        }
+        tItemViews.forEachIndexed { i, iv ->
+            val item = trainerItemDefs[i]
+            iv.isClickable = true; iv.isFocusable = true
+            iv.setOnClickListener {
+                if (item in selectedTrainerItems) selectedTrainerItems.remove(item)
+                else selectedTrainerItems.add(item)
+                refreshTrainerItems()
+            }
+        }
+        refreshTrainerItems()
 
         // Pre-fill from existing trainer, pad to 4 nulls
         existingTrainer?.pokemon?.forEach { pokemonEntries.add(TrainerPokemonEntry(preset = it, bp = it.baseBP)) }
@@ -315,7 +348,8 @@ class AddPlayerDialog(
                 avatarId = selectedAvatarId,
                 gender = selectedGender,
                 pokemon = pokemonEntries.filterNotNull().map { it.preset.copy(baseBP = it.bp) },
-                badges = selectedBadges.toSet()
+                badges = selectedBadges.toSet(),
+                trainerItems = selectedTrainerItems.toSet()
             )
             if (existingTrainer == null) {
                 val all = TrainerManager.loadTrainers(requireContext())

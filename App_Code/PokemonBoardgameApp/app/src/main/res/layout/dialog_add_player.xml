@@ -167,6 +167,63 @@
                     android:adjustViewBounds="true" android:padding="2dp"/>
             </LinearLayout>
 
+            <!-- Trainer Items label -->
+            <TextView android:id="@+id/tv_trainer_item_label"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="🎒 Trainer Items" android:textSize="12sp"
+                android:textColor="#AAAAAA"
+                android:paddingTop="4dp" android:paddingBottom="4dp"/>
+
+            <LinearLayout android:id="@+id/ll_trainer_items_row"
+                android:layout_width="match_parent" android:layout_height="44dp"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <ImageView android:id="@+id/iv_titem_1"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"/>
+                <ImageView android:id="@+id/iv_titem_2"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"/>
+                <ImageView android:id="@+id/iv_titem_3"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"/>
+                <ImageView android:id="@+id/iv_titem_4"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"/>
+                <ImageView android:id="@+id/iv_titem_5"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"
+                    android:alpha="0.2"/>
+                <ImageView android:id="@+id/iv_titem_6"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"
+                    android:alpha="0.2"/>
+                <ImageView android:id="@+id/iv_titem_7"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"
+                    android:alpha="0.2"/>
+                <ImageView android:id="@+id/iv_titem_8"
+                    android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="3dp"
+                    android:src="@drawable/ic_item_placeholder"
+                    android:alpha="0.2"/>
+            </LinearLayout>
+
             <!-- Hidden compat views -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_trainer_pokemon"

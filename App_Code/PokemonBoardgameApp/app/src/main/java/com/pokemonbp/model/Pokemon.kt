@@ -2,6 +2,7 @@ package com.pokemonbp.model
 
 import com.pokemonbp.data.PokemonItem
 import com.pokemonbp.data.PokemonType
+import com.pokemonbp.data.TrainerItem
 
 data class PokemonPreset(
     val name: String,
@@ -65,8 +66,9 @@ data class PlayerTrainer(
     val avatarId: Int,
     val gender: TrainerGender,
     val pokemon: List<PokemonPreset>,  // up to 4, stores preset info
-    val badges: Set<Int> = emptySet(),         // earned badge numbers 1-8
-    val faintedPokemonIds: Set<Int> = emptySet() // pokedexIds of currently fainted pokemon
+    val badges: Set<Int> = emptySet(),           // earned badge numbers 1-8
+    val faintedPokemonIds: Set<Int> = emptySet(), // pokedexIds of currently fainted pokemon
+    val trainerItems: Set<TrainerItem> = emptySet()
 )
 
 // Enemy trainer options

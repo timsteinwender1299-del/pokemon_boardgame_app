@@ -362,7 +362,10 @@ class TeamSetupFragment : Fragment() {
                 return@setOnClickListener
             }
             // Battle only the two selected Pokémon
-            val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB), reverseMode, assaultVestMode)
+            val activeTrainer = teamATrainer
+            val trainerBpBonus = if (activeTrainer?.trainerItems?.contains(com.pokemonbp.data.TrainerItem.LIFE_ORB) == true) 1 else 0
+            val expertBelt = activeTrainer?.trainerItems?.contains(com.pokemonbp.data.TrainerItem.EXPERTENGURT) == true
+            val result = BattleCalculator.calculate(listOf(pokemonA), listOf(pokemonB), reverseMode, assaultVestMode, trainerBpBonus, expertBelt)
             val resultFrag = ResultFragment.newInstance(result)
             resultFrag.reverseMode = reverseMode
             resultFrag.assaultVestMode = assaultVestMode
@@ -401,9 +404,8 @@ class TeamSetupFragment : Fragment() {
             val capturedEnemy = currentEnemyTrainer
             resultFrag.teamAPokemonCount = teamAList.size
             resultFrag.teamBPokemonCount = teamBList.size
-            resultFrag.onYouLost  = { removeProteinFromTeams(); applyFaintA(capturedA) }
+            resultFrag.onYouLost  = { applyFaintA(capturedA) }
             resultFrag.onYouWon   = {
-                removeProteinFromTeams()
                 activeParticipantsA.add(capturedA)
                 val allFainted = applyFaintB(capturedB)
                 // Award gym badge if applicable
@@ -423,8 +425,8 @@ class TeamSetupFragment : Fragment() {
                 }
                 allFainted
             }
-            resultFrag.onAllFaintedA = { resetAllFainted() }
-            resultFrag.onAllFaintedB = { distributeXpToTeamA(); resetAllFainted() }
+            resultFrag.onAllFaintedA = { removeProteinFromTeams(); resetAllFainted() }
+            resultFrag.onAllFaintedB = { removeProteinFromTeams(); distributeXpToTeamA(); resetAllFainted() }
             resultFrag.isChampionBattle = capturedEnemy is EnemyTrainer.Champion
             resultFrag.teamAFullRoster = teamAList.filter { it.name.isNotBlank() && it.pokedexId > 0 }
 
@@ -472,7 +474,11 @@ class TeamSetupFragment : Fragment() {
             if (p.types.isEmpty()) continue          // placeholder slot
             if (i in faintedIndicesA) continue       // fainted — no XP
             if (p.xpLocked) continue                 // XP/Level locked
-            val gain = if (i in activeParticipantsA) 2 else 1
+            val expShare = teamATrainer?.trainerItems?.contains(com.pokemonbp.data.TrainerItem.EXP_SHARE) == true
+            val gain = when {
+                i in activeParticipantsA -> if (expShare) 3 else 2
+                else -> if (expShare) 2 else 1
+            }
             val rawXp = p.xp + gain
             val levelUps = rawXp / 4
             val newXp = rawXp % 4
@@ -1136,6 +1142,9 @@ class TeamSetupFragment : Fragment() {
 
     private fun deloadPlayerTrainer() {
         teamATrainer = null
+        // Reset assault vest when trainer is deloaded
+        assaultVestMode = false
+        binding.ivAssaultVestButton.setImageResource(R.drawable.assault_vest_deactivated)
         adapterA.isTrainerLocked = false
         teamAList.clear()
         faintedIndicesA.clear(); faintedPokedexA.clear()
@@ -1281,9 +1290,20 @@ class TeamSetupFragment : Fragment() {
         refreshItemSlotsA()
         itemBtnsA.forEachIndexed { i, btn ->
             btn.setOnClickListener {
-                showItemPicker(itemSlotsA[i], currentPreset.types) { selected ->
+                showItemPicker(btn, itemSlotsA[i], currentPreset.types, currentPreset.pokedexId == 493) { selected ->
                     itemSlotsA[i] = selected
                     refreshItemSlotsA()
+                    refresh()
+                }
+            }
+        }
+
+        if (currentPreset.pokedexId == 493) {
+            ivType1.isClickable = true
+            ivType1.isFocusable = true
+            ivType1.setOnClickListener {
+                showTypePicker(ivType1) { selectedType ->
+                    currentPreset = currentPreset.copy(types = listOf(selectedType))
                     refresh()
                 }
             }
@@ -1543,9 +1563,20 @@ class TeamSetupFragment : Fragment() {
         refreshItemSlotsB()
         itemBtnsB.forEachIndexed { i, btn ->
             btn.setOnClickListener {
-                showItemPicker(itemSlotsB[i], currentPreset.types) { selected ->
+                showItemPicker(btn, itemSlotsB[i], currentPreset.types, currentPreset.pokedexId == 493) { selected ->
                     itemSlotsB[i] = selected
                     refreshItemSlotsB()
+                    refresh()
+                }
+            }
+        }
+
+        if (currentPreset.pokedexId == 493) {
+            ivType1.isClickable = true
+            ivType1.isFocusable = true
+            ivType1.setOnClickListener {
+                showTypePicker(ivType1) { selectedType ->
+                    currentPreset = currentPreset.copy(types = listOf(selectedType))
                     refresh()
                 }
             }
@@ -2046,6 +2077,11 @@ class TeamSetupFragment : Fragment() {
                 faintedPokedexIds = faintedPokedexA.toSet(),
                 onBattle = { trainer ->
                     teamATrainer = trainer; teamAList.clear()
+                    // Beulenhelm: auto-activate assault vest when trainer carries it
+                    assaultVestMode = com.pokemonbp.data.TrainerItem.BEULENHELM in trainer.trainerItems
+                    binding.ivAssaultVestButton.setImageResource(
+                        if (assaultVestMode) R.drawable.assault_vest_activated else R.drawable.assault_vest_deactivated
+                    )
                     // Always load fainted state from the trainer's stored profile
                     faintedPokedexA.clear()
                     faintedPokedexA.addAll(trainer.faintedPokemonIds)
@@ -3168,21 +3204,108 @@ class TeamSetupFragment : Fragment() {
         }
     }
 
+    private fun showTypePicker(
+        anchor: android.view.View,
+        onSelected: (com.pokemonbp.data.PokemonType) -> Unit
+    ) {
+        val ctx = requireContext()
+        val types = com.pokemonbp.data.PokemonType.values()
+        val dp = resources.displayMetrics.density
+
+        val container = android.widget.LinearLayout(ctx).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFFFFFFFF.toInt())
+            elevation = 12 * dp
+        }
+        container.addView(android.widget.TextView(ctx).apply {
+            text = "Typ wählen / Choose Type"
+            textSize = 13f
+            setTextColor(0xFF000000.toInt())
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding((12 * dp).toInt(), (10 * dp).toInt(), (12 * dp).toInt(), (4 * dp).toInt())
+        })
+
+        val recycler = androidx.recyclerview.widget.RecyclerView(ctx)
+        recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(ctx, 6)
+        recycler.setPadding((6 * dp).toInt(), (6 * dp).toInt(), (6 * dp).toInt(), (6 * dp).toInt())
+        recycler.clipToPadding = false
+        container.addView(recycler)
+
+        var popup: android.widget.PopupWindow? = null
+
+        recycler.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+            override fun getItemCount() = types.size
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int) =
+                object : androidx.recyclerview.widget.RecyclerView.ViewHolder(
+                    android.widget.ImageView(ctx).apply {
+                        val size = (52 * dp).toInt()
+                        layoutParams = android.view.ViewGroup.MarginLayoutParams(size, size).also {
+                            it.setMargins((3 * dp).toInt(), (3 * dp).toInt(), (3 * dp).toInt(), (3 * dp).toInt())
+                        }
+                        scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                        val attrs = intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
+                        val ta = ctx.obtainStyledAttributes(attrs)
+                        background = ta.getDrawable(0)
+                        ta.recycle()
+                        isClickable = true
+                        isFocusable = true
+                    }
+                ) {}
+            override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                val type = types[position]
+                val iv = holder.itemView as android.widget.ImageView
+                com.bumptech.glide.Glide.with(ctx)
+                    .load(com.pokemonbp.data.SpriteUrls.typeIconUrl(type.name))
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                    .into(iv)
+                iv.setOnClickListener {
+                    onSelected(type)
+                    popup?.dismiss()
+                }
+            }
+        }
+
+        val width = (6 * (52 + 6) * dp).toInt().coerceAtLeast((300 * dp).toInt())
+        popup = android.widget.PopupWindow(container, width, android.view.WindowManager.LayoutParams.WRAP_CONTENT, true)
+        popup.elevation = 12 * dp
+        popup.showAsDropDown(anchor, 0, (4 * dp).toInt())
+    }
+
     private fun showItemPicker(
+        anchor: android.view.View,
         current: com.pokemonbp.data.PokemonItem?,
         pokemonTypes: List<com.pokemonbp.data.PokemonType>,
+        showAllItems: Boolean = false,
         onSelected: (com.pokemonbp.data.PokemonItem?) -> Unit
     ) {
         val ctx = requireContext()
-        val allItems: List<com.pokemonbp.data.PokemonItem?> = listOf(null) + com.pokemonbp.data.PokemonItem.values().toList()
+        val dp = resources.displayMetrics.density
+        val allItems: List<com.pokemonbp.data.PokemonItem?> = listOf(null) +
+            com.pokemonbp.data.PokemonItem.values().filter { item ->
+                showAllItems || item.requiredType == null || pokemonTypes.contains(item.requiredType)
+            }
+
+        // Build popup content: title + grid
+        val container = android.widget.LinearLayout(ctx).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFFFFFFFF.toInt())
+            elevation = 12 * dp
+        }
+        container.addView(android.widget.TextView(ctx).apply {
+            text = "Item wählen / Choose Item"
+            textSize = 13f
+            setTextColor(0xFF000000.toInt())
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding((12 * dp).toInt(), (10 * dp).toInt(), (12 * dp).toInt(), (4 * dp).toInt())
+        })
 
         val recycler = androidx.recyclerview.widget.RecyclerView(ctx)
-        recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(ctx, 5)
-        val dp = resources.displayMetrics.density.toInt()
-        recycler.setPadding(8 * dp, 8 * dp, 8 * dp, 8 * dp)
+        recycler.layoutManager = androidx.recyclerview.widget.GridLayoutManager(ctx, 4)
+        recycler.setPadding((6 * dp).toInt(), (6 * dp).toInt(), (6 * dp).toInt(), (6 * dp).toInt())
         recycler.clipToPadding = false
+        container.addView(recycler)
 
-        var alertDialog: android.app.AlertDialog? = null
+        var popup: android.widget.PopupWindow? = null
 
         recycler.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
             override fun getItemCount() = allItems.size
@@ -3198,17 +3321,13 @@ class TeamSetupFragment : Fragment() {
 
                 if (item == null) {
                     iv.setImageResource(R.drawable.ic_item_placeholder)
-                    tv.text = "None"
-                    holder.itemView.alpha = 1.0f
+                    tv.text = "Keins / None"
                 } else {
                     val resId = item.iconResId(ctx)
                     if (resId != 0) iv.setImageResource(resId) else iv.setImageResource(R.drawable.ic_item_placeholder)
-                    tv.text = item.nameDE
-                    // Dim items that don't apply to this Pokemon's types
-                    holder.itemView.alpha = if (item.requiredType == null || pokemonTypes.contains(item.requiredType)) 1.0f else 0.4f
+                    tv.text = "${item.nameDE} / ${item.nameEN}"
                 }
 
-                // Highlight currently selected item
                 if (item == current) {
                     holder.itemView.setBackgroundColor(0x4400BCD4.toInt())
                 } else {
@@ -3220,20 +3339,16 @@ class TeamSetupFragment : Fragment() {
 
                 holder.itemView.setOnClickListener {
                     onSelected(item)
-                    alertDialog?.dismiss()
+                    popup?.dismiss()
                 }
             }
         }
 
-        alertDialog = android.app.AlertDialog.Builder(ctx)
-            .setTitle("Item wählen / Choose Item")
-            .setView(recycler)
-            .setNegativeButton("Abbrechen") { _, _ -> }
-            .show()
-        alertDialog.window?.setLayout(
-            (280 * resources.displayMetrics.density).toInt(),
-            android.view.WindowManager.LayoutParams.WRAP_CONTENT
-        )
+        val width = (allItems.size.coerceAtMost(4) * (80 * dp).toInt())
+            .coerceAtLeast((240 * dp).toInt())
+        popup = android.widget.PopupWindow(container, width, android.view.WindowManager.LayoutParams.WRAP_CONTENT, true)
+        popup.elevation = 12 * dp
+        popup.showAsDropDown(anchor, 0, (4 * dp).toInt())
     }
 
     private fun saveSession() {
