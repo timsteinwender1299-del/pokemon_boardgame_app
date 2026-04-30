@@ -153,27 +153,33 @@ class AddPlayerDialog(
                 }
             }
         }
+        val pickerPanel = view.findViewById<android.widget.LinearLayout>(R.id.ll_item_picker_panel)
+        val dp = resources.displayMetrics.density
+        var activePickerSlot = -1
+
+        fun hidePicker() {
+            pickerPanel.visibility = View.GONE
+            pickerPanel.removeAllViews()
+            activePickerSlot = -1
+        }
+
         allTItemViews.forEachIndexed { slotIndex, iv ->
             iv.setOnClickListener {
-                val ctx = requireContext()
-                val dp = resources.displayMetrics.density
+                if (activePickerSlot == slotIndex) { hidePicker(); return@setOnClickListener }
+                hidePicker()
 
                 val opts = mutableListOf<Pair<String, TrainerItem?>>()
                 if (itemSlots[slotIndex] != null) opts.add("❌ Remove" to null)
                 TrainerItem.values().forEach { item -> opts.add("${item.nameDE} / ${item.nameEN}" to item) }
 
-                val container = android.widget.LinearLayout(ctx).apply {
-                    orientation = android.widget.LinearLayout.VERTICAL
-                    setBackgroundColor(0xFF1A1A2E.toInt())
-                }
-
-                var popup: android.widget.PopupWindow? = null
                 opts.forEach { (label, item) ->
-                    android.widget.TextView(ctx).apply {
+                    android.widget.TextView(requireContext()).apply {
                         text = label
                         textSize = 13f
                         setTextColor(0xFFEEEEEE.toInt())
-                        setPadding((12 * dp).toInt(), (10 * dp).toInt(), (12 * dp).toInt(), (10 * dp).toInt())
+                        setPadding((14 * dp).toInt(), (9 * dp).toInt(), (14 * dp).toInt(), (9 * dp).toInt())
+                        isClickable = true
+                        isFocusable = true
                         setOnClickListener {
                             if (item == null) {
                                 itemSlots[slotIndex] = null
@@ -182,21 +188,13 @@ class AddPlayerDialog(
                                 itemSlots[slotIndex] = item
                             }
                             refreshTrainerItems()
-                            popup?.dismiss()
+                            hidePicker()
                         }
-                    }.also { container.addView(it) }
+                    }.also { pickerPanel.addView(it) }
                 }
 
-                popup = android.widget.PopupWindow(
-                    container,
-                    (180 * dp).toInt(),
-                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                    true
-                ).also {
-                    it.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1A1A2E.toInt()))
-                    it.elevation = 16f * dp
-                    it.showAtLocation(iv, android.view.Gravity.CENTER, 0, 0)
-                }
+                pickerPanel.visibility = View.VISIBLE
+                activePickerSlot = slotIndex
             }
         }
         refreshTrainerItems()

@@ -178,52 +178,72 @@
             <LinearLayout android:id="@+id/ll_trainer_items_row"
                 android:layout_width="match_parent" android:layout_height="44dp"
                 android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="4dp">
                 <ImageView android:id="@+id/iv_titem_1"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
-                    android:src="@drawable/ic_item_placeholder"/>
+                    android:src="@drawable/ic_item_placeholder"
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_2"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
-                    android:src="@drawable/ic_item_placeholder"/>
+                    android:src="@drawable/ic_item_placeholder"
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_3"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
-                    android:src="@drawable/ic_item_placeholder"/>
+                    android:src="@drawable/ic_item_placeholder"
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_4"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
-                    android:src="@drawable/ic_item_placeholder"/>
+                    android:src="@drawable/ic_item_placeholder"
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_5"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
                     android:src="@drawable/ic_item_placeholder"
-                    android:alpha="0.2"/>
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_6"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
                     android:src="@drawable/ic_item_placeholder"
-                    android:alpha="0.2"/>
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_7"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
                     android:src="@drawable/ic_item_placeholder"
-                    android:alpha="0.2"/>
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
                 <ImageView android:id="@+id/iv_titem_8"
                     android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1" android:scaleType="fitCenter"
                     android:adjustViewBounds="true" android:padding="3dp"
                     android:src="@drawable/ic_item_placeholder"
-                    android:alpha="0.2"/>
+                    android:clickable="true" android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"/>
             </LinearLayout>
+
+            <!-- Inline item picker panel (shown when a slot is tapped) -->
+            <LinearLayout android:id="@+id/ll_item_picker_panel"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="#CC1A1A2E"
+                android:layout_marginBottom="6dp"/>
 
             <!-- Hidden compat views -->
             <androidx.recyclerview.widget.RecyclerView
