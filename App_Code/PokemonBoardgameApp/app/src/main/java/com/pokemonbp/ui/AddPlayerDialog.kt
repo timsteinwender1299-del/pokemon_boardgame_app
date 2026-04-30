@@ -154,6 +154,7 @@ class AddPlayerDialog(
             }
         }
         val pickerPanel = view.findViewById<android.widget.LinearLayout>(R.id.ll_item_picker_panel)
+        val scrollView = view.findViewById<android.widget.ScrollView>(R.id.scroll_view_content)
         val dp = resources.displayMetrics.density
         var activePickerSlot = -1
 
@@ -195,6 +196,7 @@ class AddPlayerDialog(
 
                 pickerPanel.visibility = View.VISIBLE
                 activePickerSlot = slotIndex
+                scrollView.post { scrollView.smoothScrollTo(0, pickerPanel.top) }
             }
         }
         refreshTrainerItems()

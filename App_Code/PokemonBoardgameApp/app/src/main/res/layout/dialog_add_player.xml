@@ -31,6 +31,7 @@
 
     <!-- Screen panel -->
     <ScrollView
+        android:id="@+id/scroll_view_content"
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
         android:background="@drawable/pokedex_screen_bg"
         android:fillViewport="true">
