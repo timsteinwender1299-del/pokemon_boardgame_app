@@ -153,50 +153,29 @@ class AddPlayerDialog(
                 }
             }
         }
-        val pickerPanel = view.findViewById<android.widget.LinearLayout>(R.id.ll_item_picker_panel)
-        val scrollView = view.findViewById<android.widget.ScrollView>(R.id.scroll_view_content)
-        val dp = resources.displayMetrics.density
-        var activePickerSlot = -1
-
-        fun hidePicker() {
-            pickerPanel.visibility = View.GONE
-            pickerPanel.removeAllViews()
-            activePickerSlot = -1
-        }
-
         allTItemViews.forEachIndexed { slotIndex, iv ->
             iv.setOnClickListener {
-                if (activePickerSlot == slotIndex) { hidePicker(); return@setOnClickListener }
-                hidePicker()
-
-                val opts = mutableListOf<Pair<String, TrainerItem?>>()
-                if (itemSlots[slotIndex] != null) opts.add("❌ Remove" to null)
-                TrainerItem.values().forEach { item -> opts.add("${item.nameDE} / ${item.nameEN}" to item) }
-
-                opts.forEach { (label, item) ->
-                    android.widget.TextView(requireContext()).apply {
-                        text = label
-                        textSize = 13f
-                        setTextColor(0xFFEEEEEE.toInt())
-                        setPadding((14 * dp).toInt(), (9 * dp).toInt(), (14 * dp).toInt(), (9 * dp).toInt())
-                        isClickable = true
-                        isFocusable = true
-                        setOnClickListener {
-                            if (item == null) {
-                                itemSlots[slotIndex] = null
-                            } else {
-                                for (j in itemSlots.indices) { if (itemSlots[j] == item) itemSlots[j] = null }
-                                itemSlots[slotIndex] = item
-                            }
-                            refreshTrainerItems()
-                            hidePicker()
-                        }
-                    }.also { pickerPanel.addView(it) }
+                val opts = mutableListOf<String>()
+                val actions = mutableListOf<() -> Unit>()
+                if (itemSlots[slotIndex] != null) {
+                    opts.add("❌ Remove")
+                    actions.add { itemSlots[slotIndex] = null }
                 }
-
-                pickerPanel.visibility = View.VISIBLE
-                activePickerSlot = slotIndex
-                scrollView.post { scrollView.smoothScrollTo(0, pickerPanel.top) }
+                TrainerItem.values().forEach { item ->
+                    opts.add("${item.nameDE} / ${item.nameEN}")
+                    actions.add {
+                        for (j in itemSlots.indices) { if (itemSlots[j] == item) itemSlots[j] = null }
+                        itemSlots[slotIndex] = item
+                    }
+                }
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Trainer Item")
+                    .setItems(opts.toTypedArray()) { _, which ->
+                        actions[which]()
+                        refreshTrainerItems()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         }
         refreshTrainerItems()
